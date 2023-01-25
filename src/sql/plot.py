@@ -280,7 +280,7 @@ FROM "{{table}}"
 
 
 @requires(["matplotlib"])
-@telemetry.log_call('plot-histogram')
+@telemetry.log_call('-plot-histogram')
 def histogram(table, column, bins, with_=None, conn=None):
     """Plot histogram
 
