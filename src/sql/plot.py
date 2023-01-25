@@ -17,7 +17,7 @@ except ModuleNotFoundError:
 
 from sql.store import store
 import sql.connection
-
+from sql.telemetry import telemetry
 
 def _summary_stats(con, table, column, with_=None):
     """Compute percentiles and mean for boxplot"""
@@ -187,9 +187,9 @@ def _boxplot_stats(con, table, column, whis=1.5, autorange=False, with_=None):
 
     return bxpstats
 
-
 # https://github.com/matplotlib/matplotlib/blob/ddc260ce5a53958839c244c0ef0565160aeec174/lib/matplotlib/axes/_axes.py#L3915
 @requires(["matplotlib"])
+@telemetry.log_call('-plot-boxplot')
 def boxplot(table, column, *, orient="v", with_=None, conn=None):
     """Plot boxplot
 
@@ -280,6 +280,7 @@ FROM "{{table}}"
 
 
 @requires(["matplotlib"])
+@telemetry.log_call('plot-histogram')
 def histogram(table, column, bins, with_=None, conn=None):
     """Plot histogram
 
