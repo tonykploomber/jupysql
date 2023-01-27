@@ -27,7 +27,7 @@ def mock_log_api(monkeypatch):
 
 def test_boxplot_telemetry_execution(mock_log_api, simple_db_conn):
     # Test the injected log_api gets called
-    plot.boxplot("iris.csv", "petal width", conn=simple_db_conn)
+    plot.boxplot("iris.csv", "petal width", conn=simple_db_conn, orient="h")
 
     mock_log_api.assert_called_with(
         action="jupysql-boxplot-success", total_runtime=ANY, metadata=ANY
