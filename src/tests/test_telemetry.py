@@ -43,7 +43,7 @@ def test_histogram_telemetry_execution(mock_log_api, simple_db_conn):
     )
 
 
-def test_data_frame_telemtry_execution(mock_log_api, ip):
+def test_data_frame_telemetry_execution(mock_log_api, ip):
     # Simulate the cell query & get the DataFrame
     ip.run_cell("%sql duckdb://")
     ip.run_cell("result = %sql SELECT * FROM iris.csv")
@@ -51,4 +51,18 @@ def test_data_frame_telemtry_execution(mock_log_api, ip):
 
     mock_log_api.assert_called_with(
         action="jupysql-data-frame-success", total_runtime=ANY, metadata=ANY
+    )
+
+
+def test_sqlrender_telemetry_execution(mock_log_api, ip):
+    # Simulate the sqlrender query
+    ip.run_cell("%sql duckdb://")
+    ip.run_cell(
+        "%sql --save class_setosa --no-execute \
+            SELECT * FROM iris.csv WHERE class='Iris-setosa'"
+    )
+    ip.run_cell("%sqlrender class_setosa")
+
+    mock_log_api.assert_called_with(
+        action="jupysql-sqlrender-success", total_runtime=ANY, metadata=ANY
     )
