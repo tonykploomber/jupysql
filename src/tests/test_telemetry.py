@@ -1,10 +1,12 @@
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import ANY, Mock
 import pytest
 import urllib.request
 import duckdb
 from sql.telemetry import telemetry
 from sql import plot
+from sql import run
+from conftest import runsql
 
 @pytest.fixture
 def simple_db_conn():
@@ -22,14 +24,22 @@ def mock_log_api(monkeypatch):
     monkeypatch.setattr(telemetry, 'log_api', mock_log_api)
     yield mock_log_api
 
-def test_boxplot_telemetry(mock_log_api, simple_db_conn):
+def test_boxplot_telemetry_execution(mock_log_api, simple_db_conn):
     # Test the injected log_api gets called  
     plot.boxplot("iris.csv", "petal width", conn=simple_db_conn)
 
-    mock_log_api.assert_called()
+    mock_log_api.assert_called_with(action='jupysql-boxplot-success', total_runtime = ANY, metadata=ANY)
 
-def test_histogram_telemetry(mock_log_api, simple_db_conn):
+def test_histogram_telemetry_execution(mock_log_api, simple_db_conn):
     # Test the injected log_api gets called  
     plot.histogram("iris.csv", "petal width", bins=50, conn=simple_db_conn)
 
-    mock_log_api.assert_called()
+    mock_log_api.assert_called_with(action='jupysql-histogram-success', total_runtime = ANY, metadata=ANY)
+
+def test_data_frame_telemtry_execution(mock_log_api, simple_db_conn, ip):
+    # Simulate the cell query & get the DataFrame
+    ip.run_cell("%sql duckdb://")
+    ip.run_cell("result = %sql SELECT * FROM iris.csv")
+    out = ip.run_cell("result.DataFrame()")
+
+    mock_log_api.assert_called_with(action='jupysql-data-frame-success', total_runtime = ANY, metadata=ANY)
