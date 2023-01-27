@@ -66,3 +66,11 @@ def test_sqlrender_telemetry_execution(mock_log_api, ip):
     mock_log_api.assert_called_with(
         action="jupysql-sqlrender-success", total_runtime=ANY, metadata=ANY
     )
+
+
+def test_execute_telemetry_execution(mock_log_api, ip):
+    ip.run_cell("%sql duckdb://")
+
+    mock_log_api.assert_called_with(
+        action="jupysql-execute-success", total_runtime=ANY, metadata=ANY
+    )
