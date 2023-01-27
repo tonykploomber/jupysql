@@ -11,26 +11,32 @@ import duckdb
 from sql.telemetry import telemetry
 from sql import plot
 
-def test_plot_telemetry(monkeypatch):
-
-    mock_log_call = Mock()
-    mock_log_api = Mock()
-    monkeypatch.setattr(telemetry, 'log_call', mock_log_call)
-    monkeypatch.setattr(telemetry, 'log_api', mock_log_api)
-
+@pytest.fixture
+def simple_db_conn():
     if not Path("iris.csv").is_file():
         urllib.request.urlretrieve(
             "https://raw.githubusercontent.com/plotly/datasets/master/iris-data.csv",
             "iris.csv",
         )
-
     conn = duckdb.connect(database=":memory:")
+    return conn
 
-    # Simulate the call
-    plot.boxplot("iris.csv", "petal width", conn=conn)
+def test_boxplot_telemetry(monkeypatch, simple_db_conn):
 
-    # Test the log_call decorator on boxplot has been called
+    mock_log_api = Mock()
+    monkeypatch.setattr(telemetry, 'log_api', mock_log_api)
 
-    mock_log_call.assert_not_called()
-    # mock_log_call.assert_called_with("boxplot")
+    # Test the injected log_api gets called  
+    plot.boxplot("iris.csv", "petal width", conn=simple_db_conn)
 
+    mock_log_api.assert_called()
+
+def test_histogram_telemetry(monkeypatch, simple_db_conn):
+
+    mock_log_api = Mock()
+    monkeypatch.setattr(telemetry, 'log_api', mock_log_api)
+
+    # Test the injected log_api gets called  
+    plot.histogram("iris.csv", "petal width", bins=50, conn=simple_db_conn)
+
+    mock_log_api.assert_called()
