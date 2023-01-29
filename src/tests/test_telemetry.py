@@ -57,6 +57,7 @@ def test_data_frame_telemetry_execution(mock_log_api, ip, simple_file_path):
     # Simulate the cell query & get the DataFrame
     ip.run_cell("%sql duckdb://")
     ip.run_cell("result = %sql SELECT * FROM read_csv_auto('" + simple_file_path + "')")
+    ip.run_cell("result.DataFrame()")
     mock_log_api.assert_called_with(
         action="jupysql-data-frame-success", total_runtime=ANY, metadata=ANY
     )
