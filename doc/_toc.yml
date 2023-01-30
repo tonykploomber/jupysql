@@ -38,6 +38,6 @@ parts:
   - caption: Community
     chapters:
     - file: community/coc
-    - file: community/projects
     - file: community/support
+    - file: community/projects
     - file: community/credits
