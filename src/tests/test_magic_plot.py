@@ -1,5 +1,4 @@
 from pathlib import Path
-from ploomber_core import exceptions
 import pytest
 from IPython.core.error import UsageError
 import matplotlib.pyplot as plt
@@ -10,12 +9,12 @@ import matplotlib.pyplot as plt
     [
         [
             "%sqlplot someplot -t a -c b",
-            exceptions.PloomberValueError,
+            ValueError,
             "Unknown plot 'someplot'. Must be: 'histogram' or 'boxplot'",
         ],
         [
             "%sqlplot -t a -c b",
-            exceptions.PloomberValueError,
+            ValueError,
             "Missing the first argument, must be: 'histogram' or 'boxplot'",
         ],
     ],

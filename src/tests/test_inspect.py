@@ -2,7 +2,6 @@ from inspect import getsource
 import sqlite3
 import pytest
 from functools import partial
-from ploomber_core import exceptions
 
 from sql import inspect, connection
 
@@ -93,7 +92,7 @@ def test_get_column(sample_db, name, first, second, schema):
     ],
 )
 def test_nonexistent_table(name, schema, error):
-    with pytest.raises(exceptions.PloomberValueError) as excinfo:
+    with pytest.raises(ValueError) as excinfo:
         inspect.get_columns(name, schema)
 
     assert error.lower() in str(excinfo.value).lower()

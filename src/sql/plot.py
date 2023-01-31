@@ -2,7 +2,7 @@
 Plot using the SQL backend
 """
 from ploomber_core.dependencies import requires
-from ploomber_core import exceptions
+from ploomber_core.exceptions import modify_exceptions
 from jinja2 import Template
 
 try:
@@ -124,6 +124,7 @@ OR  "{{column}}" > {{whishi}}
 
 
 # https://github.com/matplotlib/matplotlib/blob/b5ac96a8980fdb9e59c9fb649e0714d776e26701/lib/matplotlib/cbook/__init__.py
+@modify_exceptions
 def _boxplot_stats(con, table, column, whis=1.5, autorange=False, with_=None):
     """Compute statistics required to create a boxplot"""
 
@@ -159,9 +160,7 @@ def _boxplot_stats(con, table, column, whis=1.5, autorange=False, with_=None):
         loval = q1 - whis * stats["iqr"]
         hival = q3 + whis * stats["iqr"]
     else:
-        raise exceptions.PloomberValueError(
-            "whis must be a float or list of percentiles"
-        )
+        raise ValueError("whis must be a float or list of percentiles")
 
     # get high extreme
     wiskhi_d = _whishi(con, table, column, hival, with_=with_)
@@ -350,6 +349,7 @@ def histogram(table, column, bins, with_=None, conn=None):
     return ax
 
 
+@modify_exceptions
 def _histogram(table, column, bins, with_=None, conn=None):
     """Compute bins and heights"""
     if not conn:
@@ -379,6 +379,6 @@ order by 1;
     bin_, height = zip(*data)
 
     if bin_[0] is None:
-        raise exceptions.PloomberValueError("Data contains NULLs")
+        raise ValueError("Data contains NULLs")
 
     return bin_, height

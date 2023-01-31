@@ -7,7 +7,6 @@ from matplotlib import cbook
 from sql import plot
 from pathlib import Path
 import pytest
-from ploomber_core import exceptions
 
 
 class DictOfFloats(Mapping):
@@ -82,7 +81,7 @@ def test_boxplot_stats_exception(chinook_db):
     [
         [
             "%sqlplot histogram --table data.csv --column age --table data.csv",
-            exceptions.PloomberValueError,
+            ValueError,
             "Data contains NULLs",
         ]
     ],

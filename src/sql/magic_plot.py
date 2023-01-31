@@ -4,7 +4,7 @@ from IPython.core.magic import (
     magics_class,
 )
 from IPython.core.magic_arguments import argument, magic_arguments
-from ploomber_core import exceptions
+from ploomber_core.exceptions import modify_exceptions
 
 try:
     from traitlets.config.configurable import Configurable
@@ -49,6 +49,7 @@ class SqlPlotMagic(Magics, Configurable):
         action="append",
         dest="with_",
     )
+    @modify_exceptions
     def execute(self, line="", cell="", local_ns=None):
         """
         Plot magic
@@ -62,7 +63,7 @@ class SqlPlotMagic(Magics, Configurable):
             column = cmd.args.column
 
         if not cmd.args.line:
-            raise exceptions.PloomberValueError(
+            raise ValueError(
                 "Missing the first argument, must be: 'histogram' or 'boxplot'"
             )
 
@@ -83,6 +84,6 @@ class SqlPlotMagic(Magics, Configurable):
                 conn=None,
             )
         else:
-            raise exceptions.PloomberValueError(
+            raise ValueError(
                 f"Unknown plot {cmd.args.line[0]!r}. Must be: 'histogram' or 'boxplot'"
             )

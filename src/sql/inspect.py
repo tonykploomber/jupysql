@@ -1,6 +1,6 @@
 from sqlalchemy import inspect
 from prettytable import PrettyTable
-from ploomber_core import exceptions
+from ploomber_core.exceptions import modify_exceptions
 
 from sql.connection import Connection
 from sql.telemetry import telemetry
@@ -42,6 +42,7 @@ class Tables(DatabaseInspection):
         self._table_txt = self._table.get_string()
 
 
+@modify_exceptions
 class Columns(DatabaseInspection):
     """
     Represents the columns in a database table
@@ -54,11 +55,11 @@ class Columns(DatabaseInspection):
 
         if not columns:
             if schema:
-                raise exceptions.PloomberValueError(
+                raise ValueError(
                     f"There is no table with name {name!r} in schema {schema!r}"
                 )
             else:
-                raise exceptions.PloomberValueError(
+                raise ValueError(
                     f"There is no table with name {name!r} in the default schema"
                 )
 

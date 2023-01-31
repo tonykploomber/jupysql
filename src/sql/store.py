@@ -1,6 +1,6 @@
 from typing import Iterator, Iterable
 from collections.abc import MutableMapping
-from ploomber_core import exceptions
+from ploomber_core.exceptions import modify_exceptions
 
 from jinja2 import Template
 
@@ -55,11 +55,10 @@ class SQLStore(MutableMapping):
         # TODO: if with is false, WITH should not appear
         return SQLQuery(self, query, with_)
 
+    @modify_exceptions
     def store(self, key, query, with_=None):
         if with_ and key in with_:
-            raise exceptions.PloomberValueError(
-                f"Script name ({key!r}) cannot appear in with_ argument"
-            )
+            raise ValueError(f"Script name ({key!r}) cannot appear in with_ argument")
 
         self._data[key] = SQLQuery(self, query, with_)
 
