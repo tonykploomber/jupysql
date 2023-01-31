@@ -57,7 +57,9 @@ class SQLStore(MutableMapping):
 
     def store(self, key, query, with_=None):
         if with_ and key in with_:
-            raise exceptions.PloomberValueError(f"Script name ({key!r}) cannot appear in with_ argument")
+            raise exceptions.PloomberValueError(
+                f"Script name ({key!r}) cannot appear in with_ argument"
+            )
 
         self._data[key] = SQLQuery(self, query, with_)
 
