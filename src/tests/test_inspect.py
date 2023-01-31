@@ -93,7 +93,7 @@ def test_get_column(sample_db, name, first, second, schema):
     ],
 )
 def test_nonexistent_table(name, schema, error):
-    with pytest.raises(excepts.PloomberValue) as excinfo:
+    with pytest.raises(exceptions.PloomberValueError) as excinfo:
         inspect.get_columns(name, schema)
 
     assert error.lower() in str(excinfo.value).lower()
