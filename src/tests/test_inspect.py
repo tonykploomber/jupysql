@@ -98,6 +98,7 @@ def test_nonexistent_table(name, schema, error):
 
     assert error.lower() in str(excinfo.value).lower()
 
+
 @pytest.mark.parametrize(
     "function",
     [

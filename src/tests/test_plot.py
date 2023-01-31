@@ -59,6 +59,7 @@ def test_boxplot_stats(chinook_db):
 
     assert DictOfFloats(result) == DictOfFloats(expected[0])
 
+
 def test_boxplot_stats_exception(chinook_db):
     con = duckdb.connect(database=":memory:")
     con.execute("INSTALL 'sqlite_scanner';")
@@ -67,9 +68,14 @@ def test_boxplot_stats_exception(chinook_db):
 
     res = con.execute("SELECT * FROM Invoice")
     X = res.df().Total
-    expected = cbook.boxplot_stats(X)
-    with pytest.raises(BaseException, match="whis must be a float or list of percentiles.*"):
-        result = plot._boxplot_stats(con, "Invoice", "Total", "Not a float or list of percentiles whis param")
+    cbook.boxplot_stats(X)
+    with pytest.raises(
+        BaseException, match="whis must be a float or list of percentiles.*"
+    ):
+        plot._boxplot_stats(
+            con, "Invoice", "Total", "Not a float or list of percentiles whis param"
+        )
+
 
 @pytest.mark.parametrize(
     "cell, error_type, error_message",
@@ -81,9 +87,9 @@ def test_boxplot_stats_exception(chinook_db):
         ]
     ],
 )
-# Test internal plot function e.g. 
+# Test internal plot function e.g.
 def test_internal_histogram_exception(tmp_empty, ip, cell, error_type, error_message):
-    Path("data.csv").write_text('name,age\nDan,33\nBob,19\nSheri,')
+    Path("data.csv").write_text("name,age\nDan,33\nBob,19\nSheri,")
     ip.run_cell("%sql duckdb://")
     ip.run_cell(
         """%%sql --save test_dataset --no-execute
