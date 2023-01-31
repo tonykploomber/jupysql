@@ -159,7 +159,7 @@ def _boxplot_stats(con, table, column, whis=1.5, autorange=False, with_=None):
         loval = q1 - whis * stats["iqr"]
         hival = q3 + whis * stats["iqr"]
     else:
-        raise ValueError("whis must be a float or list of percentiles")
+        raise exceptions.PloomberValueError("whis must be a float or list of percentiles")
 
     # get high extreme
     wiskhi_d = _whishi(con, table, column, hival, with_=with_)
