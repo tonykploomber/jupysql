@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from ploomber_core import exceptions
 import pytest
 from IPython.core.error import UsageError
 import matplotlib.pyplot as plt
@@ -10,12 +10,12 @@ import matplotlib.pyplot as plt
     [
         [
             "%sqlplot someplot -t a -c b",
-            ValueError,
+            exceptions.PloomberValueError,
             "Unknown plot 'someplot'. Must be: 'histogram' or 'boxplot'",
         ],
         [
             "%sqlplot -t a -c b",
-            ValueError,
+            exceptions.PloomberValueError,
             "Missing the first argument, must be: 'histogram' or 'boxplot'",
         ],
     ],
@@ -24,7 +24,7 @@ def test_validate_plot_name(tmp_empty, ip, cell, error_type, error_message):
     out = ip.run_cell(cell)
 
     assert isinstance(out.error_in_exec, error_type)
-    assert str(out.error_in_exec) == (error_message)
+    assert str(error_message).lower() in str(out.error_in_exec).lower()
 
 
 @pytest.mark.parametrize(
