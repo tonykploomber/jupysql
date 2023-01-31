@@ -5,6 +5,9 @@ import duckdb
 import numpy as np
 from matplotlib import cbook
 from sql import plot
+from pathlib import Path
+import pytest
+from ploomber_core import exceptions
 
 
 class DictOfFloats(Mapping):
@@ -55,3 +58,28 @@ def test_boxplot_stats(chinook_db):
     result = plot._boxplot_stats(con, "Invoice", "Total")
 
     assert DictOfFloats(result) == DictOfFloats(expected[0])
+
+
+@pytest.mark.parametrize(
+    "cell, error_type, error_message",
+    [
+        [
+            "%sqlplot histogram --table data.csv --column age --table data.csv",
+            exceptions.PloomberValueError,
+            "Data contains NULLs",
+        ]
+    ],
+)
+# Test internal plot function e.g. 
+def test_internal_histogram_exception(tmp_empty, ip, cell, error_type, error_message):
+    Path("data.csv").write_text('name,age\nDan,33\nBob,19\nSheri,')
+    ip.run_cell("%sql duckdb://")
+    ip.run_cell(
+        """%%sql --save test_dataset --no-execute
+SELECT *
+FROM data.csv
+"""
+    )
+    out = ip.run_cell(cell)
+    assert isinstance(out.error_in_exec, error_type)
+    assert str(error_message).lower() in str(out.error_in_exec).lower()

@@ -2,6 +2,7 @@
 Plot using the SQL backend
 """
 from ploomber_core.dependencies import requires
+from ploomber_core import exceptions
 from jinja2 import Template
 
 try:
@@ -376,6 +377,6 @@ order by 1;
     bin_, height = zip(*data)
 
     if bin_[0] is None:
-        raise ValueError("Data contains NULLs")
+        raise exceptions.PloomberValueError("Data contains NULLs")
 
     return bin_, height
