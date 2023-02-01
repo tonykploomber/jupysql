@@ -11,7 +11,6 @@ def test_sqlstore_setitem():
 
 def test_key():
     store = SQLStore()
-    # store.store("first", "SELECT * FROM first WHERE x > 20", with_=["first"])
 
     with pytest.raises(ValueError):
         store.store("first", "SELECT * FROM first WHERE x > 20", with_=["first"])
