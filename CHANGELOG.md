@@ -2,7 +2,7 @@
 
 ## 0.5.4dev
 
-* [Fix] Shows the community link to the exception message of ValueError and TypeError
+* [Fix] Adds community link to `ValueError` and `TypeError`
 
 ## 0.5.3 (2023-01-31)
 
