@@ -104,6 +104,14 @@ def test_persist(ip):
     persisted = runsql(ip, "SELECT * FROM results_dframe")
     assert persisted == [(0, 1, "foo"), (1, 2, "bar")]
 
+def test_persist_with_exceptions(ip):
+    runsql(ip, "")
+    ip.run_cell("results = %sql SELECT * FROM test;")
+    out = ip.run_cell("results.RANDOM()")
+    print (out)
+    # ip.run_cell("%sql --persist sqlite:// results_dframe")
+    # persisted = runsql(ip, "SELECT * FROM results_dframe")
+    # assert persisted == [(0, 1, "foo"), (1, 2, "bar")]
 
 def test_persist_no_index(ip):
     runsql(ip, "")
@@ -135,8 +143,8 @@ def test_persist_non_frame_raises(ip):
     ip.run_cell("not_a_dataframe = 22")
     runsql(ip, "")
     result = ip.run_cell("%sql --persist sqlite:// not_a_dataframe")
-    assert result.error_in_exec
-
+    print (str(result.error_in_exec))
+    assert "is not a Pandas DataFrame or Series".lower() in str(result.error_in_exec).lower()
 
 def test_persist_bare(ip):
     result = ip.run_cell("%sql --persist sqlite://")
