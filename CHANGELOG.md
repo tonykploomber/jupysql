@@ -2,6 +2,8 @@
 
 ## 0.5.4dev
 
+* [Fix] Appends the community link to the exception message of ValueError and TypeError
+
 ## 0.5.3 (2023-01-31)
 
 * [Feature] Adds `%sqlcmd tables` ([#76](https://github.com/ploomber/jupysql/issues/76))
