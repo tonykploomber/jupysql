@@ -22,6 +22,17 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: db
+          MYSQL_USER: ploomber_app
+          MYSQL_PASSWORD: ploomber_app_password
+          MYSQL_ROOT_PASSWORD: ploomber_app_root_password
+        ports:
+          - 33306:3306
+        options: --health-cmd="mysqladmin ping" --he
     steps:
       - uses: actions/checkout@v2
 

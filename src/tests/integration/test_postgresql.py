@@ -20,7 +20,7 @@ def setup_postgreSQL():
 
 
 @pytest.fixture
-def taxi_data(setup_postgreSQL, delete_table):
+def taxi_data(setup_postgreSQL):
     table_name = "taxi"
     engine = setup_postgreSQL
     df = pd.read_parquet(
