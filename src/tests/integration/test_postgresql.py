@@ -38,7 +38,7 @@ def taxi_data(setup_postgreSQL):
 #     conn.close()
 
 
-@pytest.mark.integtest
+@pytest.mark.integration
 def test_postgreSQL_query(ip, taxi_data):
     ip.run_cell("%sql postgresql://ploomber_app:ploomber_app_password@localhost/db")
     out = ip.run_cell("%sql SELECT * FROM " + taxi_data + " LIMIT 3")

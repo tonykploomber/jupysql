@@ -1,15 +1,16 @@
-name: CI - Integration DB
+name: CI - DB Integration
 
 on: [push, pull_request]
 
 jobs:
-  postgre-test:
+  database-integration-test:
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9, '3.10', '3.11']
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     services:
+    # postgreSQL Service
       postgres:
         image: postgres
         env:
@@ -23,6 +24,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+      # mySQL Service
       mysql:
         image: mysql:5.7
         env:
@@ -45,10 +47,12 @@ jobs:
         run: |
 
           pip install .
+          # Install required package for integration testing
           pip install pandas pyarrow psycopg2-binary pymysql
           # check package is importable
           python -c "import sql"
           pip install ".[dev]"
       - name: Integration Test
         run:
-          pytest -m "integtest"
+          # Run the integration test by pytest marker
+          pytest -m "integration"

@@ -32,7 +32,7 @@ def taxi_data(setup_mySQL):
     # delete_table(table_name)
 
 
-@pytest.mark.integtest
+@pytest.mark.integration
 def test_mySQL_query(ip, taxi_data):
     ip.run_cell(
         "%sql mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33306/db"
