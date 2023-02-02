@@ -6,7 +6,7 @@ postgreSQLConfig = {
     "db_name": "db",
     "user": "ploomber_app",
     "password": "ploomber_app_password",
-    "root_password": "ploomber_app_root_password"
+    "root_password": "ploomber_app_root_password",
 }
 
 
@@ -18,6 +18,7 @@ def setup_mySQL():
 
     yield engine
     engine.dispose()
+
 
 @pytest.fixture
 def taxi_data(setup_mySQL):
@@ -33,6 +34,8 @@ def taxi_data(setup_mySQL):
 
 @pytest.mark.integtest
 def test_mySQL_query(ip, taxi_data):
-    ip.run_cell("%sql mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33306/db")
+    ip.run_cell(
+        "%sql mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33306/db"
+    )
     out = ip.run_cell("%sql SELECT * FROM taxi LIMIT 3")
     print(out)
