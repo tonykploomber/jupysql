@@ -45,7 +45,7 @@ jobs:
         run: |
 
           pip install .
-          pip install pandas pyarrow psycopg2-binary
+          pip install pandas pyarrow psycopg2-binary pymysql
           # check package is importable
           python -c "import sql"
           pip install ".[dev]"
