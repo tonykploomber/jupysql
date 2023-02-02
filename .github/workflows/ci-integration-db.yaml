@@ -13,6 +13,7 @@ jobs:
       postgres:
         image: postgres
         env:
+          POSTGRES_DB: db
           POSTGRES_USER: ploomber_app
           POSTGRES_PASSWORD: ploomber_app_password
         options: >-
