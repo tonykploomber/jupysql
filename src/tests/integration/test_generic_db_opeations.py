@@ -1,5 +1,5 @@
-import pandas as pd
 import pytest
+# flake8: noqa
 from fixtures.database import *
 
 

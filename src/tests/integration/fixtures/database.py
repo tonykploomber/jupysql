@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from sqlalchemy import create_engine, engine
+from sqlalchemy import create_engine
 
 
 databaseConfig = {
