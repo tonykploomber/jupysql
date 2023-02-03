@@ -2,7 +2,6 @@
 
 ## 0.5.4dev
 
-* [Fix] Doc Typo `PosgreSQL` in Connecting
 * [Fix] Adds community link to `ValueError` and `TypeError`
 
 ## 0.5.3 (2023-01-31)
