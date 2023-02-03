@@ -55,4 +55,4 @@ jobs:
       - name: Integration Test
         run:
           # Run the integration test by pytest marker
-          pytest -m "integration"
+          pytest src/tests/integration
