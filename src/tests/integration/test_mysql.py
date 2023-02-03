@@ -28,12 +28,12 @@ def get_database_url():
 def setup_mySQL():
     engine = create_engine(get_database_url())
     # Load taxi_data
-    taxi_data(engine)
+    load_taxi_data(engine)
     yield engine
     engine.dispose()
 
 
-def taxi_data(engine):
+def load_taxi_data(engine):
     table_name = "taxi"
     df = pd.DataFrame(
         {"taxi_driver_name": ["Eric Ken", "John Smith", "Kevin Kelly"] * 15}
