@@ -21,7 +21,7 @@ def get_database_url():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_mySQL():
+def setup_postgreSQL():
     engine = create_engine(get_database_url())
     # Load taxi_data
     taxi_data(engine)
