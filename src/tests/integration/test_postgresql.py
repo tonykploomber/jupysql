@@ -44,10 +44,10 @@ def ip_with_db(ip):
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Connect
-    ip.run_cell("%sql " + get_database_url() + " --alias mySQLTest")
+    ip.run_cell("%sql " + get_database_url() + " --alias postgreSQLTest")
     yield ip
     # Disconnect
-    ip.run_cell("%sql -x mySQLTest")
+    ip.run_cell("%sql -x postgreSQLTest")
 
 
 # Query
