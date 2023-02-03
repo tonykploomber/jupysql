@@ -27,20 +27,18 @@ def get_database_url():
 @pytest.fixture(scope="session", autouse=True)
 def setup_mySQL():
     engine = create_engine(get_database_url())
+    # Load taxi_data
+    taxi_data(engine)
     yield engine
     engine.dispose()
 
 
-@pytest.fixture(scope="session", autouse=True)
-def taxi_data(setup_mySQL):
+def taxi_data(engine):
     table_name = "taxi"
-    engine = setup_mySQL
     df = pd.DataFrame(
         {"taxi_driver_name": ["Eric Ken", "John Smith", "Kevin Kelly"] * 15}
     )
     df.to_sql(name=table_name, con=engine, chunksize=100_000, if_exists="replace")
-    print("Taxi Data is loaded")
-    yield table_name
 
 
 @pytest.fixture
@@ -55,7 +53,7 @@ def ip_with_db(ip):
 
 
 # Query
-def test_query_count(ip_with_db, taxi_data):
+def test_query_count(ip_with_db):
     out = ip_with_db.run_line_magic("sql", "SELECT * FROM taxi LIMIT 3")
     print("count out: ", len(out))
     assert len(out) == 3
@@ -74,6 +72,7 @@ def test_create_table_with_indexed_df(ip_with_db):
 # Connection - Connect & Close and List
 def get_connection_count(ip_with_db):
     out = ip_with_db.run_line_magic("sql", "-l")
+    print("Current connections:", out)
     connections_count = len(out)
     return connections_count
 
