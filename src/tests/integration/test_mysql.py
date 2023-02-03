@@ -3,7 +3,7 @@ import pytest
 from sqlalchemy import create_engine
 
 # TODO: move postgreSQLConfig to individual file, shared with ci-integration-db
-postgreSQLConfig = {
+databaseConfig = {
     # Database Config
     "db_name": "db",
     # MySQL Service Config
@@ -17,10 +17,10 @@ postgreSQLConfig = {
 # SQLAlchmey URL: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
 def get_database_url():
     return "mysql+pymysql://{}:{}@{}/{}".format(
-        postgreSQLConfig["user"],
-        postgreSQLConfig["password"],
-        postgreSQLConfig["endpoint"],
-        postgreSQLConfig["db_name"],
+        databaseConfig["user"],
+        databaseConfig["password"],
+        databaseConfig["endpoint"],
+        databaseConfig["db_name"],
     )
 
 
@@ -35,8 +35,8 @@ def setup_mySQL():
 def taxi_data(setup_mySQL):
     table_name = "taxi"
     engine = setup_mySQL
-    df = pd.read_parquet(
-        "https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2022-01.parquet"
+    df = pd.DataFrame(
+        {"taxi_driver_name": ["Eric Ken", "John Smith", "Kevin Kelly"] * 15}
     )
     df.to_sql(name=table_name, con=engine, chunksize=100_000, if_exists="replace")
     print("Taxi Data is loaded")
