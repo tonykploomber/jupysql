@@ -1,25 +1,7 @@
 import pandas as pd
 import pytest
 from sqlalchemy import create_engine
-
-
-# SQLAlchmey URL: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
-def get_database_url(database):
-    return "{}://{}:{}@{}:{}/{}".format(
-        databaseConfig[database]["drivername"],
-        databaseConfig[database]["username"],
-        databaseConfig[database]["password"],
-        databaseConfig[database]["host"],
-        databaseConfig[database]["port"],
-        databaseConfig[database]["database"],
-    )
-
-
-def get_SQLite_database_url(database="SQLite"):
-    return "{}:///{}.db".format(
-        databaseConfig[database]["drivername"],
-        databaseConfig[database]["database"],
-    )
+from sqlalchemy.engine import URL
 
 
 databaseConfig = {
@@ -31,7 +13,6 @@ databaseConfig = {
         "host": "localhost",
         "port": "5432",
         "alias": "postgreSQLTest",
-        "url_formatter": get_database_url,
     },
     "mySQL": {
         "drivername": "mysql+pymysql",
@@ -41,19 +22,38 @@ databaseConfig = {
         "host": "localhost",
         "port": "33306",
         "alias": "mySQLTest",
-        "url_formatter": get_database_url,
     },
     "SQLite": {
         "drivername": "sqlite",
+        "username": None,
+        "password": None,
+        "database": "db",
+        "host": None,
+        "port": None,
+        "alias": "SQLiteTest",
+    },
+    "duckDB": {
+        "drivername": "duckdb",
         "username": "",
         "password": "",
         "database": "db",
         "host": "",
         "port": "",
-        "alias": "SQLiteTest",
-        "url_formatter": get_SQLite_database_url,
+        "alias": "duckDBTest",
     },
 }
+
+
+# SQLAlchmey URL: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
+def get_database_url(database, return_as_string=False):
+    return URL.create(
+        drivername=databaseConfig[database]["drivername"],
+        username=databaseConfig[database]["username"],
+        password=databaseConfig[database]["password"],
+        host=databaseConfig[database]["host"],
+        port=databaseConfig[database]["port"],
+        database=databaseConfig[database]["database"],
+    ).render_as_string(hide_password=False)
 
 
 def load_taxi_data(engine):
@@ -75,18 +75,21 @@ def setup_postgreSQL():
 
 @pytest.fixture
 def ip_with_postgreSQL(ip, setup_postgreSQL):
+    configKey = "postgreSQL"
+    alias = databaseConfig[configKey]["alias"]
+
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Select database engine
     ip.run_cell(
         "%sql "
-        + get_database_url("postgreSQL")
+        + get_database_url("postgreSQL", return_as_string=True)
         + " --alias "
-        + databaseConfig["postgreSQL"]["alias"]
+        + alias
     )
     yield ip
     # Disconnect database
-    ip.run_cell("%sql -x " + databaseConfig["postgreSQL"]["alias"])
+    ip.run_cell("%sql -x " + alias)
 
 
 @pytest.fixture(scope="session")
@@ -100,23 +103,21 @@ def setup_mySQL():
 
 @pytest.fixture
 def ip_with_mySQL(ip, setup_mySQL):
+    configKey = "mySQL"
+    alias = databaseConfig[configKey]["alias"]
+
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Select database engine
-    ip.run_cell(
-        "%sql "
-        + get_database_url("mySQL")
-        + " --alias "
-        + databaseConfig["mySQL"]["alias"]
-    )
+    ip.run_cell("%sql " + get_database_url("mySQL") + " --alias " + alias)
     yield ip
     # Disconnect database
-    ip.run_cell("%sql -x " + databaseConfig["mySQL"]["alias"])
+    ip.run_cell("%sql -x " + alias)
 
 
 @pytest.fixture(scope="session")
 def setup_SQLite():
-    engine = create_engine(get_SQLite_database_url())
+    engine = create_engine(get_database_url("SQLite"))
     # Load taxi_data
     load_taxi_data(engine)
 
@@ -126,10 +127,13 @@ def setup_SQLite():
 
 @pytest.fixture
 def ip_with_SQLite(ip, setup_SQLite):
-    # # Disconnect build-in sqlite connection
+    configKey = "SQLite"
+    alias = databaseConfig[configKey]["alias"]
+
+    # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
-    # # Select database engine, use different sqlite database endpoint
-    ip.run_cell("%sql " + get_SQLite_database_url() + " --alias SQLiteTest")
+    # Select database engine, use different sqlite database endpoint
+    ip.run_cell("%sql " + get_database_url(configKey) + " --alias " + alias)
     yield ip
     # Disconnect database
-    ip.run_cell("%sql -x SQLiteTest")
+    ip.run_cell("%sql -x " + alias)
