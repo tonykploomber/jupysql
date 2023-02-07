@@ -27,7 +27,7 @@ jobs:
       # mySQL Service
       mysql:
         # Disable test
-        # image: mysql
+        image: mysql
         env:
           MYSQL_DATABASE: db
           MYSQL_USER: ploomber_app
