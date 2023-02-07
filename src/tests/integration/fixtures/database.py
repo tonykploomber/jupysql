@@ -4,11 +4,12 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
+TMP_DIR = "tmp"
+
 """
 For some in-memoery databases, those would create the static file on local storage while testing.
 We need to keep the temporary folder to keep those and destory later
 """
-TMP_DIR = "tmp"
 
 
 @pytest.fixture(autouse=True)
