@@ -47,7 +47,7 @@ jobs:
         run: |
 
           # Install required package for integration testing
-          pip install pandas pyarrow psycopg2-binary pymysql
+          pip install pandas pyarrow psycopg2-binary pymysql duckdb duckdb-engine
           pip install ".[dev]"
       - name: Integration Test
         run:

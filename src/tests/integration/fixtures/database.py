@@ -1,7 +1,15 @@
+import shutil
 import pandas as pd
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
+
+
+@pytest.fixture(autouse=True)
+def run_around_tests(tmpdir_factory):
+    my_tmpdir = tmpdir_factory.mktemp("tmp")
+    yield my_tmpdir
+    shutil.rmtree(str(my_tmpdir))
 
 
 databaseConfig = {
@@ -27,25 +35,25 @@ databaseConfig = {
         "drivername": "sqlite",
         "username": None,
         "password": None,
-        "database": "db",
+        "database": "/tmp/db-sqlite",
         "host": None,
         "port": None,
         "alias": "SQLiteTest",
     },
     "duckDB": {
         "drivername": "duckdb",
-        "username": "",
-        "password": "",
-        "database": "db",
-        "host": "",
-        "port": "",
+        "username": None,
+        "password": None,
+        "database": "/tmp/db-duckdb",
+        "host": None,
+        "port": None,
         "alias": "duckDBTest",
     },
 }
 
 
 # SQLAlchmey URL: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
-def get_database_url(database):
+def get_database_url(database, static_db=False):
     return URL.create(
         drivername=databaseConfig[database]["drivername"],
         username=databaseConfig[database]["username"],
@@ -81,12 +89,7 @@ def ip_with_postgreSQL(ip, setup_postgreSQL):
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Select database engine
-    ip.run_cell(
-        "%sql "
-        + get_database_url("postgreSQL")
-        + " --alias "
-        + alias
-    )
+    ip.run_cell("%sql " + get_database_url("postgreSQL") + " --alias " + alias)
     yield ip
     # Disconnect database
     ip.run_cell("%sql -x " + alias)
@@ -128,6 +131,30 @@ def setup_SQLite():
 @pytest.fixture
 def ip_with_SQLite(ip, setup_SQLite):
     configKey = "SQLite"
+    alias = databaseConfig[configKey]["alias"]
+
+    # Disconnect build-in sqlite connection
+    ip.run_cell("%sql --close sqlite://")
+    # Select database engine, use different sqlite database endpoint
+    ip.run_cell("%sql " + get_database_url(configKey) + " --alias " + alias)
+    yield ip
+    # Disconnect database
+    ip.run_cell("%sql -x " + alias)
+
+
+@pytest.fixture(scope="session")
+def setup_duckDB():
+    engine = create_engine(get_database_url("duckDB"))
+    # Load taxi_data
+    load_taxi_data(engine)
+
+    yield engine
+    engine.dispose()
+
+
+@pytest.fixture
+def ip_with_duckDB(ip, setup_duckDB):
+    configKey = "duckDB"
     alias = databaseConfig[configKey]["alias"]
 
     # Disconnect build-in sqlite connection
