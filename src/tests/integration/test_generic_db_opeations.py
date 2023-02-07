@@ -5,7 +5,7 @@ from fixtures.database import *
 
 # Query
 @pytest.mark.parametrize(
-    "ip_with_dynamic_db, excepted", [("ip_with_postgreSQL", 3), ("ip_with_mySQL", 3)]
+    "ip_with_dynamic_db, excepted", [("ip_with_postgreSQL", 3), ("ip_with_mySQL", 3), ("ip_with_SQLite", 3)]
 )
 def test_query_count(ip_with_dynamic_db, excepted, request):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
@@ -38,7 +38,7 @@ def get_connection_count(ip_with_dynamic_db):
 
 # Test - Number of active connection
 @pytest.mark.parametrize(
-    "ip_with_dynamic_db, excepted", [("ip_with_postgreSQL", 1), ("ip_with_mySQL", 1)]
+    "ip_with_dynamic_db, excepted", [("ip_with_postgreSQL", 1), ("ip_with_mySQL", 1), ("ip_with_SQLite", 1)]
 )
 def test_active_connection_number(ip_with_dynamic_db, excepted, request):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
@@ -47,16 +47,18 @@ def test_active_connection_number(ip_with_dynamic_db, excepted, request):
 
 @pytest.mark.parametrize(
     "ip_with_dynamic_db, config_key",
-    [("ip_with_postgreSQL", "postgreSQL"), ("ip_with_mySQL", "mySQL")],
+    [("ip_with_postgreSQL", "postgreSQL"), ("ip_with_mySQL", "mySQL"), ("ip_with_SQLite", "SQLite")],
 )
 def test_close_and_connect(ip_with_dynamic_db, config_key, request):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
+
     conn_alias = databaseConfig[config_key]["alias"]
+    database_url = databaseConfig[config_key]["url_formatter"](config_key)
     # Disconnect
     ip_with_dynamic_db.run_cell("%sql -x " + conn_alias)
     assert get_connection_count(ip_with_dynamic_db) == 0
     # Connect
     ip_with_dynamic_db.run_cell(
-        "%sql " + get_database_url(config_key) + " --alias " + conn_alias
+        "%sql " + database_url + " --alias " + conn_alias
     )
     assert get_connection_count(ip_with_dynamic_db) == 1
