@@ -45,7 +45,7 @@ databaseConfig = {
 
 
 # SQLAlchmey URL: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
-def get_database_url(database, return_as_string=False):
+def get_database_url(database):
     return URL.create(
         drivername=databaseConfig[database]["drivername"],
         username=databaseConfig[database]["username"],
@@ -83,7 +83,7 @@ def ip_with_postgreSQL(ip, setup_postgreSQL):
     # Select database engine
     ip.run_cell(
         "%sql "
-        + get_database_url("postgreSQL", return_as_string=True)
+        + get_database_url("postgreSQL")
         + " --alias "
         + alias
     )
