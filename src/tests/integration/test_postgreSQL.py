@@ -7,6 +7,7 @@ def test_meta_cmd_display(ip_with_postgreSQL):
     assert len(out.result) > 0
     assert ("public", "taxi", "table", "ploomber_app") in out.result
 
+
 # Known issue, addressing in https://github.com/ploomber/jupysql/issues/90
 @pytest.mark.xfail(reason="known autocommit mode issue")
 def test_auto_commit_mode_on(ip_with_postgreSQL, capsys):

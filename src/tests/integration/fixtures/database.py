@@ -4,11 +4,19 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
+"""
+For some in-memoery databases, those would create the static file on local storage while testing.
+We need to keep the temporary folder to keep those and destory later
+"""
+TMP_DIR = "tmp"
+
 
 @pytest.fixture(autouse=True)
 def run_around_tests(tmpdir_factory):
-    my_tmpdir = tmpdir_factory.mktemp("tmp")
+    # Create tmp folder
+    my_tmpdir = tmpdir_factory.mktemp(TMP_DIR)
     yield my_tmpdir
+    # Destory tmp folder
     shutil.rmtree(str(my_tmpdir))
 
 
@@ -44,7 +52,7 @@ databaseConfig = {
         "drivername": "sqlite",
         "username": None,
         "password": None,
-        "database": "/tmp/db-sqlite",
+        "database": "/{}/db-sqlite".format(TMP_DIR),
         "host": None,
         "port": None,
         "alias": "SQLiteTest",
@@ -53,7 +61,7 @@ databaseConfig = {
         "drivername": "duckdb",
         "username": None,
         "password": None,
-        "database": "/tmp/db-duckdb",
+        "database": "/{}/db-duckdb".format(TMP_DIR),
         "host": None,
         "port": None,
         "alias": "duckDBTest",
