@@ -18,7 +18,7 @@ def test_query_count(ip_with_dynamic_db, excepted, request):
 
 # Create
 @pytest.mark.parametrize(
-    "ip_with_dynamic_db, excepted", [("ip_with_postgreSQL", 15), ("ip_with_mySQL", 15),("ip_with_mariaDB", 3), ("ip_with_duckDB", 15) ]
+    "ip_with_dynamic_db, excepted", [("ip_with_postgreSQL", 15), ("ip_with_mySQL", 15),("ip_with_mariaDB", 15), ("ip_with_duckDB", 15) ]
 )
 def test_create_table_with_indexed_df(ip_with_dynamic_db, excepted, request):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
