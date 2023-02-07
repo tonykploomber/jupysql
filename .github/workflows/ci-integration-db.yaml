@@ -61,8 +61,8 @@ jobs:
           # Install required package for integration testing
           pip install pandas pyarrow duckdb duckdb-engine
           # Install postgreSQL driver
-          pip install psycopg2-binary pymysql pospecial
-          
+          pip install psycopg2-binary pymysql pgspecial
+
           pip install ".[dev]"
       - name: Integration Test
         run:
