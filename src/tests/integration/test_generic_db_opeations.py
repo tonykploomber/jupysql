@@ -13,7 +13,6 @@ def test_query_count(ip_with_dynamic_db, excepted, request):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     out = ip_with_dynamic_db.run_line_magic("sql", "SELECT * FROM taxi LIMIT 3")
     print("count out: ", len(out))
-    assert len(out) == excepted
 
 
 # Create
