@@ -31,6 +31,15 @@ databaseConfig = {
         "port": "33306",
         "alias": "mySQLTest",
     },
+    "mariaDB": {
+        "drivername": "mysql+pymysql",
+        "username": "ploomber_app",
+        "password": "ploomber_app_password",
+        "database": "db",
+        "host": "localhost",
+        "port": "33309",
+        "alias": "mySQLTest",
+    },
     "SQLite": {
         "drivername": "sqlite",
         "username": None,
@@ -89,7 +98,7 @@ def ip_with_postgreSQL(ip, setup_postgreSQL):
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Select database engine
-    ip.run_cell("%sql " + get_database_url("postgreSQL") + " --alias " + alias)
+    ip.run_cell("%sql " + get_database_url(configKey) + " --alias " + alias)
     yield ip
     # Disconnect database
     ip.run_cell("%sql -x " + alias)
@@ -112,7 +121,30 @@ def ip_with_mySQL(ip, setup_mySQL):
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Select database engine
-    ip.run_cell("%sql " + get_database_url("mySQL") + " --alias " + alias)
+    ip.run_cell("%sql " + get_database_url(configKey) + " --alias " + alias)
+    yield ip
+    # Disconnect database
+    ip.run_cell("%sql -x " + alias)
+
+
+@pytest.fixture(scope="session")
+def setup_mariaDB():
+    engine = create_engine(get_database_url("mariaDB"), pool_recycle=1800)
+    # Load taxi_data
+    load_taxi_data(engine)
+    yield engine
+    engine.dispose()
+
+
+@pytest.fixture
+def ip_with_mariaDB(ip, setup_mariaDB):
+    configKey = "mariaDB"
+    alias = databaseConfig[configKey]["alias"]
+
+    # Disconnect build-in sqlite connection
+    ip.run_cell("%sql --close sqlite://")
+    # Select database engine
+    ip.run_cell("%sql " + get_database_url(configKey) + " --alias " + alias)
     yield ip
     # Disconnect database
     ip.run_cell("%sql -x " + alias)
