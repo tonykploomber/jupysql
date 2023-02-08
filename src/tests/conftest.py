@@ -82,6 +82,18 @@ def ip(ip_empty):
 
 
 @pytest.fixture
+def ip_wo_engine():
+    """Provides an IPython session in which tables have been created"""
+    ip_session = InteractiveShell()
+    ip_session.register_magics(SqlMagic)
+    ip_session.register_magics(RenderMagic)
+    ip_session.register_magics(SqlPlotMagic)
+    ip_session.register_magics(SqlCmdMagic)
+
+    yield ip_session
+
+
+@pytest.fixture
 def tmp_empty(tmp_path):
     """
     Create temporary path using pytest native fixture,
