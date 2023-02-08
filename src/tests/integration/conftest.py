@@ -5,21 +5,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
 TMP_DIR = "tmp"
-
-"""
-Create the temporary folder to keep some static database storage files & destory later
-"""
-
-
-@pytest.fixture(autouse=True)
-def run_around_tests(tmpdir_factory):
-    # Create tmp folder
-    my_tmpdir = tmpdir_factory.mktemp(TMP_DIR)
-    yield my_tmpdir
-    # Destory tmp folder
-    shutil.rmtree(str(my_tmpdir))
-
-
 databaseConfig = {
     "postgreSQL": {
         "drivername": "postgresql",
@@ -69,8 +54,37 @@ databaseConfig = {
 }
 
 
+class DatabaseConfigHelper:
+    @staticmethod
+    def get_database_config(database):
+        return databaseConfig[database]
+
+    @staticmethod
+    def get_database_url(database):
+        return _get_database_url(database)
+
+
+@pytest.fixture
+def get_database_config_helper():
+    return DatabaseConfigHelper
+
+
+"""
+Create the temporary folder to keep some static database storage files & destory later
+"""
+
+
+@pytest.fixture(autouse=True)
+def run_around_tests(tmpdir_factory):
+    # Create tmp folder
+    my_tmpdir = tmpdir_factory.mktemp(TMP_DIR)
+    yield my_tmpdir
+    # Destory tmp folder
+    shutil.rmtree(str(my_tmpdir))
+
+
 # SQLAlchmey URL: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
-def get_database_url(database, static_db=False):
+def _get_database_url(database):
     return URL.create(
         drivername=databaseConfig[database]["drivername"],
         username=databaseConfig[database]["username"],
@@ -91,7 +105,7 @@ def load_taxi_data(engine):
 
 @pytest.fixture(scope="session")
 def setup_postgreSQL():
-    engine = create_engine(get_database_url("postgreSQL"))
+    engine = create_engine(_get_database_url("postgreSQL"))
     # Load taxi_data
     load_taxi_data(engine)
     yield engine
@@ -106,7 +120,7 @@ def ip_with_postgreSQL(ip, setup_postgreSQL):
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Select database engine
-    ip.run_cell("%sql " + get_database_url(configKey) + " --alias " + alias)
+    ip.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
     yield ip
     # Disconnect database
     ip.run_cell("%sql -x " + alias)
@@ -114,7 +128,7 @@ def ip_with_postgreSQL(ip, setup_postgreSQL):
 
 @pytest.fixture(scope="session")
 def setup_mySQL():
-    engine = create_engine(get_database_url("mySQL"))
+    engine = create_engine(_get_database_url("mySQL"))
     # Load taxi_data
     load_taxi_data(engine)
     yield engine
@@ -129,7 +143,7 @@ def ip_with_mySQL(ip, setup_mySQL):
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Select database engine
-    ip.run_cell("%sql " + get_database_url(configKey) + " --alias " + alias)
+    ip.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
     yield ip
     # Disconnect database
     ip.run_cell("%sql -x " + alias)
@@ -137,7 +151,7 @@ def ip_with_mySQL(ip, setup_mySQL):
 
 @pytest.fixture(scope="session")
 def setup_mariaDB():
-    engine = create_engine(get_database_url("mariaDB"), pool_recycle=1800)
+    engine = create_engine(_get_database_url("mariaDB"), pool_recycle=1800)
     # Load taxi_data
     load_taxi_data(engine)
     yield engine
@@ -152,7 +166,7 @@ def ip_with_mariaDB(ip, setup_mariaDB):
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Select database engine
-    ip.run_cell("%sql " + get_database_url(configKey) + " --alias " + alias)
+    ip.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
     yield ip
     # Disconnect database
     ip.run_cell("%sql -x " + alias)
@@ -160,7 +174,7 @@ def ip_with_mariaDB(ip, setup_mariaDB):
 
 @pytest.fixture(scope="session")
 def setup_SQLite():
-    engine = create_engine(get_database_url("SQLite"))
+    engine = create_engine(_get_database_url("SQLite"))
     # Load taxi_data
     load_taxi_data(engine)
 
@@ -176,7 +190,7 @@ def ip_with_SQLite(ip, setup_SQLite):
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Select database engine, use different sqlite database endpoint
-    ip.run_cell("%sql " + get_database_url(configKey) + " --alias " + alias)
+    ip.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
     yield ip
     # Disconnect database
     ip.run_cell("%sql -x " + alias)
@@ -184,7 +198,7 @@ def ip_with_SQLite(ip, setup_SQLite):
 
 @pytest.fixture(scope="session")
 def setup_duckDB():
-    engine = create_engine(get_database_url("duckDB"))
+    engine = create_engine(_get_database_url("duckDB"))
     # Load taxi_data
     load_taxi_data(engine)
 
@@ -200,7 +214,7 @@ def ip_with_duckDB(ip, setup_duckDB):
     # Disconnect build-in sqlite connection
     ip.run_cell("%sql --close sqlite://")
     # Select database engine, use different sqlite database endpoint
-    ip.run_cell("%sql " + get_database_url(configKey) + " --alias " + alias)
+    ip.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
     yield ip
     # Disconnect database
     ip.run_cell("%sql -x " + alias)

@@ -1,8 +1,5 @@
 import pytest
 
-# flake8: noqa
-from fixtures.database import *
-
 
 # Query
 @pytest.mark.parametrize(
@@ -19,6 +16,7 @@ def test_query_count(ip_with_dynamic_db, excepted, request):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     out = ip_with_dynamic_db.run_line_magic("sql", "SELECT * FROM taxi LIMIT 3")
     assert len(out) == excepted
+
 
 # Create
 @pytest.mark.parametrize(
@@ -75,15 +73,16 @@ def test_active_connection_number(ip_with_dynamic_db, excepted, request):
         ("ip_with_duckDB", "duckDB"),
     ],
 )
-def test_close_and_connect(ip_with_dynamic_db, config_key, request):
+def test_close_and_connect(
+    ip_with_dynamic_db, config_key, request, get_database_config_helper
+):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
 
-    conn_alias = databaseConfig[config_key]["alias"]
+    conn_alias = get_database_config_helper.get_database_config(config_key)["alias"]
+    database_url = get_database_config_helper.get_database_url(config_key)
     # Disconnect
     ip_with_dynamic_db.run_cell("%sql -x " + conn_alias)
     assert get_connection_count(ip_with_dynamic_db) == 0
     # Connect
-    ip_with_dynamic_db.run_cell(
-        "%sql " + get_database_url(config_key) + " --alias " + conn_alias
-    )
+    ip_with_dynamic_db.run_cell("%sql " + database_url + " --alias " + conn_alias)
     assert get_connection_count(ip_with_dynamic_db) == 1
