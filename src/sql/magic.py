@@ -191,8 +191,8 @@ class SqlMagic(Magics, Configurable):
         type=str,
         help="Assign an alias to the connection",
     )
-    @telemetry.log_call("execute")
-    def execute(self, line="", cell="", local_ns={}):
+    @telemetry.log_call("execute", payload=True)
+    def execute(self, payload, line="", cell="", local_ns={}):
         """
         Runs SQL statement against a database, specified by
         SQLAlchemy connect string.
@@ -275,7 +275,8 @@ class SqlMagic(Magics, Configurable):
             creator=args.creator,
             alias=args.alias,
         )
-
+        payload["engine_name"] = conn.current.\
+            metadata.bind.url.__repr__().split("://")[0]
         if args.persist:
             return self._persist_dataframe(
                 command.sql, conn, user_ns, append=False, index=not args.no_index
