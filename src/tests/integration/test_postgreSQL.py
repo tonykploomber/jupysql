@@ -2,11 +2,9 @@ import pytest
 
 
 def test_meta_cmd_display(ip_with_postgreSQL):
-    print("Running test_meta_cmd_display\n")
     out = ip_with_postgreSQL.run_cell("%sql \d")  # noqa: W605
     assert len(out.result) > 0
     assert ("public", "taxi", "table", "ploomber_app") in out.result
-    print("Ending test_meta_cmd_display\n")
 
 
 # Known issue, addressing in https://github.com/ploomber/jupysql/issues/90
