@@ -1,4 +1,14 @@
+import shutil
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def run_around_tests(tmpdir_factory):
+    # Create tmp folder
+    my_tmpdir = tmpdir_factory.mktemp("tmp")
+    yield my_tmpdir
+    # Destory tmp folder
+    shutil.rmtree(str(my_tmpdir))
 
 
 # Query
@@ -31,12 +41,16 @@ def test_query_count(ip_with_dynamic_db, excepted, request):
 )
 def test_create_table_with_indexed_df(ip_with_dynamic_db, excepted, request):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
+    # Clean up
+    ip_with_dynamic_db.run_cell("%sql DROP TABLE new_table_from_df")
+    # Prepare DF
     ip_with_dynamic_db.run_cell("results = %sql SELECT * FROM taxi LIMIT 15")
     ip_with_dynamic_db.run_cell("new_table_from_df = results.DataFrame()")
-    ip_with_dynamic_db.run_cell("%sql --persist new_table_from_df")
-    out = ip_with_dynamic_db.run_cell("%sql SELECT * FROM new_table_from_df")
-
-    assert len(out.result) == excepted
+    # Create table from DF
+    persist_out = ip_with_dynamic_db.run_cell("%sql --persist new_table_from_df")
+    query_out = ip_with_dynamic_db.run_cell("%sql SELECT * FROM new_table_from_df")
+    assert persist_out.error_in_exec is None and query_out.error_in_exec is None
+    assert len(query_out.result) == excepted
 
 
 # Connection
