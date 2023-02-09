@@ -6,6 +6,20 @@ import duckdb
 from sql.telemetry import telemetry
 from sql import plot
 
+MOCK_API_KEY = "phc_P1dsjk20bijsabdaib2eu"
+
+
+@pytest.fixture
+def mock_telemetry(monkeypatch):
+    mock = Mock()
+    mock_dt = Mock()
+    mock_dt.now.side_effect = [1, 2]
+    monkeypatch.setattr(telemetry.Telemetry, "log_api", mock)
+    monkeypatch.setattr(telemetry.datetime, "datetime", mock_dt)
+    monkeypatch.setattr(telemetry.sys, "argv", ["/path/to/bin", "arg"])
+    yield mock
+
+
 # Ref: https://pytest.org/en/7.2.x/how-to/tmp_path.html#
 # Utilize tmp directory to store downloaded csv
 
@@ -84,4 +98,14 @@ def test_execute_telemetry_execution(mock_log_api, ip):
 
     mock_log_api.assert_called_with(
         action="jupysql-execute-success", total_runtime=ANY, metadata=ANY
+    )
+
+
+def test_sql_execute_send_database_metadata(mock_log_api, ip):
+    ip.run_cell("%sql duckdb://")
+
+    mock_log_api.assert_called_with(
+        action="jupysql-execute-success",
+        total_runtime=ANY,
+        metadata={"argv": ANY, "engine_name": "duckdb"},
     )
