@@ -113,15 +113,15 @@ def setup_postgreSQL():
 
 
 @pytest.fixture
-def ip_with_postgreSQL(ip_wo_engine, setup_postgreSQL):
+def ip_with_postgreSQL(ip_empty, setup_postgreSQL):
     configKey = "postgreSQL"
     alias = databaseConfig[configKey]["alias"]
 
     # Select database engine
-    ip_wo_engine.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
-    yield ip_wo_engine
+    ip_empty.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
+    yield ip_empty
     # Disconnect database
-    ip_wo_engine.run_cell("%sql -x " + alias)
+    ip_empty.run_cell("%sql -x " + alias)
 
 
 @pytest.fixture(scope="session")
@@ -134,15 +134,15 @@ def setup_mySQL():
 
 
 @pytest.fixture
-def ip_with_mySQL(ip_wo_engine, setup_mySQL):
+def ip_with_mySQL(ip_empty, setup_mySQL):
     configKey = "mySQL"
     alias = databaseConfig[configKey]["alias"]
 
     # Select database engine
-    ip_wo_engine.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
-    yield ip_wo_engine
+    ip_empty.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
+    yield ip_empty
     # Disconnect database
-    ip_wo_engine.run_cell("%sql -x " + alias)
+    ip_empty.run_cell("%sql -x " + alias)
 
 
 @pytest.fixture(scope="session")
@@ -155,15 +155,15 @@ def setup_mariaDB():
 
 
 @pytest.fixture
-def ip_with_mariaDB(ip_wo_engine, setup_mariaDB):
+def ip_with_mariaDB(ip_empty, setup_mariaDB):
     configKey = "mariaDB"
     alias = databaseConfig[configKey]["alias"]
 
     # Select database engine
-    ip_wo_engine.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
-    yield ip_wo_engine
+    ip_empty.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
+    yield ip_empty
     # Disconnect database
-    ip_wo_engine.run_cell("%sql -x " + alias)
+    ip_empty.run_cell("%sql -x " + alias)
 
 
 @pytest.fixture(scope="session")
@@ -177,15 +177,15 @@ def setup_SQLite():
 
 
 @pytest.fixture
-def ip_with_SQLite(ip_wo_engine, setup_SQLite):
+def ip_with_SQLite(ip_empty, setup_SQLite):
     configKey = "SQLite"
     alias = databaseConfig[configKey]["alias"]
 
     # Select database engine, use different sqlite database endpoint
-    ip_wo_engine.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
-    yield ip_wo_engine
+    ip_empty.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
+    yield ip_empty
     # Disconnect database
-    ip_wo_engine.run_cell("%sql -x " + alias)
+    ip_empty.run_cell("%sql -x " + alias)
 
 
 @pytest.fixture(scope="session")
@@ -199,12 +199,12 @@ def setup_duckDB():
 
 
 @pytest.fixture
-def ip_with_duckDB(ip_wo_engine, setup_duckDB):
+def ip_with_duckDB(ip_empty, setup_duckDB):
     configKey = "duckDB"
     alias = databaseConfig[configKey]["alias"]
 
     # Select database engine, use different sqlite database endpoint
-    ip_wo_engine.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
-    yield ip_wo_engine
+    ip_empty.run_cell("%sql " + _get_database_url(configKey) + " --alias " + alias)
+    yield ip_empty
     # Disconnect database
-    ip_wo_engine.run_cell("%sql -x " + alias)
+    ip_empty.run_cell("%sql -x " + alias)

@@ -50,7 +50,6 @@ def clean_conns():
 
 @pytest.fixture
 def ip_empty():
-
     ip_session = InteractiveShell()
     ip_session.register_magics(SqlMagic)
     ip_session.register_magics(RenderMagic)
@@ -79,18 +78,6 @@ def ip(ip_empty):
     yield ip_empty
     runsql(ip_empty, "DROP TABLE test")
     runsql(ip_empty, "DROP TABLE author")
-
-
-@pytest.fixture
-def ip_wo_engine():
-    """Provides an IPython session in which tables have been created"""
-    ip_session = InteractiveShell()
-    ip_session.register_magics(SqlMagic)
-    ip_session.register_magics(RenderMagic)
-    ip_session.register_magics(SqlPlotMagic)
-    ip_session.register_magics(SqlCmdMagic)
-
-    yield ip_session
 
 
 @pytest.fixture
