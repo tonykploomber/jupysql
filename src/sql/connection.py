@@ -5,11 +5,6 @@ import sqlalchemy
 from sqlalchemy.engine import Engine
 from IPython.core.error import UsageError
 
-PLOOMBER_SUPPORT_LINK_STR = (
-    "For technical support: https://ploomber.io/community"
-    "\nDocumentation: https://jupysql.ploomber.io/en/latest/connecting.html"
-)
-
 
 def rough_dict_get(dct, sought, default=None):
     """
@@ -20,7 +15,7 @@ def rough_dict_get(dct, sought, default=None):
     """
 
     sought = sought.split("@")
-    for key, val in dct.items():
+    for (key, val) in dct.items():
         if not any(s.lower() not in key.lower() for s in sought):
             return val
     return default
@@ -40,16 +35,6 @@ class Connection:
 
     # all connections
     connections = {}
-
-    @classmethod
-    def _suggest_fix_no_module_found(module_name):
-        DEFAULT_PREFIX = "\n\n"
-
-        prefix = DEFAULT_PREFIX
-        suffix = "To fix it:"
-        suggest_str = "Install X package and try again"
-        options = [f"{prefix}{suffix}", suggest_str]
-        return "\n\n".join(options)
 
     @classmethod
     def _suggest_fix(cls, env_var, connect_str=None):
@@ -97,7 +82,10 @@ class Connection:
         if len(options) >= 3:
             options.insert(-1, "OR")
 
-        options.append(PLOOMBER_SUPPORT_LINK_STR)
+        options.append(
+            "For technical support: https://ploomber.io/community"
+            "\nDocumentation: https://jupysql.ploomber.io/en/latest/connecting.html"
+        )
 
         return "\n\n".join(options)
 
@@ -112,10 +100,6 @@ class Connection:
             "An error happened while creating the connection: "
             f"{e}.{cls._suggest_fix(env_var=False, connect_str=connect_str)}"
         )
-
-    @classmethod
-    def _error_module_not_found(cls, e):
-        return ModuleNotFoundError("test")
 
     def __init__(self, engine, alias=None):
         self.dialect = engine.url.get_dialect()
@@ -146,17 +130,6 @@ class Connection:
                     connect_str,
                     connect_args=connect_args,
                 )
-        except ModuleNotFoundError as e:
-            raise UsageError(
-                "\n\n".join(
-                    [
-                        str(e),
-                        "To fix it, try to install the missing module",
-                        PLOOMBER_SUPPORT_LINK_STR,
-                    ]
-                )
-            )
-            # raise ModuleNotFoundError("To fix itt")
         except Exception as e:
             raise cls._error_invalid_connection_info(e, connect_str) from e
 
@@ -196,6 +169,7 @@ class Connection:
                 )
 
         else:
+
             if cls.connections:
                 if displaycon:
                     # display list of connections
