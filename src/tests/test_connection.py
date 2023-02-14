@@ -1,3 +1,4 @@
+import builtins
 import sys
 from unittest.mock import Mock
 import pytest
@@ -18,16 +19,30 @@ def mock_postgres(monkeypatch, cleanup):
     monkeypatch.setattr(Engine, "connect", Mock())
 
 
+# Mock the missing package
+# Ref: https://stackoverflow.com/a/60229056
 @pytest.fixture
 def mock_missing_pymysql_pkg(monkeypatch, cleanup):
-    monkeypatch.setitem(sys.modules, "pymysql", None)
-    monkeypatch.setattr(Engine, "connect", Mock())
+    import_orig = builtins.__import__
+
+    def mocked_import(name, *args, **kwargs):
+        if name == "pymysql":
+            raise ImportError()
+        return import_orig(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", mocked_import)
 
 
 @pytest.fixture
 def mock_missing_duckdb_pkg(monkeypatch, cleanup):
-    monkeypatch.setitem(sys.modules, "duckdb", None)
-    monkeypatch.setattr(Engine, "connect", Mock())
+    import_orig = builtins.__import__
+
+    def mocked_import(name, *args, **kwargs):
+        if name == "duckdb":
+            raise ImportError()
+        return import_orig(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", mocked_import)
 
 
 def test_password_isnt_displayed(mock_postgres):
@@ -50,9 +65,7 @@ def test_alias(cleanup):
 
 def test_missing_pymysql(mock_missing_pymysql_pkg):
     with pytest.raises(UsageError) as error:
-        Connection.from_connect_str(
-            "mysql+pymysql://user:topsecret@somedomain.com/db"
-        )
+        Connection.from_connect_str("mysql+pymysql://user:topsecret@somedomain.com/db")
     assert "To fix it, try to install the missing module: pymysql" in str(error.value)
 
 
