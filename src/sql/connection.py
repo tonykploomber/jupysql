@@ -6,35 +6,43 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoSuchModuleError
 from IPython.core.error import UsageError
 import difflib
+
 PLOOMBER_SUPPORT_LINK_STR = (
     "For technical support: https://ploomber.io/community"
     "\nDocumentation: https://jupysql.ploomber.io/en/latest/connecting.html"
 )
 
 MISSING_PACKAGE_LIST_EXCEPT_MATCHERS = {
+    "sqlite": "sqlite",
     "duckdb": "duckdb-engine",
+    # MySQL + MariaDB: https://docs.sqlalchemy.org/en/20/dialects/mysql.html#dialect-mysql
     "pymysql": "pymysql",
+    "mysqldb": "mysqlclient",
+    "mariadb": "mariadb",
 }
+
 
 def extract_module_name_from_ModuleNotFoundError(e):
     return e.name
 
+
 def extract_module_name_from_NoSuchModuleError(e):
     # print ("NoSuchModuleError ", str(e))
-    return str(e).split(":")[-1]
+    return str(e).split(":")[-1].split(".")[-1]
+
 
 def get_missing_package_suggestion_str(e):
-
     suggestion_prefix = "To fix it, "
+    print("e", e)
     module_name = None
     if isinstance(e, ModuleNotFoundError):
         module_name = extract_module_name_from_ModuleNotFoundError(e)
     elif isinstance(e, NoSuchModuleError):
         module_name = extract_module_name_from_NoSuchModuleError(e)
 
-    # print ("module_name", module_name)
-
-
+    # pip is case insensitive
+    module_name = module_name.lower()
+    print("Module name: ", module_name)
     # Handle perfect matching case
     for matcher, suggested_package in MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.items():
         if matcher == module_name:
@@ -43,12 +51,21 @@ def get_missing_package_suggestion_str(e):
 
     # print ("Not a perfect match", )
     # Handle partial matching case
-    close_matches = difflib.get_close_matches(module_name, MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.keys())
+    close_matches = difflib.get_close_matches(
+        module_name, MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.keys()
+    )
     if close_matches:
-        return suggestion_prefix + "perhaps you meant to use driver name: {}".format(close_matches[0])
+        return suggestion_prefix + "perhaps you meant to use driver name: {}".format(
+            close_matches[0]
+        )
 
     # Handle not found case
-    return suggestion_prefix + "make sure you are using correct driver name: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls"
+    return (
+        suggestion_prefix
+        + "make sure you are using correct driver name:\n\
+            https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls"
+    )
+
 
 def rough_dict_get(dct, sought, default=None):
     """
