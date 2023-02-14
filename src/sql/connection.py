@@ -2,13 +2,29 @@ import os
 from difflib import get_close_matches
 
 import sqlalchemy
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, Dialect
+from sqlalchemy.exc import NoSuchModuleError
 from IPython.core.error import UsageError
 
 PLOOMBER_SUPPORT_LINK_STR = (
     "For technical support: https://ploomber.io/community"
     "\nDocumentation: https://jupysql.ploomber.io/en/latest/connecting.html"
 )
+
+MISSING_PACKAGE_LIST_EXCEPT_MATCHERS = {
+    "sqlalchemy.dialects:duckdb": "duckdb-engine",
+    "pymysql": "pymysql",
+}
+
+
+def get_missing_package_install_suggestion(e):
+    e = str(e)
+
+    for matcher, suggested_package in MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.items():
+        if matcher in e:
+            return suggested_package
+
+    return None
 
 
 def rough_dict_get(dct, sought, default=None):
@@ -146,18 +162,23 @@ class Connection:
                     connect_str,
                     connect_args=connect_args,
                 )
-        except ModuleNotFoundError as e:
+        except (ModuleNotFoundError, NoSuchModuleError) as e:
+            suggested_missing_pkg = get_missing_package_install_suggestion(e)
+            suggested_missing_pkg_str = (
+                ": " + suggested_missing_pkg if suggested_missing_pkg else ""
+            )
             raise UsageError(
                 "\n\n".join(
                     [
                         str(e),
-                        "To fix it, try to install the missing module",
+                        "To fix it, try to install the missing module"
+                        + suggested_missing_pkg_str,
                         PLOOMBER_SUPPORT_LINK_STR,
                     ]
                 )
             )
-            # raise ModuleNotFoundError("To fix itt")
         except Exception as e:
+            print("e", e, type(e))
             raise cls._error_invalid_connection_info(e, connect_str) from e
 
         connection = cls(engine, alias=alias)
