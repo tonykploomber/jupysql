@@ -5,27 +5,50 @@ import sqlalchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoSuchModuleError
 from IPython.core.error import UsageError
-
+import difflib
 PLOOMBER_SUPPORT_LINK_STR = (
     "For technical support: https://ploomber.io/community"
     "\nDocumentation: https://jupysql.ploomber.io/en/latest/connecting.html"
 )
 
 MISSING_PACKAGE_LIST_EXCEPT_MATCHERS = {
-    "sqlalchemy.dialects:duckdb": "duckdb-engine",
+    "duckdb": "duckdb-engine",
     "pymysql": "pymysql",
 }
 
+def extract_module_name_from_ModuleNotFoundError(e):
+    return e.name
 
-def get_missing_package_install_suggestion(e):
-    e = str(e)
+def extract_module_name_from_NoSuchModuleError(e):
+    # print ("NoSuchModuleError ", str(e))
+    return str(e).split(":")[-1]
 
+def get_missing_package_suggestion_str(e):
+
+    suggestion_prefix = "To fix it, "
+    module_name = None
+    if isinstance(e, ModuleNotFoundError):
+        module_name = extract_module_name_from_ModuleNotFoundError(e)
+    elif isinstance(e, NoSuchModuleError):
+        module_name = extract_module_name_from_NoSuchModuleError(e)
+
+    # print ("module_name", module_name)
+
+
+    # Handle perfect matching case
     for matcher, suggested_package in MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.items():
-        if matcher in e:
-            return suggested_package
+        if matcher == module_name:
+            # print ("Perfect match")
+            return suggestion_prefix + "try to install package: " + suggested_package
 
-    return None
+    # print ("Not a perfect match", )
+    # Handle partial matching case
+    close_matches = difflib.get_close_matches(module_name, MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.keys())
+    if close_matches:
+        return suggestion_prefix + "perhaps you meant to use driver name: {}".format(close_matches[0])
 
+    # Handle not found case
+    return suggestion_prefix + "make sure you are using correct driver name: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls"
 
 def rough_dict_get(dct, sought, default=None):
     """
@@ -163,20 +186,16 @@ class Connection:
                     connect_args=connect_args,
                 )
         except (ModuleNotFoundError, NoSuchModuleError) as e:
-            suggested_missing_pkg = get_missing_package_install_suggestion(e)
-            suggested_missing_pkg_str = (
-                ": " + suggested_missing_pkg if suggested_missing_pkg else ""
-            )
+            suggestion_str = get_missing_package_suggestion_str(e)
             raise UsageError(
                 "\n\n".join(
                     [
                         str(e),
-                        "To fix it, try to install the missing module"
-                        + suggested_missing_pkg_str,
+                        suggestion_str,
                         PLOOMBER_SUPPORT_LINK_STR,
                     ]
                 )
-            )
+            ) from e
         except Exception as e:
             print("e", e, type(e))
             raise cls._error_invalid_connection_info(e, connect_str) from e
