@@ -4,7 +4,6 @@ import pytest
 import urllib.request
 import duckdb
 from sql.telemetry import telemetry
-from sql import plot
 
 
 # Ref: https://pytest.org/en/7.2.x/how-to/tmp_path.html#
@@ -17,8 +16,7 @@ def simple_file_path_iris(tmpdir):
 
     if not Path(file_path_str).is_file():
         urllib.request.urlretrieve(
-            "https://raw.githubusercontent.com/\
-                plotly/datasets/master/iris-data.csv",
+            "https://raw.githubusercontent.com/plotly/datasets/master/iris-data.csv",
             file_path_str,
         )
 
@@ -31,8 +29,8 @@ def simple_file_path_penguins(tmpdir):
 
     if not Path(file_path_str).is_file():
         urllib.request.urlretrieve(
-            "https://raw.githubusercontent.com/\
-                mwaskom/seaborn-data/master/penguins.csv",
+            "https://raw.githubusercontent.com"
+            "/mwaskom/seaborn-data/master/penguins.csv",
             file_path_str,
         )
 
@@ -52,24 +50,38 @@ def mock_log_api(monkeypatch):
     yield mock_log_api
 
 
-def test_boxplot_telemetry_execution(
-    mock_log_api, simple_db_conn, simple_file_path_iris
-):
-    plot.boxplot(simple_file_path_iris, "petal width", conn=simple_db_conn, orient="h")
+def test_boxplot_telemetry_execution(mock_log_api, ip, simple_file_path_penguins):
+    ip.run_cell("%sql duckdb://")
+    ip.run_cell(
+        "%sqlplot boxplot --table "
+        + simple_file_path_penguins
+        + " --column body_mass_g"
+    )
 
     mock_log_api.assert_called_with(
-        action="jupysql-boxplot-success", total_runtime=ANY, metadata=ANY
+        action="jupysql-boxplot-success",
+        total_runtime=ANY,
+        metadata={"argv": ANY, "dialect_meta": "duckdb"},
     )
 
 
-def test_histogram_telemetry_execution(
-    mock_log_api, simple_db_conn, simple_file_path_iris
-):
-    # Test the injected log_api gets called
-    plot.histogram(simple_file_path_iris, "petal width", bins=50, conn=simple_db_conn)
+def test_histogram_telemetry_execution(mock_log_api, ip, simple_file_path_penguins):
+    ip.run_cell("%sql duckdb://")
+    ip.run_cell(
+        "%sql --save not_empty_data --no-execute \
+        SELECT * FROM read_csv_auto('"
+        + simple_file_path_penguins
+        + "') WHERE body_mass_g IS NOT NULL"
+    )
+    ip.run_cell(
+        "%sqlplot histogram --table not_empty_data\
+         --column body_mass_g --with not_empty_data"
+    )
 
     mock_log_api.assert_called_with(
-        action="jupysql-histogram-success", total_runtime=ANY, metadata=ANY
+        action="jupysql-histogram-success",
+        total_runtime=ANY,
+        metadata={"argv": ANY, "dialect_meta": "duckdb"},
     )
 
 
@@ -114,45 +126,6 @@ def test_sql_execute_send_dialect_meta(mock_log_api, ip):
 
     mock_log_api.assert_called_with(
         action="jupysql-execute-success",
-        total_runtime=ANY,
-        metadata={"argv": ANY, "dialect_meta": "duckdb"},
-    )
-
-
-def test_sqlplot_boxplot_execute_send_dialect_meta(
-    mock_log_api, ip, simple_file_path_penguins
-):
-    ip.run_cell("%sql duckdb://")
-    ip.run_cell(
-        "%sqlplot boxplot --table "
-        + simple_file_path_penguins
-        + " --column body_mass_g"
-    )
-
-    mock_log_api.assert_called_with(
-        action="jupysql-boxplot-success",
-        total_runtime=ANY,
-        metadata={"argv": ANY, "dialect_meta": "duckdb"},
-    )
-
-
-def test_sqlplot_histogram_execute_send_dialect_meta(
-    mock_log_api, ip, simple_file_path_penguins
-):
-    ip.run_cell("%sql duckdb://")
-    ip.run_cell(
-        "%sql --save not_empty_data --no-execute \
-        SELECT * FROM read_csv_auto('"
-        + simple_file_path_penguins
-        + "') WHERE body_mass_g IS NOT NULL"
-    )
-    ip.run_cell(
-        "%sqlplot histogram --table not_empty_data\
-         --column body_mass_g --with not_empty_data"
-    )
-
-    mock_log_api.assert_called_with(
-        action="jupysql-histogram-success",
         total_runtime=ANY,
         metadata={"argv": ANY, "dialect_meta": "duckdb"},
     )
