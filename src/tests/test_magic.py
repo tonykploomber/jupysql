@@ -492,7 +492,7 @@ invalid_connection_string_format = """\
 Can't load plugin: sqlalchemy.dialects:something
 
 To fix it, make sure you are using correct driver name:
-            https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
+Ref: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
 
 For technical support: https://ploomber.io/community
 Documentation: https://jupysql.ploomber.io/en/latest/connecting.html
@@ -510,7 +510,7 @@ invalid_connection_string_existing_conns = """
 Can't load plugin: sqlalchemy.dialects:something
 
 To fix it, make sure you are using correct driver name:
-            https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
+Ref: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
 
 For technical support: https://ploomber.io/community
 Documentation: https://jupysql.ploomber.io/en/latest/connecting.html

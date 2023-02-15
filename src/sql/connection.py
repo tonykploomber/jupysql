@@ -62,7 +62,6 @@ Three types of suggestions will be shown when the missing module name is:
 
 def get_missing_package_suggestion_str(e):
     suggestion_prefix = "To fix it, "
-    print("e", e)
     module_name = None
     if isinstance(e, ModuleNotFoundError):
         module_name = extract_module_name_from_ModuleNotFoundError(e)
@@ -84,9 +83,8 @@ def get_missing_package_suggestion_str(e):
         )
     # Not found
     return (
-        suggestion_prefix
-        + "make sure you are using correct driver name:\n\
-            https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls"
+        suggestion_prefix + "make sure you are using correct driver name:\n"
+        "Ref: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls"
     )
 
 
