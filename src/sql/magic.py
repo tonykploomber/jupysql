@@ -275,7 +275,7 @@ class SqlMagic(Magics, Configurable):
             creator=args.creator,
             alias=args.alias,
         )
-        payload["engine_name"] = conn.current.\
+        payload["dialect_meta"] = conn.current.\
             metadata.bind.url.__repr__().split("://")[0]
         if args.persist:
             return self._persist_dataframe(
