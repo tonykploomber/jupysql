@@ -12,13 +12,29 @@ PLOOMBER_SUPPORT_LINK_STR = (
     "\nDocumentation: https://jupysql.ploomber.io/en/latest/connecting.html"
 )
 
+# Check Full List: https://docs.sqlalchemy.org/en/20/dialects
 MISSING_PACKAGE_LIST_EXCEPT_MATCHERS = {
+    # SQLite
     "sqlite": "sqlite",
+    "pysqlcipher3": "pysqlcipher3",
+    # DuckDB
     "duckdb": "duckdb-engine",
-    # MySQL + MariaDB: https://docs.sqlalchemy.org/en/20/dialects/mysql.html#dialect-mysql
+    # MySQL + MariaDB
     "pymysql": "pymysql",
     "mysqldb": "mysqlclient",
     "mariadb": "mariadb",
+    "mysql": "mysql-connector-python",
+    "asyncmy": "asyncmy",
+    "aiomysql": "aiomysql",
+    "cymysql": "cymysql",
+    "pyodbc": "pyodbc",
+    # PostgreSQL
+    "psycopg2": "psycopg2",
+    "psycopg": "psycopg",
+    "pg8000": "pg8000",
+    "asyncpg": "asyncpg",
+    "psycopg2cffi": "psycopg2cffi",
+
 }
 
 

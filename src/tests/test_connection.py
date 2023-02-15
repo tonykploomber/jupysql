@@ -1,6 +1,5 @@
-import builtins
 import sys
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import pytest
 from sqlalchemy.engine import Engine
 from sql.connection import Connection
@@ -17,32 +16,6 @@ def cleanup():
 def mock_postgres(monkeypatch, cleanup):
     monkeypatch.setitem(sys.modules, "psycopg2", Mock())
     monkeypatch.setattr(Engine, "connect", Mock())
-
-
-# Mock the missing package
-# Ref: https://stackoverflow.com/a/60229056
-@pytest.fixture
-def mock_missing_pymysql_pkg(monkeypatch, cleanup):
-    import_orig = builtins.__import__
-
-    def mocked_import(name, *args, **kwargs):
-        if name == "pymysql":
-            raise ImportError()
-        return import_orig(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", mocked_import)
-
-
-@pytest.fixture
-def mock_missing_duckdb_pkg(monkeypatch, cleanup):
-    import_orig = builtins.__import__
-
-    def mocked_import(name, *args, **kwargs):
-        if name == "duckdb":
-            raise ImportError()
-        return import_orig(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", mocked_import)
 
 
 def test_password_isnt_displayed(mock_postgres):
@@ -63,13 +36,37 @@ def test_alias(cleanup):
     assert list(Connection.connections) == ["some-alias"]
 
 
-def test_missing_pymysql(mock_missing_pymysql_pkg):
-    with pytest.raises(UsageError) as error:
-        Connection.from_connect_str("mysql+pymysql://user:topsecret@somedomain.com/db")
-    assert "To fix it, try to install the missing module: pymysql" in str(error.value)
+# Mock the missing package
+# Ref: https://stackoverflow.com/a/28361013
+def test_missing_duckdb_dependencies(cleanup, monkeypatch):
+    with patch.dict(sys.modules):
+        sys.modules["duckdb"] = None
+        sys.modules["duckdb-engine"] = None
+
+        with pytest.raises(UsageError) as error:
+            Connection.from_connect_str("duckdb://")
+        assert "try to install package: duckdb-engine" + str(error.value)
 
 
-def test_missing_duck(mock_missing_duckdb_pkg):
-    with pytest.raises(UsageError) as error:
-        Connection.from_connect_str("duckdb://")
-    assert "To fix it, try to install the missing module: duckdb" in str(error.value)
+@pytest.mark.parametrize(
+    "missing_pkg, except_missing_pkg_suggestion, connect_str",
+    [
+        ["pymysql", "pymysql", "mysql+pymysql://"],
+        ["mysqlclient", "mysqlclient", "mysql+mysqldb://"],
+        ["mariadb", "mariadb", "mariadb+mariadbconnector://"],
+        ["mysql-connector-python", "mysql-connector-python", "mysql+mysqlconnector://"],
+        ["asyncmy", "asyncmy", "mysql+asyncmy://"],
+        ["aiomysql", "aiomysql", "mysql+aiomysql://"],
+        ["cymysql", "cymysql", "mysql+cymysql://"],
+        ["pyodbc", "pyodbc", "mysql+pyodbc://"],
+    ],
+)
+def test_missing_driver(
+    missing_pkg, except_missing_pkg_suggestion, connect_str, monkeypatch
+):
+    with patch.dict(sys.modules):
+        sys.modules[missing_pkg] = None
+        with pytest.raises(UsageError) as error:
+            Connection.from_connect_str(connect_str)
+
+        assert "try to install package: " + missing_pkg in str(error.value)
