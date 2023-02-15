@@ -34,7 +34,12 @@ MISSING_PACKAGE_LIST_EXCEPT_MATCHERS = {
     "pg8000": "pg8000",
     "asyncpg": "asyncpg",
     "psycopg2cffi": "psycopg2cffi",
-
+    # Oracle
+    "cx_oracle": "cx_oracle",
+    "oracledb": "oracledb",
+    # MSSQL
+    "pyodbc": "pyodbc",
+    "pymssql": "pymssql"
 }
 
 

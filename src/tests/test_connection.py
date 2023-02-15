@@ -51,6 +51,7 @@ def test_missing_duckdb_dependencies(cleanup, monkeypatch):
 @pytest.mark.parametrize(
     "missing_pkg, except_missing_pkg_suggestion, connect_str",
     [
+        # MySQL + MariaDB
         ["pymysql", "pymysql", "mysql+pymysql://"],
         ["mysqlclient", "mysqlclient", "mysql+mysqldb://"],
         ["mariadb", "mariadb", "mariadb+mariadbconnector://"],
@@ -59,6 +60,18 @@ def test_missing_duckdb_dependencies(cleanup, monkeypatch):
         ["aiomysql", "aiomysql", "mysql+aiomysql://"],
         ["cymysql", "cymysql", "mysql+cymysql://"],
         ["pyodbc", "pyodbc", "mysql+pyodbc://"],
+        # PostgreSQL
+        ["psycopg2", "psycopg2", "postgresql+psycopg2://"],
+        ["psycopg", "psycopg", "postgresql+psycopg://"],
+        ["pg8000", "pg8000", "postgresql+pg8000://"],
+        ["asyncpg", "asyncpg", "postgresql+asyncpg://"],
+        ["psycopg2cffi", "psycopg2cffi", "postgresql+psycopg2cffi://"],
+        # Oracle
+        ["cx_oracle", "cx_oracle", "oracle+cx_oracle://"],
+        ["oracledb", "oracledb", "oracle+oracledb://"],
+        # MSSQL
+        ["pyodbc", "pyodbc", "mssql+pyodbc://"],
+        ["pymssql", "pymssql", "mssql+pymssql://"],
     ],
 )
 def test_missing_driver(
