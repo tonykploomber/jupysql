@@ -33,6 +33,8 @@ except ImportError:
 
 from sql.telemetry import telemetry
 
+telemetry_sql_magic = telemetry.create_group("SqlMagic")
+
 
 @magics_class
 class RenderMagic(Magics):
@@ -114,7 +116,6 @@ class SqlMagic(Magics, Configurable):
 
     @telemetry.log_call("init")
     def __init__(self, shell):
-
         self._store = store
 
         Configurable.__init__(self, config=shell.config)
@@ -191,8 +192,8 @@ class SqlMagic(Magics, Configurable):
         type=str,
         help="Assign an alias to the connection",
     )
-    @telemetry.log_call("execute", payload=True)
-    def execute(self, payload, line="", cell="", local_ns={}):
+    @telemetry_sql_magic.log_call("execute", payload=True)
+    def execute(self, payload={}, line="", cell="", local_ns={}):
         """
         Runs SQL statement against a database, specified by
         SQLAlchemy connect string.
@@ -275,8 +276,9 @@ class SqlMagic(Magics, Configurable):
             creator=args.creator,
             alias=args.alias,
         )
-        payload["dialect_meta"] = conn.current.\
-            metadata.bind.url.__repr__().split("://")[0]
+        payload["dialect_meta"] = conn.current.metadata.bind.url.__repr__().split(
+            "://"
+        )[0]
         if args.persist:
             return self._persist_dataframe(
                 command.sql, conn, user_ns, append=False, index=not args.no_index
@@ -324,7 +326,6 @@ class SqlMagic(Magics, Configurable):
 
                 return None
             else:
-
                 if command.result_var:
                     self.shell.user_ns.update({command.result_var: result})
                     return None
