@@ -39,7 +39,7 @@ MISSING_PACKAGE_LIST_EXCEPT_MATCHERS = {
     "oracledb": "oracledb",
     # MSSQL
     "pyodbc": "pyodbc",
-    "pymssql": "pymssql"
+    "pymssql": "pymssql",
 }
 
 
@@ -48,8 +48,16 @@ def extract_module_name_from_ModuleNotFoundError(e):
 
 
 def extract_module_name_from_NoSuchModuleError(e):
-    # print ("NoSuchModuleError ", str(e))
     return str(e).split(":")[-1].split(".")[-1]
+
+
+"""
+When there is ModuleNotFoundError or NoSuchModuleError case
+Three types of suggestions will be shown when the missing module name is:
+1. Excepted in the pre-defined map, suggest the user to install the driver pkg
+2. Closely matched to the pre-defined map, suggest the user to type correct driver name
+3. Not found in the pre-defined map, suggest user to use valid driver pkg
+"""
 
 
 def get_missing_package_suggestion_str(e):
@@ -61,17 +69,12 @@ def get_missing_package_suggestion_str(e):
     elif isinstance(e, NoSuchModuleError):
         module_name = extract_module_name_from_NoSuchModuleError(e)
 
-    # pip is case insensitive
     module_name = module_name.lower()
-    print("Module name: ", module_name)
-    # Handle perfect matching case
+    # Excepted
     for matcher, suggested_package in MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.items():
         if matcher == module_name:
-            # print ("Perfect match")
             return suggestion_prefix + "try to install package: " + suggested_package
-
-    # print ("Not a perfect match", )
-    # Handle partial matching case
+    # Closely matched
     close_matches = difflib.get_close_matches(
         module_name, MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.keys()
     )
@@ -79,8 +82,7 @@ def get_missing_package_suggestion_str(e):
         return suggestion_prefix + "perhaps you meant to use driver name: {}".format(
             close_matches[0]
         )
-
-    # Handle not found case
+    # Not found
     return (
         suggestion_prefix
         + "make sure you are using correct driver name:\n\
@@ -235,7 +237,6 @@ class Connection:
                 )
             ) from e
         except Exception as e:
-            print("e", e, type(e))
             raise cls._error_invalid_connection_info(e, connect_str) from e
 
         connection = cls(engine, alias=alias)
