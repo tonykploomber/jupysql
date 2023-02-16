@@ -192,7 +192,9 @@ class SqlMagic(Magics, Configurable):
         help="Assign an alias to the connection",
     )
     @telemetry.log_call("execute", payload=True)
-    def execute(self, payload, line="", cell="", local_ns={}):
+    def execute(self, payload, line="", cell="", local_ns=None):
+        if local_ns is None:
+            local_ns = {}
         """
         Runs SQL statement against a database, specified by
         SQLAlchemy connect string.
