@@ -4,6 +4,7 @@ import pytest
 import urllib.request
 import duckdb
 from sql.telemetry import telemetry
+from sql import plot
 
 
 # Ref: https://pytest.org/en/7.2.x/how-to/tmp_path.html#
@@ -50,14 +51,11 @@ def mock_log_api(monkeypatch):
     yield mock_log_api
 
 
-def test_boxplot_telemetry_execution(mock_log_api, ip, simple_file_path_penguins):
+def test_boxplot_telemetry_execution(
+    mock_log_api, simple_db_conn, simple_file_path_iris, ip
+):
     ip.run_cell("%sql duckdb://")
-    ip.run_cell(
-        "%sqlplot boxplot --table "
-        + simple_file_path_penguins
-        + " --column body_mass_g"
-    )
-
+    plot.boxplot(simple_file_path_iris, "petal width", conn=simple_db_conn, orient="h")
     mock_log_api.assert_called_with(
         action="jupysql-boxplot-success",
         total_runtime=ANY,
@@ -65,18 +63,11 @@ def test_boxplot_telemetry_execution(mock_log_api, ip, simple_file_path_penguins
     )
 
 
-def test_histogram_telemetry_execution(mock_log_api, ip, simple_file_path_penguins):
+def test_histogram_telemetry_execution(
+    mock_log_api, simple_db_conn, simple_file_path_iris, ip
+):
     ip.run_cell("%sql duckdb://")
-    ip.run_cell(
-        "%sql --save not_empty_data --no-execute \
-        SELECT * FROM read_csv_auto('"
-        + simple_file_path_penguins
-        + "') WHERE body_mass_g IS NOT NULL"
-    )
-    ip.run_cell(
-        "%sqlplot histogram --table not_empty_data\
-         --column body_mass_g --with not_empty_data"
-    )
+    plot.histogram(simple_file_path_iris, "petal width", bins=50, conn=simple_db_conn)
 
     mock_log_api.assert_called_with(
         action="jupysql-histogram-success",
