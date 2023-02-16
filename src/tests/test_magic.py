@@ -528,7 +528,7 @@ def test_error_on_invalid_connection_string_with_existing_conns(ip_empty, clean_
 invalid_connection_string_with_possible_typo = """
 Can't load plugin: sqlalchemy.dialects:sqlit
 
-To fix it, perhaps you meant to use driver name: sqlite
+Perhaps you meant to use driver the dialect: "sqlite"
 
 For technical support: https://ploomber.io/community
 Documentation: https://jupysql.ploomber.io/en/latest/connecting.html

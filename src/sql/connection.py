@@ -78,7 +78,7 @@ def get_missing_package_suggestion_str(e):
         module_name, MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.keys()
     )
     if close_matches:
-        return suggestion_prefix + "perhaps you meant to use driver name: {}".format(
+        return "Perhaps you meant to use driver the dialect: \"{}\"".format(
             close_matches[0]
         )
     # Not found
