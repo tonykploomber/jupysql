@@ -114,7 +114,6 @@ class SqlMagic(Magics, Configurable):
 
     @telemetry.log_call("init")
     def __init__(self, shell):
-
         self._store = store
 
         Configurable.__init__(self, config=shell.config)
@@ -191,6 +190,21 @@ class SqlMagic(Magics, Configurable):
         type=str,
         help="Assign an alias to the connection",
     )
+    # @argument(
+    #     "-G",
+    #     "--use-globals",
+    #     action="use_globals",
+    #     help="use global namespace"
+    # )
+    @argument(
+        "-o",
+        "--param",
+        type=str,
+        nargs=2,
+        action="append",
+        metavar=("NAME", "VALUE"),
+        help="stroe a param",
+    )
     @telemetry.log_call("execute")
     def execute(self, line="", cell="", local_ns={}):
         """
@@ -230,6 +244,7 @@ class SqlMagic(Magics, Configurable):
         # {cell}
 
         # save globals and locals so they can be referenced in bind vars
+        print("execute")
         user_ns = self.shell.user_ns.copy()
         user_ns.update(local_ns)
 
@@ -297,6 +312,14 @@ class SqlMagic(Magics, Configurable):
             print("Skipping execution...")
             return
 
+        if args.param:
+            print("I have param")
+            self._persist_parameter(command.sql)
+
+        print("args: ", args)
+        # print ("command: ", conn)
+        # print ("user_ns", user_ns)
+        # print ("test_x: ", user_ns["test_y"])
         try:
             result = sql.run.run(conn, command.sql, self, user_ns)
 
@@ -323,7 +346,6 @@ class SqlMagic(Magics, Configurable):
 
                 return None
             else:
-
                 if command.result_var:
                     self.shell.user_ns.update({command.result_var: result})
                     return None
@@ -368,6 +390,9 @@ class SqlMagic(Magics, Configurable):
 
         frame.to_sql(table_name, conn.session.engine, if_exists=if_exists, index=index)
         return "Persisted %s" % table_name
+
+    def _persist_parameter(self, raw):
+        print("Raw: ", raw)
 
 
 def load_ipython_extension(ip):
