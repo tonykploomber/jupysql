@@ -190,12 +190,7 @@ class SqlMagic(Magics, Configurable):
         type=str,
         help="Assign an alias to the connection",
     )
-    @argument(
-        "-G",
-        "--use-globals",
-        action="store_true",
-        help="use global namespace"
-    )
+    @argument("-G", "--use-globals", action="store_true", help="use global namespace")
     @argument(
         "-P",
         "--param",
@@ -313,15 +308,19 @@ class SqlMagic(Magics, Configurable):
             return
 
         if args.param:
-            self.parse_sql_clause_by_parameters(raw = command.sql, user_ns = user_ns, use_globals=False)
+            self.parse_sql_clause_by_parameters(
+                raw=command.sql, user_ns=user_ns, use_globals=False
+            )
             # self._persist_parameter(command.sql)
 
         if args.use_globals:
             # Gotta replace the sql clause variable from namespace
-            self.parse_sql_clause_by_parameters(raw = command.sql, user_ns = user_ns, use_globals=True)
+            self.parse_sql_clause_by_parameters(
+                raw=command.sql, user_ns=user_ns, use_globals=True
+            )
 
         try:
-            print ("before run: ", command.sql)
+            print("before run: ", command.sql)
             result = sql.run.run(conn, command.sql, self, user_ns)
 
             if (
@@ -394,15 +393,15 @@ class SqlMagic(Magics, Configurable):
         frame.to_sql(table_name, conn.session.engine, if_exists=if_exists, index=index)
         return "Persisted %s" % table_name
 
-
     def _persist_parameter(self, raw):
         print("Raw: ", raw)
 
-    def parse_sql_clause_by_parameters(self, raw, user_ns, use_globals = False):
+    def parse_sql_clause_by_parameters(self, raw, user_ns, use_globals=False):
         if use_globals:
-            print ("Parse: {} with use_globals".format(raw))
+            print("Parse: {} with use_globals".format(raw))
         else:
-            print ("Parse: {} with param".format(raw))
+            print("Parse: {} with param".format(raw))
+
 
 def load_ipython_extension(ip):
     """Load the extension in IPython."""
