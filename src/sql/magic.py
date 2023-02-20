@@ -190,14 +190,14 @@ class SqlMagic(Magics, Configurable):
         type=str,
         help="Assign an alias to the connection",
     )
-    # @argument(
-    #     "-G",
-    #     "--use-globals",
-    #     action="use_globals",
-    #     help="use global namespace"
-    # )
     @argument(
-        "-o",
+        "-G",
+        "--use-globals",
+        action="store_true",
+        help="use global namespace"
+    )
+    @argument(
+        "-P",
         "--param",
         type=str,
         nargs=2,
@@ -313,14 +313,15 @@ class SqlMagic(Magics, Configurable):
             return
 
         if args.param:
-            print("I have param")
-            self._persist_parameter(command.sql)
+            self.parse_sql_clause_by_parameters(raw = command.sql, user_ns = user_ns, use_globals=False)
+            # self._persist_parameter(command.sql)
 
-        print("args: ", args)
-        # print ("command: ", conn)
-        # print ("user_ns", user_ns)
-        # print ("test_x: ", user_ns["test_y"])
+        if args.use_globals:
+            # Gotta replace the sql clause variable from namespace
+            self.parse_sql_clause_by_parameters(raw = command.sql, user_ns = user_ns, use_globals=True)
+
         try:
+            print ("before run: ", command.sql)
             result = sql.run.run(conn, command.sql, self, user_ns)
 
             if (
@@ -370,6 +371,8 @@ class SqlMagic(Magics, Configurable):
         if not DataFrame:
             raise ImportError("Must `pip install pandas` to use DataFrames")
 
+        # print ("raw: ", raw)
+        # print ("user_ns: ", user_ns)
         frame_name = raw.strip(";")
 
         # Get the DataFrame from the user namespace
@@ -391,9 +394,15 @@ class SqlMagic(Magics, Configurable):
         frame.to_sql(table_name, conn.session.engine, if_exists=if_exists, index=index)
         return "Persisted %s" % table_name
 
+
     def _persist_parameter(self, raw):
         print("Raw: ", raw)
 
+    def parse_sql_clause_by_parameters(self, raw, user_ns, use_globals = False):
+        if use_globals:
+            print ("Parse: {} with use_globals".format(raw))
+        else:
+            print ("Parse: {} with param".format(raw))
 
 def load_ipython_extension(ip):
     """Load the extension in IPython."""
