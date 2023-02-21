@@ -35,3 +35,7 @@ def test_alias(cleanup):
     Connection.from_connect_str("sqlite://", alias="some-alias")
 
     assert list(Connection.connections) == ["some-alias"]
+
+def test_get_curr_connection_info(mock_postgres):
+    conn = Connection.from_connect_str("postgresql://user:topsecret@somedomain.com/db")
+    assert conn.get_curr_connection_info() == {'dialect': 'postgresql', 'driver': 'psycopg2', 'server_version_info': None}
