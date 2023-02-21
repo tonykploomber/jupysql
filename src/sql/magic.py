@@ -284,9 +284,7 @@ class SqlMagic(Magics, Configurable):
             creator=args.creator,
             alias=args.alias,
         )
-        payload["dialect_meta"] = conn.current.metadata.bind.url.__repr__().split(
-            "://"
-        )[0]
+        payload["connection_meta"] = conn.get_curr_connection_meta()
         if args.persist:
             return self._persist_dataframe(
                 command.sql, conn, user_ns, append=False, index=not args.no_index

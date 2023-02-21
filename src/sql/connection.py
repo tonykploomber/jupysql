@@ -15,7 +15,7 @@ def rough_dict_get(dct, sought, default=None):
     """
 
     sought = sought.split("@")
-    for (key, val) in dct.items():
+    for key, val in dct.items():
         if not any(s.lower() not in key.lower() for s in sought):
             return val
     return default
@@ -169,7 +169,6 @@ class Connection:
                 )
 
         else:
-
             if cls.connections:
                 if displaycon:
                     # display list of connections
@@ -233,3 +232,15 @@ class Connection:
 
     def close(self):
         self.__class__._close(self)
+
+    def get_curr_connection_meta(self):
+        """Returns the dialect, driver, and database server version info"""
+        if not self.current:
+            return None
+
+        engine = self.current.metadata.bind
+        return {
+            "dialect": engine.dialect.name,
+            "driver": engine.dialect.driver,
+            "server_version_info": engine.dialect.server_version_info,
+        }
