@@ -97,7 +97,12 @@ def test_data_frame_telemetry_execution(mock_log_api, ip, simple_file_path_iris)
     )
     ip.run_cell("result.DataFrame()")
     mock_log_api.assert_called_with(
-        action="jupysql-data-frame-success", total_runtime=ANY, metadata=ANY
+        action="jupysql-data-frame-success",
+        total_runtime=ANY,
+        metadata={
+            "argv": ANY,
+            "connection_info": excepted_duckdb_connection_info,
+        },
     )
 
 

@@ -172,8 +172,9 @@ class ResultSet(list, ColumnGuesserMixin):
         import pandas as pd
 
         frame = pd.DataFrame(self, columns=(self and self.keys) or [])
-        payload["dialect_meta"] = sql.connection.Connection.current.\
-            metadata.bind.url.__repr__().split("://")[0]
+        payload[
+            "connection_info"
+        ] = sql.connection.Connection.current.get_curr_connection_info()
         return frame
 
     @telemetry.log_call("pie")

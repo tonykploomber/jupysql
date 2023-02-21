@@ -329,8 +329,8 @@ def histogram(payload, table, column, bins, with_=None, conn=None):
     """
     ax = plt.gca()
     payload[
-        "dialect_meta"
-    ] = sql.connection.Connection.current.metadata.bind.url.__repr__().split("://")[0]
+        "connection_info"
+    ] = sql.connection.Connection.current.get_curr_connection_info()
     if isinstance(column, str):
         bin_, height = _histogram(table, column, bins, with_=with_, conn=conn)
         ax.bar(bin_, height, align="center", width=bin_[-1] - bin_[-2])
