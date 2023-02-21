@@ -43,6 +43,8 @@ def test_get_curr_connection_info(mock_postgres):
         "driver": "psycopg2",
         "server_version_info": None,
     }
+
+
 # Mock the missing package
 # Ref: https://stackoverflow.com/a/28361013
 def test_missing_duckdb_dependencies(cleanup, monkeypatch):
