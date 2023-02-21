@@ -245,8 +245,9 @@ def boxplot(payload, table, column, *, orient="v", with_=None, conn=None):
         conn = sql.connection.Connection.current.session
 
     payload[
-        "dialect_meta"
-    ] = sql.connection.Connection.current.metadata.bind.url.__repr__().split("://")[0]
+        "connection_info"
+    ] = sql.connection.Connection.current.get_curr_connection_info()
+
     ax = plt.gca()
     vert = orient == "v"
 

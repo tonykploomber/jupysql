@@ -51,6 +51,13 @@ def mock_log_api(monkeypatch):
     yield mock_log_api
 
 
+excepted_duckdb_connection_info = {
+    "dialect": "duckdb",
+    "driver": "duckdb_engine",
+    "server_version_info": ANY,
+}
+
+
 def test_boxplot_telemetry_execution(
     mock_log_api, simple_db_conn, simple_file_path_iris, ip
 ):
@@ -59,7 +66,10 @@ def test_boxplot_telemetry_execution(
     mock_log_api.assert_called_with(
         action="jupysql-boxplot-success",
         total_runtime=ANY,
-        metadata={"argv": ANY, "dialect_meta": "duckdb"},
+        metadata={
+            "argv": ANY,
+            "connection_info": excepted_duckdb_connection_info,
+        },
     )
 
 
@@ -72,7 +82,10 @@ def test_histogram_telemetry_execution(
     mock_log_api.assert_called_with(
         action="jupysql-histogram-success",
         total_runtime=ANY,
-        metadata={"argv": ANY, "dialect_meta": "duckdb"},
+        metadata={
+            "argv": ANY,
+            "connection_info": excepted_duckdb_connection_info,
+        },
     )
 
 
@@ -108,22 +121,10 @@ def test_execute_telemetry_execution(mock_log_api, ip):
     ip.run_cell("%sql duckdb://")
 
     mock_log_api.assert_called_with(
-        action="jupysql-execute-success", total_runtime=ANY, metadata=ANY
-    )
-
-
-def test_sql_execute_has_connection_info_metadata(mock_log_api, ip):
-    ip.run_cell("%sql duckdb://")
-
-    mock_log_api.assert_called_with(
         action="jupysql-execute-success",
         total_runtime=ANY,
         metadata={
             "argv": ANY,
-            "connection_info": {
-                "dialect": "duckdb",
-                "driver": "duckdb_engine",
-                "server_version_info": ANY,
-            },
+            "connection_info": excepted_duckdb_connection_info,
         },
     )
