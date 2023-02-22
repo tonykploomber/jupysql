@@ -359,8 +359,6 @@ class SqlMagic(Magics, Configurable):
         if not DataFrame:
             raise ImportError("Must `pip install pandas` to use DataFrames")
 
-        # print ("raw: ", raw)
-        # print ("user_ns: ", user_ns)
         frame_name = raw.strip(";")
 
         # Get the DataFrame from the user namespace
@@ -381,9 +379,6 @@ class SqlMagic(Magics, Configurable):
 
         frame.to_sql(table_name, conn.session.engine, if_exists=if_exists, index=index)
         return "Persisted %s" % table_name
-
-    def _persist_parameter(self, raw):
-        print("Raw: ", raw)
 
 
 def load_ipython_extension(ip):
