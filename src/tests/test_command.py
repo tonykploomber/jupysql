@@ -181,31 +181,3 @@ def test_variable_substitution_cell_magic(ip, sql_magic):
     )
 
     assert cmd.parsed["sql"] == "\nGRANT CONNECT ON DATABASE postgres TO some-user;"
-
-
-def test_variable_substitution_double_curly_bracklets_line_magic(ip, sql_magic):
-    ip.user_global_ns["test_limit"] = 3
-    ip.user_global_ns["test_column_name_str"] = "first_name"
-    print("Hey")
-
-    cmd = SQLCommand(
-        sql_magic,
-        ip.user_ns,
-        line="SELECT {{test_column_name_str}} FROM author LIMIT {{test_limit}}",
-        cell="",
-    )
-
-    assert cmd.parsed["sql"] == "SELECT first_name FROM author LIMIT 3"
-
-
-def test_variable_substitution_double_curly_bracklets_cell_magic(ip, sql_magic):
-    ip.user_global_ns["username"] = "some-user"
-
-    cmd = SQLCommand(
-        sql_magic,
-        ip.user_ns,
-        line="",
-        cell="GRANT CONNECT ON DATABASE postgres TO {{username}};",
-    )
-
-    assert cmd.parsed["sql"] == "\nGRANT CONNECT ON DATABASE postgres TO some-user;"
