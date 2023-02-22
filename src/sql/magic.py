@@ -7,6 +7,7 @@ from IPython.core.magic import (
     line_magic,
     magics_class,
     needs_local_scope,
+    no_var_expand,
 )
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
 from sqlalchemy.exc import OperationalError, ProgrammingError, DatabaseError
@@ -18,6 +19,7 @@ from sql.store import store
 from sql.command import SQLCommand
 from sql.magic_plot import SqlPlotMagic
 from sql.magic_cmd import SqlCmdMagic
+
 
 try:
     from traitlets.config.configurable import Configurable
@@ -122,6 +124,7 @@ class SqlMagic(Magics, Configurable):
         # Add ourself to the list of module configurable via %config
         self.shell.configurables.append(self)
 
+    @no_var_expand
     @needs_local_scope
     @line_magic("sql")
     @cell_magic("sql")
@@ -190,16 +193,16 @@ class SqlMagic(Magics, Configurable):
         type=str,
         help="Assign an alias to the connection",
     )
-    @argument("-G", "--use-globals", action="store_true", help="use global namespace")
-    @argument(
-        "-P",
-        "--param",
-        type=str,
-        nargs=2,
-        action="append",
-        metavar=("NAME", "VALUE"),
-        help="stroe a param",
-    )
+    # @argument("-G", "--use-globals", action="store_true", help="use global namespace")
+    # @argument(
+    #     "-P",
+    #     "--param",
+    #     type=str,
+    #     nargs=2,
+    #     action="append",
+    #     metavar=("NAME", "VALUE"),
+    #     help="stroe a param",
+    # )
     @telemetry.log_call("execute")
     def execute(self, line="", cell="", local_ns={}):
         """
@@ -239,7 +242,6 @@ class SqlMagic(Magics, Configurable):
         # {cell}
 
         # save globals and locals so they can be referenced in bind vars
-        print("execute")
         user_ns = self.shell.user_ns.copy()
         user_ns.update(local_ns)
 
@@ -307,20 +309,7 @@ class SqlMagic(Magics, Configurable):
             print("Skipping execution...")
             return
 
-        if args.param:
-            self.parse_sql_clause_by_parameters(
-                raw=command.sql, user_ns=user_ns, use_globals=False
-            )
-            # self._persist_parameter(command.sql)
-
-        if args.use_globals:
-            # Gotta replace the sql clause variable from namespace
-            self.parse_sql_clause_by_parameters(
-                raw=command.sql, user_ns=user_ns, use_globals=True
-            )
-
         try:
-            print("before run: ", command.sql)
             result = sql.run.run(conn, command.sql, self, user_ns)
 
             if (
@@ -395,12 +384,6 @@ class SqlMagic(Magics, Configurable):
 
     def _persist_parameter(self, raw):
         print("Raw: ", raw)
-
-    def parse_sql_clause_by_parameters(self, raw, user_ns, use_globals=False):
-        if use_globals:
-            print("Parse: {} with use_globals".format(raw))
-        else:
-            print("Parse: {} with param".format(raw))
 
 
 def load_ipython_extension(ip):

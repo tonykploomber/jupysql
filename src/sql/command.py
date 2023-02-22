@@ -1,4 +1,5 @@
 from IPython.core.magic_arguments import parse_argstring
+from jinja2 import Template
 
 from sqlalchemy.engine import Engine
 
@@ -19,12 +20,9 @@ class SQLCommand:
     """
 
     def __init__(self, magic, user_ns, line, cell) -> None:
-        # Parse variables (words wrapped in {}) for %%sql magic
-        # (for %sql this is done automatically)
-        cell = magic.shell.var_expand(cell)
-
+        # Support for the variable substition in the SQL clause
+        line, cell = self._var_expand(magic, user_ns, line, cell)
         self.args = parse.magic_args(magic.execute, line)
-
         # self.args.line (everything that appears after %sql/%%sql in the first line)
         # is splited in tokens (delimited by spaces), this checks if we have one arg
         one_arg = len(self.args.line) == 1
@@ -45,7 +43,6 @@ class SQLCommand:
             add_alias = True
         else:
             add_alias = False
-
         self.command_text = " ".join(line_for_command) + "\n" + cell
 
         if self.args.file:
@@ -89,3 +86,49 @@ class SQLCommand:
     def result_var(self):
         """Returns the result_var"""
         return self.parsed["result_var"]
+
+    def _params_helper(self, params):
+        def is_float(element):
+            if element is None:
+                return False
+            try:
+                float(element)
+                return True
+            except ValueError:
+                return False
+
+        params_dict = {}
+        if not params:
+            return params_dict
+            # Throw some exception
+
+        for key, value in params:
+            if is_float(value):
+                params_dict[key] = int(value)
+            else:
+                params_dict[key] = value
+        return params_dict
+
+    def _var_expand(self, magic, user_ns, line, cell):
+        """
+        Support for the variable substition in the SQL clause, for now we have two ways:
+        1. Latest format, {{a}}, we use jinja2 to parse the string with {{a}} format
+        2. Legacy format, {a}, $a, and :a format.
+
+        We will deprecate the legacy format feature in next major version
+        """
+        self.is_legacy_var_expand_parsed = False
+        # Latest format
+        # TODO: support --param and --use-global logic here
+        line = Template(line).render(user_ns)
+        cell = Template(cell).render(user_ns)
+        # Legacy
+        parsed_cell = magic.shell.var_expand(cell)
+        parsed_line = magic.shell.var_expand(line)
+        has_SQLAlchemy_var_expand = ":" in line or ":" in cell
+
+        if parsed_line != line or parsed_cell != cell or has_SQLAlchemy_var_expand:
+            self.is_legacy_var_expand_parsed = True
+            print("You should not use this feature")
+
+        return parsed_line, parsed_cell
