@@ -181,3 +181,31 @@ def test_variable_substitution_cell_magic(ip, sql_magic):
     )
 
     assert cmd.parsed["sql"] == "\nGRANT CONNECT ON DATABASE postgres TO some-user;"
+
+
+def test_variable_substitution_double_curly_cell_magic(ip, sql_magic):
+    ip.user_global_ns["username"] = "some-user"
+
+    cmd = SQLCommand(
+        sql_magic,
+        ip.user_ns,
+        line="",
+        cell="GRANT CONNECT ON DATABASE postgres TO {{username}};",
+    )
+
+    print("cmd.parsed['sql']", cmd.parsed["sql"])
+    assert cmd.parsed["sql"] == "\nGRANT CONNECT ON DATABASE postgres TO some-user;"
+
+
+def test_variable_substitution_double_curly_lin_magic(ip, sql_magic):
+    ip.user_global_ns["limit_number"] = 5
+    ip.user_global_ns["column_name"] = "first_name"
+    cmd = SQLCommand(
+        sql_magic,
+        ip.user_ns,
+        line="SELECT {{column_name}} FROM author LIMIT {{limit_number}};",
+        cell="",
+    )
+
+    # print ("cmd.parsed['sql']", cmd.parsed["sql"])
+    assert cmd.parsed["sql"] == "SELECT first_name FROM author LIMIT 5;\n"
