@@ -125,10 +125,10 @@ class SQLCommand:
         line = Template(line).render(user_ns)
         cell = Template(cell).render(user_ns)
         # Legacy format parsing
-        parsed_cell = magic.shell.var_expand(cell)
-        parsed_line = magic.shell.var_expand(line)
+        parsed_cell = magic.shell.var_expand(cell, depth=2)
+        parsed_line = magic.shell.var_expand(line, depth=2)
         # Exclusive the string with "://", but has :variable
-        has_SQLAlchemy_var_expand = re.search("(?<!:\\):[^/]+", line) or ":" in cell
+        has_SQLAlchemy_var_expand = re.search("(?<!://):[^/]+", line) or ":" in cell
 
         if parsed_line != line or parsed_cell != cell or has_SQLAlchemy_var_expand:
             self.is_legacy_var_expand_parsed = True
