@@ -111,24 +111,29 @@ class SQLCommand:
 
     def _var_expand(self, magic, user_ns, line, cell):
         """
-        Support for the variable substition in the SQL clause, for now we have two ways:
+        Support for the variable substition in the SQL clause
+        For now, we have enabled two ways:
         1. Latest format, {{a}}, we use jinja2 to parse the string with {{a}} format
         2. Legacy format, {a}, $a, and :a format.
 
         We will deprecate the legacy format feature in next major version
         """
         self.is_legacy_var_expand_parsed = False
-        # Latest format
+        # Latest format parsing
         # TODO: support --param and --use-global logic here
         line = Template(line).render(user_ns)
         cell = Template(cell).render(user_ns)
-        # Legacy
+        # Legacy format parsing
         parsed_cell = magic.shell.var_expand(cell)
         parsed_line = magic.shell.var_expand(line)
         has_SQLAlchemy_var_expand = ":" in line or ":" in cell
 
         if parsed_line != line or parsed_cell != cell or has_SQLAlchemy_var_expand:
             self.is_legacy_var_expand_parsed = True
-            print("You should not use this feature")
+            print(
+                "Please aware the variable substition"
+                " as {a}, $a, and :a format has been deprecated."
+            )
+            print("Use {{a}} instead.")
 
         return parsed_line, parsed_cell
