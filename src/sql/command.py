@@ -21,7 +21,7 @@ class SQLCommand:
 
     def __init__(self, magic, user_ns, line, cell) -> None:
         # Support for the variable substition in the SQL clause
-        line, cell = self._var_expand(magic, user_ns, line, cell)
+        # line, cell = self._var_expand(magic, user_ns, line, cell)
         self.args = parse.magic_args(magic.execute, line)
         # self.args.line (everything that appears after %sql/%%sql in the first line)
         # is splited in tokens (delimited by spaces), this checks if we have one arg
@@ -50,6 +50,8 @@ class SQLCommand:
                 self.command_text = infile.read() + "\n" + self.command_text
 
         self.parsed = parse.parse(self.command_text, magic)
+        # Variable substition
+        self.parsed["sql"] = self._var_expand(magic, user_ns, self.parsed["sql"])
 
         self.parsed["sql_original"] = self.parsed["sql"]
 
@@ -109,7 +111,7 @@ class SQLCommand:
                 params_dict[key] = value
         return params_dict
 
-    def _var_expand(self, magic, user_ns, line, cell):
+    def _var_expand(self, magic, user_ns, sql):
         """
         Support for the variable substition in the SQL clause
         For now, we have enabled two ways:
@@ -121,19 +123,16 @@ class SQLCommand:
         self.is_legacy_var_expand_parsed = False
         # Latest format parsing
         # TODO: support --param and --use-global logic here
-        line = Template(line).render(user_ns)
-        cell = Template(cell).render(user_ns)
+        sql = Template(sql).render(user_ns)
         # Legacy format parsing
-        parsed_cell = magic.shell.var_expand(cell)
-        parsed_line = magic.shell.var_expand(line)
-        has_SQLAlchemy_var_expand = ":" in line or ":" in cell
+        parsed_sql = magic.shell.var_expand(sql)
+        has_SQLAlchemy_var_expand = ":" in sql
 
-        if parsed_line != line or parsed_cell != cell or has_SQLAlchemy_var_expand:
+        if parsed_sql != sql or has_SQLAlchemy_var_expand:
             self.is_legacy_var_expand_parsed = True
             print(
-                "Please aware the variable substition"
+                "Warning: The variable substition"
                 " as {a}, $a, and :a format has been deprecated."
             )
-            print("Use {{a}} instead.")
-
-        return parsed_line, parsed_cell
+            print("Instead, use {{a}} format.")
+        return parsed_sql
