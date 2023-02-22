@@ -1,3 +1,4 @@
+import re
 from IPython.core.magic_arguments import parse_argstring
 from jinja2 import Template
 
@@ -126,7 +127,8 @@ class SQLCommand:
         # Legacy format parsing
         parsed_cell = magic.shell.var_expand(cell)
         parsed_line = magic.shell.var_expand(line)
-        has_SQLAlchemy_var_expand = ":" in line or ":" in cell
+        # Exclusive the string with "://", but has :variable
+        has_SQLAlchemy_var_expand = re.search("(?<!:\\):[^/]+", line) or ":" in cell
 
         if parsed_line != line or parsed_cell != cell or has_SQLAlchemy_var_expand:
             self.is_legacy_var_expand_parsed = True
