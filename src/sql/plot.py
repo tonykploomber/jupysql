@@ -27,21 +27,22 @@ def _summary_stats(con, table, column, with_=None):
     """Compute percentiles and mean for boxplot"""
     template = Template(
         """
-SELECT
-percentile_disc(0.25) WITHIN GROUP (ORDER BY "{{column}}") AS q1,
-percentile_disc(0.50) WITHIN GROUP (ORDER BY "{{column}}") AS med,
-percentile_disc(0.75) WITHIN GROUP (ORDER BY "{{column}}") AS q3,
-AVG("{{column}}") AS mean,
-COUNT(*) AS N
-FROM "{{table}}"
+    SELECT
+    percentile_disc([0.25, 0.50, 0.75]) WITHIN GROUP \
+    (ORDER BY "{{column}}") AS percentiles,
+    AVG("{{column}}") AS mean,
+    COUNT(*) AS N
+    FROM "{{table}}"
 """
     )
+
     query = template.render(table=table, column=column)
 
     if with_:
         query = str(store.render(query, with_=with_))
-
     values = con.execute(query).fetchone()
+    # Flatten the ([q1, med, q3], mean, N) to (q1, med, q3, mean, N)
+    values = tuple(values[0]) + (values[1],) + (values[2],)
     keys = ["q1", "med", "q3", "mean", "N"]
     return {k: float(v) for k, v in zip(keys, values)}
 
