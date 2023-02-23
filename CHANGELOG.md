@@ -2,6 +2,8 @@
 
 ## 0.5.7dev
 
+* [Feature] Support new variable substitution as {{a}} format ([#137](https://github.com/ploomber/jupysql/pull/137))
+
 ## 0.5.6 (2023-02-16)
 
 * [Feature] Shows missing driver package suggestion message ([#124](https://github.com/ploomber/jupysql/issues/124))
