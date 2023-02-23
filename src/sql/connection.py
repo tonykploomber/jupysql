@@ -344,7 +344,7 @@ class Connection:
 
         engine = self.current.metadata.bind
         return {
-            "dialect": engine.dialect.name,
-            "driver": engine.dialect.driver,
-            "server_version_info": engine.dialect.server_version_info,
+            "dialect": getattr(engine.dialect, "name", None),
+            "driver": getattr(engine.dialect, "driver", None),
+            "server_version_info": getattr(engine.dialect, "server_version_info", None),
         }
