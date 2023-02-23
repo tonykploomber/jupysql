@@ -49,6 +49,12 @@ def load_numeric_data(engine):
     df.to_sql(name=table_name, con=engine, chunksize=100_000, if_exists="replace")
 
 
+def load_plot_data(engine):
+    table_name = "plot"
+    df = pd.DataFrame({"x": range(0, 5), "y": range(5, 10)})
+    df.to_sql(name=table_name, con=engine, chunksize=100_000, if_exists="replace")
+
+
 @pytest.fixture(scope="session")
 def setup_postgreSQL():
     with _testing.postgres(is_bypass_init=is_on_github):
