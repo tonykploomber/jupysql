@@ -57,6 +57,12 @@ excepted_duckdb_connection_info = {
     "server_version_info": ANY,
 }
 
+excepted_sqlite_connection_info = {
+    "dialect": "sqlite",
+    "driver": "pysqlite",
+    "server_version_info": ANY,
+}
+
 
 def test_boxplot_telemetry_execution(
     mock_log_api, simple_db_conn, simple_file_path_iris, ip
@@ -131,5 +137,29 @@ def test_execute_telemetry_execution(mock_log_api, ip):
         metadata={
             "argv": ANY,
             "connection_info": excepted_duckdb_connection_info,
+        },
+    )
+
+
+def test_switch_connection_with_correct_telemetry_connection_info(mock_log_api, ip):
+    ip.run_cell("%sql duckdb://")
+
+    mock_log_api.assert_called_with(
+        action="jupysql-execute-success",
+        total_runtime=ANY,
+        metadata={
+            "argv": ANY,
+            "connection_info": excepted_duckdb_connection_info,
+        },
+    )
+
+    ip.run_cell("%sql sqlite://")
+
+    mock_log_api.assert_called_with(
+        action="jupysql-execute-success",
+        total_runtime=ANY,
+        metadata={
+            "argv": ANY,
+            "connection_info": excepted_sqlite_connection_info,
         },
     )
