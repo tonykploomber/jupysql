@@ -244,9 +244,10 @@ def boxplot(payload, table, column, *, orient="v", with_=None, conn=None):
     if not conn:
         conn = sql.connection.Connection.current.session
 
-    payload[
-        "connection_info"
-    ] = sql.connection.Connection.current._get_curr_connection_info()
+    if sql.connection.Connection.current:
+        payload[
+            "connection_info"
+        ] = sql.connection.Connection.current._get_curr_connection_info()
 
     ax = plt.gca()
     vert = orient == "v"
