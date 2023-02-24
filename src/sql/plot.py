@@ -39,6 +39,10 @@ FROM "{{table}}"
     if with_:
         query = str(store.render(query, with_=with_))
 
+    try:
+        query = sql.connection.Connection.current._transiple_query(query)
+    except Exception:
+        print("Unable to detect current database connection")
     values = con.execute(query).fetchone()
     keys = ["q1", "med", "q3", "mean", "N"]
     return {k: float(v) for k, v in zip(keys, values)}
@@ -60,7 +64,10 @@ FROM (
 
     if with_:
         query = str(store.render(query, with_=with_))
-
+    try:
+        query = sql.connection.Connection.current._transiple_query(query)
+    except Exception:
+        print("Unable to detect current database connection")
     values = con.execute(query).fetchone()
     keys = ["N", "wiskhi_max"]
     return {k: float(v) for k, v in zip(keys, values)}
@@ -82,7 +89,10 @@ FROM (
 
     if with_:
         query = str(store.render(query, with_=with_))
-
+    try:
+        query = sql.connection.Connection.current._transiple_query(query)
+    except Exception:
+        print("Unable to detect current database connection")
     values = con.execute(query).fetchone()
     keys = ["N", "wisklo_min"]
     return {k: float(v) for k, v in zip(keys, values)}
@@ -100,7 +110,10 @@ FROM "{{table}}"
 
     if with_:
         query = str(store.render(query, with_=with_))
-
+    try:
+        query = sql.connection.Connection.current._transiple_query(query)
+    except Exception:
+        print("Unable to detect current database connection")
     values = con.execute(query).fetchone()[0]
     return values
 
@@ -108,17 +121,20 @@ FROM "{{table}}"
 def _between(con, table, column, whislo, whishi, with_=None):
     template = Template(
         """
-SELECT "{{column}}"
-FROM "{{table}}"
-WHERE "{{column}}" < {{whislo}}
-OR  "{{column}}" > {{whishi}}
+SELECT {{column}}
+FROM {{table}}
+WHERE {{column}} < {{whislo}}
+OR  {{column}} > {{whishi}}
 """
     )
     query = template.render(table=table, column=column, whislo=whislo, whishi=whishi)
 
     if with_:
         query = str(store.render(query, with_=with_))
-
+    try:
+        query = sql.connection.Connection.current._transiple_query(query)
+    except Exception:
+        print("Unable to detect current database connection")
     results = [float(n[0]) for n in con.execute(query).fetchall()]
     return results
 
@@ -282,7 +298,10 @@ FROM "{{table}}"
 
     if with_:
         query = str(store.render(query, with_=with_))
-
+    try:
+        query = sql.connection.Connection.current._transiple_query(query)
+    except Exception:
+        print("Unable to detect current database connection")
     min_, max_ = con.execute(query).fetchone()
     return min_, max_
 
@@ -380,7 +399,10 @@ order by 1;
 
     if with_:
         query = str(store.render(query, with_=with_))
-
+    try:
+        query = sql.connection.Connection.current._transiple_query(query)
+    except Exception:
+        print("Unable to detect current database connection")
     data = conn.execute(query).fetchall()
     bin_, height = zip(*data)
 

@@ -357,30 +357,13 @@ class Connection:
     def _transiple_query(self, query):
         connection_info = self._get_curr_connection_info()
         try:
-            # Dialect name might inconsistent bet. sqlalchemy and sqlglot
-            write_dialect = (
-                getattr(
-                    DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING,
-                    connection_info["dialect"],
-                    None,
-                )
-                or connection_info["dialect"]
-            )
-
-            # Validate the write dialect is supported by sqlglot
-            supported_dialects_by_sqlglot = [
-                sup_dialect.lower()
-                for sup_dialect in sqlglot.Dialects.__members__.keys()
-            ]
-            write_dialect = (
-                write_dialect
-                if write_dialect in supported_dialects_by_sqlglot
-                else None
-            )
-
-            if write_dialect:
-                query = sqlglot.transpile(query, read="duckdb", write=write_dialect)[0]
-        except Exception:
-            pass
+            write_dialect = connection_info["dialect"]
+            if write_dialect in DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING:
+                write_dialect = DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING[
+                    write_dialect
+                ]
+            query = sqlglot.transpile(query, read="duckdb", write=write_dialect)[0]
+        except Exception as e:
+            raise e
         finally:
             return query

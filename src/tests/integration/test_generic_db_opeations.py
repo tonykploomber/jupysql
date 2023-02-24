@@ -154,29 +154,24 @@ def test_telemetry_execute_command_has_connection_info(
     )
 
 
-# @pytest.mark.skip(reason="Known issue, sqlplot from existing table")
+@pytest.mark.skip(reason="Known issue, boxplot internal sql clause ")
 @pytest.mark.parametrize(
     "cell",
     [
         "%sqlplot histogram --table plot_something --column x",
-        # "%sqlplot hist --table data.csv --column x",
-        # "%sqlplot histogram --table data.csv --column x --bins 10",
-        # pytest.param(
-        #     "%sqlplot histogram --table nas.csv --column x",
-        #     marks=pytest.mark.xfail(reason="Not implemented yet"),
-        # ),
-        # "%sqlplot boxplot --table data.csv --column x",
-        # "%sqlplot box --table data.csv --column x",
-        # "%sqlplot boxplot --table data.csv --column x --orient h",
+        "%sqlplot hist --table plot_something --column x",
+        "%sqlplot histogram --table plot_something --column x --bins 10",
+        # "%sqlplot boxplot --table plot_something --column x",
+        # "%sqlplot box --table plot_something --column x",
+        # "%sqlplot boxplot --table plot_something --column x --orient h",
         # "%sqlplot boxplot --table subset --column x --with subset",
         # "%sqlplot boxplot -t subset -c x -w subset -o h",
-        # "%sqlplot boxplot --table nas.csv --column x",
+        # "%sqlplot boxplot --table plot_something --column x",
     ],
     ids=[
         "histogram",
-        # "hist",
-        # "histogram-bins",
-        # "histogram-nas",
+        "hist",
+        "histogram-bins",
         # "boxplot",
         # "box",
         # "boxplot-horizontal",
@@ -188,10 +183,10 @@ def test_telemetry_execute_command_has_connection_info(
 @pytest.mark.parametrize(
     "ip_with_dynamic_db",
     [
-        # ("ip_with_postgreSQL"),
+        ("ip_with_postgreSQL"),
         ("ip_with_mySQL"),
-        # ("ip_with_mariaDB"),
-        # ("ip_with_SQLite"),
+        ("ip_with_mariaDB"),
+        ("ip_with_SQLite"),
         ("ip_with_duckDB"),
     ],
 )
@@ -201,18 +196,10 @@ def test_sqlplot(ip_with_dynamic_db, cell, request):
     plt.cla()
 
     # store plot as subset table
-    #     ip_with_dynamic_db.run_cell(
-    #         "%%sql --save subset --no-execute
-    # SELECT *
-    # FROM plot_something
-    # WHERE x > -1
-    # "
-    #     )
+    ip_with_dynamic_db.run_cell(
+        "%sql --save plot_subset --no-execute SELECT * FROM plot_something WHERE x > -1"
+    )
 
     out = ip_with_dynamic_db.run_cell(cell)
-    # print ("out: ", out)
-    # out = ip_with_dynamic_db.run_cell(cell)
 
-    # maptlotlib >= 3.7 has Axes but earlier Python
-    # versions are not compatible
     assert type(out.result).__name__ in {"Axes", "AxesSubplot"}
