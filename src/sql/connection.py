@@ -6,6 +6,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoSuchModuleError
 from IPython.core.error import UsageError
 import difflib
+import sqlglot
 
 PLOOMBER_SUPPORT_LINK_STR = (
     "For technical support: https://ploomber.io/community"
@@ -40,6 +41,10 @@ MISSING_PACKAGE_LIST_EXCEPT_MATCHERS = {
     # MSSQL
     "pyodbc": "pyodbc",
     "pymssql": "pymssql",
+}
+
+DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING = {
+    "postgresql": "postgres",
 }
 
 
@@ -78,7 +83,7 @@ def get_missing_package_suggestion_str(e):
         module_name, MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.keys()
     )
     if close_matches:
-        return "Perhaps you meant to use driver the dialect: \"{}\"".format(
+        return 'Perhaps you meant to use driver the dialect: "{}"'.format(
             close_matches[0]
         )
     # Not found
@@ -348,3 +353,34 @@ class Connection:
             "driver": getattr(engine.dialect, "driver", None),
             "server_version_info": getattr(engine.dialect, "server_version_info", None),
         }
+
+    def _transiple_query(self, query):
+        connection_info = self._get_curr_connection_info()
+        try:
+            # Dialect name might inconsistent bet. sqlalchemy and sqlglot
+            write_dialect = (
+                getattr(
+                    DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING,
+                    connection_info["dialect"],
+                    None,
+                )
+                or connection_info["dialect"]
+            )
+
+            # Validate the write dialect is supported by sqlglot
+            supported_dialects_by_sqlglot = [
+                sup_dialect.lower()
+                for sup_dialect in sqlglot.Dialects.__members__.keys()
+            ]
+            write_dialect = (
+                write_dialect
+                if write_dialect in supported_dialects_by_sqlglot
+                else None
+            )
+
+            if write_dialect:
+                query = sqlglot.transpile(query, read="duckdb", write=write_dialect)[0]
+        except Exception:
+            pass
+        finally:
+            return query

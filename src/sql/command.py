@@ -64,7 +64,7 @@ class SQLCommand:
 
         if self.args.with_:
             final = store.render(self.parsed["sql"], with_=self.args.with_)
-            self.parsed["sql"] = str(final)
+            self.parsed["sql"] = str(Connection.current._transiple_query((str(final))))
 
     @property
     def sql(self):
