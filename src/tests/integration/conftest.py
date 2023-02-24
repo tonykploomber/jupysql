@@ -50,7 +50,7 @@ def load_numeric_data(engine):
 
 
 def load_plot_data(engine):
-    table_name = "plot"
+    table_name = "plot_something"
     df = pd.DataFrame({"x": range(0, 5), "y": range(5, 10)})
     df.to_sql(name=table_name, con=engine, chunksize=100_000, if_exists="replace")
 
