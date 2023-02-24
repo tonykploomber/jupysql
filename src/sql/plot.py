@@ -121,10 +121,10 @@ FROM "{{table}}"
 def _between(con, table, column, whislo, whishi, with_=None):
     template = Template(
         """
-SELECT {{column}}
-FROM {{table}}
-WHERE {{column}} < {{whislo}}
-OR  {{column}} > {{whishi}}
+SELECT "{{column}}"
+FROM "{{table}}"
+WHERE "{{column}}" < {{whislo}}
+OR  "{{column}}" > {{whishi}}
 """
     )
     query = template.render(table=table, column=column, whislo=whislo, whishi=whishi)
