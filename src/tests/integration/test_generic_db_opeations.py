@@ -33,8 +33,18 @@ def mock_log_api(monkeypatch):
 )
 def test_query_count(ip_with_dynamic_db, excepted, request):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
+    # Test normal query
     out = ip_with_dynamic_db.run_line_magic("sql", "SELECT * FROM taxi LIMIT 3")
     assert len(out) == excepted
+
+    # Test query with --with & --save param
+    ip_with_dynamic_db.run_cell(
+        "%sql --save taxi_subset --no-execute SELECT * FROM taxi LIMIT 5"
+    )
+    out = ip_with_dynamic_db.run_line_magic(
+        "sql", "--with taxi_subset SELECT * FROM taxi_subset"
+    )
+    assert len(out) == 5
 
 
 # Create

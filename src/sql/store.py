@@ -65,7 +65,7 @@ class SQLStore(MutableMapping):
 
 _template = Template(
     """\
-WITH{% for name in with_ %} "{{name}}" AS (
+WITH{% for name in with_ %} {{name}} AS (
     {{saved[name]._query}}
 ){{ "," if not loop.last }}{% endfor %}
 {{query}}
