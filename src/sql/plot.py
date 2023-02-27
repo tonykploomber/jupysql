@@ -240,6 +240,7 @@ def boxplot(payload, table, column, *, orient="v", with_=None, conn=None):
     if not conn:
         conn = sql.connection.Connection.current.session
 
+    if sql.connection.Connection.current:
         payload[
             "connection_info"
         ] = sql.connection.Connection.current._get_curr_connection_info()
@@ -325,9 +326,10 @@ def histogram(payload, table, column, bins, with_=None, conn=None):
     .. plot:: ../examples/plot_histogram_many.py
     """
     ax = plt.gca()
-    payload[
-        "connection_info"
-    ] = sql.connection.Connection.current._get_curr_connection_info()
+    if sql.connection.Connection.current:
+        payload[
+            "connection_info"
+        ] = sql.connection.Connection.current._get_curr_connection_info()
     if isinstance(column, str):
         bin_, height = _histogram(table, column, bins, with_=with_, conn=conn)
         ax.bar(bin_, height, align="center", width=bin_[-1] - bin_[-2])
@@ -379,7 +381,6 @@ order by 1;
         query = str(store.render(query, with_=with_))
     if sql.connection.Connection.current:
         query = sql.connection.Connection.current._transpile_query(query)
-
     data = conn.execute(query).fetchall()
     bin_, height = zip(*data)
 
