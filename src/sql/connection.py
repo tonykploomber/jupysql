@@ -357,11 +357,9 @@ class Connection:
     def _transpile_query(self, query):
         connection_info = self._get_curr_connection_info()
         try:
-            write_dialect = connection_info["dialect"]
-            if write_dialect in DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING:
-                write_dialect = DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING[
-                    write_dialect
-                ]
+            write_dialect = DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING.get(
+                connection_info["dialect"], connection_info["dialect"]
+            )
             query = sqlglot.transpile(query, read="duckdb", write=write_dialect)[0]
         except Exception as e:
             raise e
