@@ -92,3 +92,8 @@ def test_missing_driver(
             Connection.from_connect_str(connect_str)
 
         assert "try to install package: " + missing_pkg in str(error.value)
+
+
+def test_no_current_connection_and_get_info(cleanup):
+    with pytest.raises(AttributeError):
+        Connection.current._get_curr_connection_info()
