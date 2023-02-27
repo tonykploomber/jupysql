@@ -2,6 +2,8 @@
 
 ## 0.6.1dev
 
+* [Fix] `--save` + `--with` double quotes syntax error in MySQL ([#145](https://github.com/ploomber/jupysql/issues/145))
+
 ## 0.6.0 (2023-02-27)
 
 * [API Change] Drops support for old versions of IPython (removed imports from `IPython.utils.traitlets`)
