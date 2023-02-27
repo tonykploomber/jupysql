@@ -14,22 +14,22 @@ def sql_magic(ip):
 @pytest.mark.parametrize(
     "line, cell, parsed_sql, parsed_connection, parsed_result_var",
     [
-        ("something --no-execute", "", "something", "", None),
-        # ("sqlite://", "", "", "sqlite://", None),
-        # ("SELECT * FROM TABLE", "", "SELECT * FROM TABLE\n", "", None),
-        # ("SELECT * FROM", "TABLE", "SELECT * FROM\nTABLE", "", None),
-        # ("my_var << SELECT * FROM table", "", "SELECT * FROM table\n", "", "my_var"),
-        # ("my_var << SELECT *", "FROM table", "SELECT *\nFROM table", "", "my_var"),
-        # ("[db]", "", "", "sqlite://", None),
+        ("something --no-execute", "", "something\n", "", None),
+        ("sqlite://", "", "", "sqlite://", None),
+        ("SELECT * FROM TABLE", "", "SELECT * FROM TABLE\n", "", None),
+        ("SELECT * FROM", "TABLE", "SELECT * FROM\nTABLE", "", None),
+        ("my_var << SELECT * FROM table", "", "SELECT * FROM table\n", "", "my_var"),
+        ("my_var << SELECT *", "FROM table", "SELECT *\nFROM table", "", "my_var"),
+        ("[db]", "", "", "sqlite://", None),
     ],
     ids=[
         "arg-with-option",
-        # "connection-string",
-        # "sql-query",
-        # "sql-query-in-line-and-cell",
-        # "parsed-var-single-line",
-        # "parsed-var-multi-line",
-        # "config",
+        "connection-string",
+        "sql-query",
+        "sql-query-in-line-and-cell",
+        "parsed-var-single-line",
+        "parsed-var-multi-line",
+        "config",
     ],
 )
 def test_parsed(
@@ -77,10 +77,14 @@ def test_parsed_sql_when_using_with(ip, sql_magic):
         sql_magic, ip.user_ns, line="--with author_one", cell="SELECT * FROM author_one"
     )
 
-    sql = 'WITH "author_one" AS (SELECT * FROM author LIMIT 1) SELECT * FROM author_one'
+    sql = (
+        'WITH "author_one" AS (\n    \n\n        '
+        "SELECT * FROM author LIMIT 1\n        \n)"
+        "\n\nSELECT * FROM author_one"
+    )
 
-    sql_original = "SELECT * FROM author_one"
-    print("out cmd sql: ", cmd.sql)
+    sql_original = "\nSELECT * FROM author_one"
+
     assert cmd.parsed == {
         "connection": "",
         "result_var": None,
@@ -100,13 +104,13 @@ def test_parsed_sql_when_using_file(ip, sql_magic, tmp_empty):
     assert cmd.parsed == {
         "connection": "",
         "result_var": None,
-        "sql": "SELECT * FROM author",
-        "sql_original": "SELECT * FROM author",
+        "sql": "SELECT * FROM author\n\n",
+        "sql_original": "SELECT * FROM author\n\n",
     }
 
     assert cmd.connection == ""
-    assert cmd.sql == "SELECT * FROM author"
-    assert cmd.sql_original == "SELECT * FROM author"
+    assert cmd.sql == "SELECT * FROM author\n\n"
+    assert cmd.sql_original == "SELECT * FROM author\n\n"
 
 
 def test_args(ip, sql_magic):
@@ -152,7 +156,7 @@ def test_parse_sql_when_passing_engine(ip, sql_magic, tmp_empty, line):
 
     cmd = SQLCommand(sql_magic, ip.user_ns, line, cell="SELECT * FROM author")
 
-    sql_expected = "SELECT * FROM author"
+    sql_expected = "\nSELECT * FROM author"
 
     assert cmd.parsed == {
         "connection": engine,
@@ -160,6 +164,7 @@ def test_parse_sql_when_passing_engine(ip, sql_magic, tmp_empty, line):
         "sql": sql_expected,
         "sql_original": sql_expected,
     }
+
     assert cmd.connection is engine
     assert cmd.sql == sql_expected
     assert cmd.sql_original == sql_expected
