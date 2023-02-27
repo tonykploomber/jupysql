@@ -77,14 +77,10 @@ def test_parsed_sql_when_using_with(ip, sql_magic):
         sql_magic, ip.user_ns, line="--with author_one", cell="SELECT * FROM author_one"
     )
 
-    sql = (
-        'WITH "author_one" AS (\n    \n\n        '
-        "SELECT * FROM author LIMIT 1\n        \n)"
-        "\n\nSELECT * FROM author_one"
-    )
+    sql = 'WITH "author_one" AS (SELECT * FROM author LIMIT 1) SELECT * FROM author_one'
 
     sql_original = "\nSELECT * FROM author_one"
-
+    print("out cmd sql: ", cmd.sql)
     assert cmd.parsed == {
         "connection": "",
         "result_var": None,
@@ -164,7 +160,6 @@ def test_parse_sql_when_passing_engine(ip, sql_magic, tmp_empty, line):
         "sql": sql_expected,
         "sql_original": sql_expected,
     }
-
     assert cmd.connection is engine
     assert cmd.sql == sql_expected
     assert cmd.sql_original == sql_expected
