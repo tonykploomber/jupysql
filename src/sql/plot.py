@@ -39,10 +39,6 @@ FROM "{{table}}"
     if with_:
         query = str(store.render(query, with_=with_))
 
-    try:
-        query = sql.connection.Connection.current._transiple_query(query)
-    except Exception:
-        print("Unable to detect current database connection")
     values = con.execute(query).fetchone()
     keys = ["q1", "med", "q3", "mean", "N"]
     return {k: float(v) for k, v in zip(keys, values)}
@@ -64,10 +60,6 @@ FROM (
 
     if with_:
         query = str(store.render(query, with_=with_))
-    try:
-        query = sql.connection.Connection.current._transiple_query(query)
-    except Exception:
-        print("Unable to detect current database connection")
     values = con.execute(query).fetchone()
     keys = ["N", "wiskhi_max"]
     return {k: float(v) for k, v in zip(keys, values)}
@@ -110,10 +102,6 @@ FROM "{{table}}"
 
     if with_:
         query = str(store.render(query, with_=with_))
-    try:
-        query = sql.connection.Connection.current._transiple_query(query)
-    except Exception:
-        print("Unable to detect current database connection")
     values = con.execute(query).fetchone()[0]
     return values
 
@@ -131,10 +119,6 @@ OR  "{{column}}" > {{whishi}}
 
     if with_:
         query = str(store.render(query, with_=with_))
-    try:
-        query = sql.connection.Connection.current._transiple_query(query)
-    except Exception:
-        print("Unable to detect current database connection")
     results = [float(n[0]) for n in con.execute(query).fetchall()]
     return results
 
@@ -260,10 +244,9 @@ def boxplot(payload, table, column, *, orient="v", with_=None, conn=None):
     if not conn:
         conn = sql.connection.Connection.current.session
 
-    if sql.connection.Connection.current:
-        payload[
-            "connection_info"
-        ] = sql.connection.Connection.current._get_curr_connection_info()
+    payload[
+        "connection_info"
+    ] = sql.connection.Connection.current._get_curr_connection_info()
 
     ax = plt.gca()
     vert = orient == "v"
@@ -348,10 +331,9 @@ def histogram(payload, table, column, bins, with_=None, conn=None):
     .. plot:: ../examples/plot_histogram_many.py
     """
     ax = plt.gca()
-    if sql.connection.Connection.current:
-        payload[
-            "connection_info"
-        ] = sql.connection.Connection.current._get_curr_connection_info()
+    payload[
+        "connection_info"
+    ] = sql.connection.Connection.current._get_curr_connection_info()
     if isinstance(column, str):
         bin_, height = _histogram(table, column, bins, with_=with_, conn=conn)
         ax.bar(bin_, height, align="center", width=bin_[-1] - bin_[-2])
