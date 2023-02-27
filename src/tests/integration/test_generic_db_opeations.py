@@ -154,30 +154,31 @@ def test_telemetry_execute_command_has_connection_info(
     )
 
 
-# @pytest.mark.skip(reason="Known issue, boxplot internal sql clause ")
+@pytest.mark.skip(reason="Known issue, SQL engine must support \
+                  percentile_disc() SQL clause")
 @pytest.mark.parametrize(
     "cell",
     [
         "%sqlplot histogram --table plot_something --column x",
         "%sqlplot hist --table plot_something --column x",
         "%sqlplot histogram --table plot_something --column x --bins 10",
-        # "%sqlplot boxplot --table plot_something --column x",
-        # "%sqlplot box --table plot_something --column x",
-        # "%sqlplot boxplot --table plot_something --column x --orient h",
-        # "%sqlplot boxplot --table subset --column x --with subset",
-        # "%sqlplot boxplot -t subset -c x -w subset -o h",
-        # "%sqlplot boxplot --table plot_something --column x",
+        "%sqlplot boxplot --table plot_something --column x",
+        "%sqlplot box --table plot_something --column x",
+        "%sqlplot boxplot --table plot_something --column x --orient h",
+        "%sqlplot boxplot --table subset --column x --with subset",
+        "%sqlplot boxplot -t subset -c x -w subset -o h",
+        "%sqlplot boxplot --table plot_something --column x",
     ],
     ids=[
         "histogram",
         "hist",
         "histogram-bins",
-        # "boxplot",
-        # "box",
-        # "boxplot-horizontal",
-        # "boxplot-with",
-        # "boxplot-shortcuts",
-        # "boxplot-nas",
+        "boxplot",
+        "box",
+        "boxplot-horizontal",
+        "boxplot-with",
+        "boxplot-shortcuts",
+        "boxplot-nas",
     ],
 )
 @pytest.mark.parametrize(
