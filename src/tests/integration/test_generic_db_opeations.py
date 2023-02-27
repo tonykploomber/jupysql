@@ -159,8 +159,8 @@ def test_telemetry_execute_command_has_connection_info(
     "cell",
     [
         "%sqlplot histogram --table plot_something --column x",
-        # "%sqlplot hist --table plot_something --column x",
-        # "%sqlplot histogram --table plot_something --column x --bins 10",
+        "%sqlplot hist --table plot_something --column x",
+        "%sqlplot histogram --table plot_something --column x --bins 10",
         # "%sqlplot boxplot --table plot_something --column x",
         # "%sqlplot box --table plot_something --column x",
         # "%sqlplot boxplot --table plot_something --column x --orient h",
@@ -170,8 +170,8 @@ def test_telemetry_execute_command_has_connection_info(
     ],
     ids=[
         "histogram",
-        # "hist",
-        # "histogram-bins",
+        "hist",
+        "histogram-bins",
         # "boxplot",
         # "box",
         # "boxplot-horizontal",
@@ -183,18 +183,17 @@ def test_telemetry_execute_command_has_connection_info(
 @pytest.mark.parametrize(
     "ip_with_dynamic_db",
     [
-        # ("ip_with_postgreSQL"),
+        ("ip_with_postgreSQL"),
         ("ip_with_mySQL"),
         ("ip_with_mariaDB"),
-        # ("ip_with_SQLite"),
-        # ("ip_with_duckDB"),
+        ("ip_with_SQLite"),
+        ("ip_with_duckDB"),
     ],
 )
 def test_sqlplot(ip_with_dynamic_db, cell, request):
     # clean current Axes
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     plt.cla()
-
     out = ip_with_dynamic_db.run_cell(cell)
 
     assert type(out.result).__name__ in {"Axes", "AxesSubplot"}

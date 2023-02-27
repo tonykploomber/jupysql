@@ -81,10 +81,6 @@ FROM (
 
     if with_:
         query = str(store.render(query, with_=with_))
-    try:
-        query = sql.connection.Connection.current._transiple_query(query)
-    except Exception:
-        print("Unable to detect current database connection")
     values = con.execute(query).fetchone()
     keys = ["N", "wisklo_min"]
     return {k: float(v) for k, v in zip(keys, values)}
@@ -244,9 +240,9 @@ def boxplot(payload, table, column, *, orient="v", with_=None, conn=None):
     if not conn:
         conn = sql.connection.Connection.current.session
 
-    payload[
-        "connection_info"
-    ] = sql.connection.Connection.current._get_curr_connection_info()
+        payload[
+            "connection_info"
+        ] = sql.connection.Connection.current._get_curr_connection_info()
 
     ax = plt.gca()
     vert = orient == "v"
@@ -282,10 +278,8 @@ FROM "{{table}}"
 
     if with_:
         query = str(store.render(query, with_=with_))
-    try:
-        query = sql.connection.Connection.current._transiple_query(query)
-    except Exception:
-        print("Unable to detect current database connection")
+    if sql.connection.Connection.current:
+        query = sql.connection.Connection.current._transpile_query(query)
     min_, max_ = con.execute(query).fetchone()
     return min_, max_
 
@@ -383,10 +377,9 @@ order by 1;
 
     if with_:
         query = str(store.render(query, with_=with_))
-    try:
-        query = sql.connection.Connection.current._transiple_query(query)
-    except Exception:
-        print("Unable to detect current database connection")
+    if sql.connection.Connection.current:
+        query = sql.connection.Connection.current._transpile_query(query)
+
     data = conn.execute(query).fetchall()
     bin_, height = zip(*data)
 
