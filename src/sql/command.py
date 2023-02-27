@@ -66,16 +66,6 @@ class SQLCommand:
             final = store.render(self.parsed["sql"], with_=self.args.with_)
             self.parsed["sql"] = str(final)
 
-        # print("Before: ", self.parsed["sql"], self.parsed["sql_original"])
-        if Connection.current:
-            self.parsed["sql"] = str(
-                Connection.current._transpile_query((self.parsed["sql"]))
-            )
-            self.parsed["sql_original"] = str(
-                Connection.current._transpile_query((self.parsed["sql_original"]))
-            )
-            print("After: ", self.parsed["sql"])
-
     @property
     def sql(self):
         """

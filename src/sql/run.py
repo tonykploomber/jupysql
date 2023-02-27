@@ -11,6 +11,7 @@ import sqlalchemy
 import sqlparse
 import sql.connection
 from .column_guesser import ColumnGuesserMixin
+from sql.connection import Connection
 
 try:
     from pgspecial.main import PGSpecial
@@ -400,6 +401,8 @@ def run(conn, sql, config, user_namespace):
                 )[0]
                 result = FakeResultProxy(cur, headers)
             else:
+                if Connection.current:
+                    statement = str(Connection.current._transpile_query((statement)))
                 txt = sqlalchemy.sql.text(statement)
                 result = conn.session.execute(txt, user_namespace)
             _commit(conn=conn, config=config)
