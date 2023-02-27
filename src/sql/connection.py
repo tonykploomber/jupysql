@@ -354,7 +354,7 @@ class Connection:
             "server_version_info": getattr(engine.dialect, "server_version_info", None),
         }
 
-    def _transiple_query(self, query):
+    def _transpile_query(self, query):
         connection_info = self._get_curr_connection_info()
         try:
             write_dialect = connection_info["dialect"]
