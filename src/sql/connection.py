@@ -361,7 +361,5 @@ class Connection:
                 connection_info["dialect"], connection_info["dialect"]
             )
             query = sqlglot.transpile(query, read="duckdb", write=write_dialect)[0]
-        except Exception as e:
-            raise e
         finally:
             return query
