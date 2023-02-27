@@ -66,6 +66,7 @@ class SQLCommand:
             final = store.render(self.parsed["sql"], with_=self.args.with_)
             self.parsed["sql"] = str(final)
 
+        print("Execute execute part")
         if Connection.current:
             self.parsed["sql"] = str(
                 Connection.current._transpile_query((self.parsed["sql"]))
