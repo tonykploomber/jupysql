@@ -154,20 +154,41 @@ def test_telemetry_execute_command_has_connection_info(
     )
 
 
-@pytest.mark.skip(reason="Known issue, SQL engine must support \
-                  percentile_disc() SQL clause")
+BOX_PLOT_FAIL_REASON = (
+    "Known issue, the SQL engine must support percentile_disc() SQL clause"
+)
+
+
 @pytest.mark.parametrize(
     "cell",
     [
-        "%sqlplot histogram --table plot_something --column x",
-        "%sqlplot hist --table plot_something --column x",
-        "%sqlplot histogram --table plot_something --column x --bins 10",
-        "%sqlplot boxplot --table plot_something --column x",
-        "%sqlplot box --table plot_something --column x",
-        "%sqlplot boxplot --table plot_something --column x --orient h",
-        "%sqlplot boxplot --table subset --column x --with subset",
-        "%sqlplot boxplot -t subset -c x -w subset -o h",
-        "%sqlplot boxplot --table plot_something --column x",
+        ("%sqlplot histogram --table plot_something --column x"),
+        ("%sqlplot hist --table plot_something --column x"),
+        ("%sqlplot histogram --table plot_something --column x --bins 10"),
+        pytest.param(
+            "%sqlplot boxplot --table plot_something --column x",
+            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
+        ),
+        pytest.param(
+            "%sqlplot box --table plot_something --column x",
+            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
+        ),
+        pytest.param(
+            "%sqlplot boxplot --table plot_something --column x --orient h",
+            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
+        ),
+        pytest.param(
+            "%sqlplot boxplot --table subset --column x --with subset",
+            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
+        ),
+        pytest.param(
+            "%sqlplot boxplot -t subset -c x -w subset -o h",
+            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
+        ),
+        pytest.param(
+            "%sqlplot boxplot --table plot_something --column x",
+            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
+        ),
     ],
     ids=[
         "histogram",
