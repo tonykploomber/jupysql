@@ -124,6 +124,10 @@ or a single dictionary with a tuple of scalar values per key (``result.dict()``)
 
 ## Variable substitution 
 
+```{versionchanged} 0.5.7
+This is a legacy API that's kept for backwards compatibility.
+```
+
 Bind variables (bind parameters) can be used in the "named" (:x) style.
 The variable names used should be defined in the local namespace.
 
@@ -149,10 +153,6 @@ Bind variables are passed through to the SQL engine and can only
 be used to replace strings passed to SQL.  ``$`` and ``{}`` are 
 substituted before passing to SQL and can be used to form SQL 
 statements dynamically.
-
-```{versionchanged} 0.5.7
-This has been deprecated use '{{a}}' [Variable Expansion in Template](https://jupysql.ploomber.io/en/latest/template.html)
-```
 
 ## Assignment
 
