@@ -1,7 +1,7 @@
 from typing import Iterator, Iterable
 from collections.abc import MutableMapping
 from ploomber_core.exceptions import modify_exceptions
-
+import sql.connection
 from jinja2 import Template
 
 
@@ -83,9 +83,12 @@ class SQLQuery:
 
     def __str__(self) -> str:
         with_all = _get_dependencies(self._store, self._with_)
-        return _template.render(
+        rendered_template = _template.render(
             query=self._query, saved=self._store._data, with_=with_all
         )
+        if sql.connection.Connection.current:
+            return sql.connection.Connection.current._transpile_query(rendered_template)
+        return rendered_template
 
 
 def _get_dependencies(store, keys):
