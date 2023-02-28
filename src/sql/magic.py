@@ -21,12 +21,6 @@ from sql.magic_plot import SqlPlotMagic
 from sql.magic_cmd import SqlCmdMagic
 
 
-try:
-    from traitlets.config.configurable import Configurable
-    from traitlets import Bool, Int, Unicode
-except ImportError:
-    from IPython.config.configurable import Configurable
-    from IPython.utils.traitlets import Bool, Int, Unicode
 from traitlets.config.configurable import Configurable
 from traitlets import Bool, Int, Unicode, observe
 
