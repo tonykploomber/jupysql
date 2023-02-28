@@ -100,6 +100,7 @@ class SQLCommand:
         self.is_legacy_var_expand_parsed = False
         # Latest format parsing
         # TODO: support --param and --use-global logic here
+        # Ref: https://github.com/ploomber/jupysql/issues/93
         line = Template(line).render(user_ns)
         cell = Template(cell).render(user_ns)
         # Legacy format parsing
