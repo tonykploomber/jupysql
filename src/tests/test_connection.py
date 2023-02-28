@@ -18,11 +18,6 @@ def mock_postgres(monkeypatch, cleanup):
     monkeypatch.setattr(Engine, "connect", Mock())
 
 
-@pytest.fixture
-def mock_init_connection(monkeypatch):
-    monkeypatch.setattr(Connection, "current", None)
-
-
 def test_password_isnt_displayed(mock_postgres):
     Connection.from_connect_str("postgresql://user:topsecret@somedomain.com/db")
 
@@ -99,5 +94,6 @@ def test_missing_driver(
         assert "try to install package: " + missing_pkg in str(error.value)
 
 
-def test_no_current_connection_and_get_info(mock_init_connection):
+def test_no_current_connection_and_get_info(monkeypatch):
+    monkeypatch.setattr(Connection, "current", None)
     assert Connection._get_curr_connection_info() is None
