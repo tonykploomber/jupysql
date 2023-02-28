@@ -1,4 +1,5 @@
 import re
+import warnings
 from IPython.core.magic_arguments import parse_argstring
 from jinja2 import Template
 
@@ -108,13 +109,9 @@ class SQLCommand:
         parsed_line = magic.shell.var_expand(line, depth=2)
         # Exclusive the string with "://", but has :variable
         has_SQLAlchemy_var_expand = re.search("(?<!://):[^/]+", line) or ":" in cell
-
         if parsed_line != line or parsed_cell != cell or has_SQLAlchemy_var_expand:
             self.is_legacy_var_expand_parsed = True
-            print(
-                "Please aware the variable substition"
-                " as {a}, $a, and :a format has been deprecated."
-            )
-            print("Use {{a}} instead.")
-
+            warnings.simplefilter("once")
+            warnings.warn("Please aware the variable substition. Use {{a}} instead"
+                          , PendingDeprecationWarning)
         return parsed_line, parsed_cell
