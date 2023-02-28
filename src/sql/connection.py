@@ -78,7 +78,7 @@ def get_missing_package_suggestion_str(e):
         module_name, MISSING_PACKAGE_LIST_EXCEPT_MATCHERS.keys()
     )
     if close_matches:
-        return "Perhaps you meant to use driver the dialect: \"{}\"".format(
+        return 'Perhaps you meant to use driver the dialect: "{}"'.format(
             close_matches[0]
         )
     # Not found
@@ -337,6 +337,7 @@ class Connection:
     def close(self):
         self.__class__._close(self)
 
+    @classmethod
     def _get_curr_connection_info(self):
         """Returns the dialect, driver, and database server version info"""
         if not self.current:

@@ -42,8 +42,8 @@ def test_alias(cleanup):
 
 
 def test_get_curr_connection_info(mock_postgres):
-    conn = Connection.from_connect_str("postgresql://user:topsecret@somedomain.com/db")
-    assert conn._get_curr_connection_info() == {
+    Connection.from_connect_str("postgresql://user:topsecret@somedomain.com/db")
+    assert Connection._get_curr_connection_info() == {
         "dialect": "postgresql",
         "driver": "psycopg2",
         "server_version_info": None,
@@ -100,5 +100,4 @@ def test_missing_driver(
 
 
 def test_no_current_connection_and_get_info(mock_init_connection):
-    with pytest.raises(AttributeError):
-        Connection.current._get_curr_connection_info()
+    assert Connection._get_curr_connection_info() is None
