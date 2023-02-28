@@ -6,7 +6,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.5
+    jupytext_version: 1.14.4
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -150,6 +150,10 @@ be used to replace strings passed to SQL.  ``$`` and ``{}`` are
 substituted before passing to SQL and can be used to form SQL 
 statements dynamically.
 
+```{versionchanged} 0.5.7
+This has been deprecated use '{{a}}' [Variable Expansion in Template](https://jupysql.ploomber.io/en/latest/template.html)
+```
+
 ## Assignment
 
 Ordinary IPython assignment works for single-line `%sql` queries:
@@ -164,10 +168,6 @@ can be used in multi-line ``%%sql``:
 ```{code-cell} ipython3
 %%sql lang << SELECT *
 FROM languages
-```
-
-```{versionchanged} 0.5.7
-This has been deprecated use '{{a}}' [Variable Expansion in Template](https://jupysql.ploomber.io/en/latest/template.html)
 ```
 
 +++
