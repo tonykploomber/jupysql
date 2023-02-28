@@ -29,7 +29,7 @@ def test_password_isnt_displayed(mock_postgres):
     assert "topsecret" not in Connection.connection_list()
 
 
-def test_connection_name(mock_postgres, cleanup):
+def test_connection_name(mock_postgres):
     conn = Connection.from_connect_str("postgresql://user:topsecret@somedomain.com/db")
 
     assert conn.name == "user@db"
