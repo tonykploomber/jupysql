@@ -193,16 +193,6 @@ class SqlMagic(Magics, Configurable):
         type=str,
         help="Assign an alias to the connection",
     )
-    # @argument("-G", "--use-globals", action="store_true", help="use global namespace")
-    # @argument(
-    #     "-P",
-    #     "--param",
-    #     type=str,
-    #     nargs=2,
-    #     action="append",
-    #     metavar=("NAME", "VALUE"),
-    #     help="stroe a param",
-    # )
     @telemetry.log_call("execute")
     def execute(self, line="", cell="", local_ns={}):
         """

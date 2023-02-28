@@ -88,28 +88,6 @@ class SQLCommand:
         """Returns the result_var"""
         return self.parsed["result_var"]
 
-    def _params_helper(self, params):
-        def is_float(element):
-            if element is None:
-                return False
-            try:
-                float(element)
-                return True
-            except ValueError:
-                return False
-
-        params_dict = {}
-        if not params:
-            return params_dict
-            # Throw some exception
-
-        for key, value in params:
-            if is_float(value):
-                params_dict[key] = int(value)
-            else:
-                params_dict[key] = value
-        return params_dict
-
     def _var_expand(self, magic, user_ns, line, cell):
         """
         Support for the variable substition in the SQL clause
