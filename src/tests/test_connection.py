@@ -18,13 +18,18 @@ def mock_postgres(monkeypatch, cleanup):
     monkeypatch.setattr(Engine, "connect", Mock())
 
 
-def test_password_isnt_displayed(mock_postgres):
+@pytest.fixture
+def mock_init_connection(monkeypatch):
+    monkeypatch.setattr(Connection, "current", None)
+
+
+def test_password_isnt_displayed(mock_postgres, cleanup):
     Connection.from_connect_str("postgresql://user:topsecret@somedomain.com/db")
 
     assert "topsecret" not in Connection.connection_list()
 
 
-def test_connection_name(mock_postgres):
+def test_connection_name(mock_postgres, cleanup):
     conn = Connection.from_connect_str("postgresql://user:topsecret@somedomain.com/db")
 
     assert conn.name == "user@db"
@@ -36,7 +41,7 @@ def test_alias(cleanup):
     assert list(Connection.connections) == ["some-alias"]
 
 
-def test_get_curr_connection_info(mock_postgres):
+def test_get_curr_connection_info(mock_postgres, cleanup):
     conn = Connection.from_connect_str("postgresql://user:topsecret@somedomain.com/db")
     assert conn._get_curr_connection_info() == {
         "dialect": "postgresql",
@@ -84,7 +89,7 @@ def test_missing_duckdb_dependencies(cleanup, monkeypatch):
     ],
 )
 def test_missing_driver(
-    missing_pkg, except_missing_pkg_suggestion, connect_str, monkeypatch
+    missing_pkg, except_missing_pkg_suggestion, connect_str, monkeypatch, cleanup
 ):
     with patch.dict(sys.modules):
         sys.modules[missing_pkg] = None
@@ -94,6 +99,6 @@ def test_missing_driver(
         assert "try to install package: " + missing_pkg in str(error.value)
 
 
-def test_no_current_connection_and_get_info(cleanup):
+def test_no_current_connection_and_get_info(mock_init_connection):
     with pytest.raises(AttributeError):
         Connection.current._get_curr_connection_info()
