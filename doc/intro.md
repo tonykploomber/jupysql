@@ -6,7 +6,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.4
+    jupytext_version: 1.14.5
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -165,6 +165,12 @@ can be used in multi-line ``%%sql``:
 %%sql lang << SELECT *
 FROM languages
 ```
+
+```{versionchanged} 0.5.7
+This has been deprecated use '{{a}}' [Variable Expansion in Template](https://jupysql.ploomber.io/en/latest/template.html)
+```
+
++++
 
 ## Considerations
 
