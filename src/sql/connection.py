@@ -338,10 +338,10 @@ class Connection:
     @classmethod
     def _get_curr_connection_info(cls):
         """Returns the dialect, driver, and database server version info"""
-        if not self.current:
+        if not cls.current:
             return None
 
-        engine = self.current.metadata.bind
+        engine = cls.current.metadata.bind
         return {
             "dialect": getattr(engine.dialect, "name", None),
             "driver": getattr(engine.dialect, "driver", None),
