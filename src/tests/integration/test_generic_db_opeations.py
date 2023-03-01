@@ -212,7 +212,55 @@ BOX_PLOT_FAIL_REASON = (
         ("ip_with_duckDB"),
     ],
 )
-def test_sqlplot(ip_with_dynamic_db, cell, request):
+def test_sqlplot_histogram(ip_with_dynamic_db, cell, request):
+    # clean current Axes
+    ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
+    plt.cla()
+    out = ip_with_dynamic_db.run_cell(cell)
+
+    assert type(out.result).__name__ in {"Axes", "AxesSubplot"}
+
+
+@pytest.mark.parametrize(
+    "cell",
+    [
+        "%sqlplot boxplot --table plot_something --column x",
+        "%sqlplot box --table plot_something --column x",
+        "%sqlplot boxplot --table plot_something --column x --orient h",
+        "%sqlplot boxplot --table subset --column x --with subset",
+        "%sqlplot boxplot -t subset -c x -w subset -o h",
+        "%sqlplot boxplot --table plot_something --column x",
+    ],
+    ids=[
+        "boxplot",
+        "box",
+        "boxplot-horizontal",
+        "boxplot-with",
+        "boxplot-shortcuts",
+        "boxplot-nas",
+    ],
+)
+@pytest.mark.parametrize(
+    "ip_with_dynamic_db",
+    [
+        pytest.param(
+            "ip_with_postgreSQL", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        ),
+        pytest.param(
+            "ip_with_mySQL", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        ),
+        pytest.param(
+            "ip_with_mariaDB", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        ),
+        pytest.param(
+            "ip_with_SQLite", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        ),
+        pytest.param(
+            "ip_with_duckDB", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        ),
+    ],
+)
+def test_sqlplot_boxplot(ip_with_dynamic_db, cell, request):
     # clean current Axes
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     plt.cla()
