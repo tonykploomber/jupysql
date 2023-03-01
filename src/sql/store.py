@@ -63,13 +63,17 @@ class SQLStore(MutableMapping):
         self._data[key] = SQLQuery(self, query, with_)
 
 
-_template = Template(
+user_query_template = Template(
+    """
+{{query}}
+"""
+)
+
+_with_template = Template(
     """\
 WITH{% for name in with_ %} "{{name}}" AS (
     {{saved[name]._query}}
-){{ "," if not loop.last }}{% endfor %}
-{{query}}
-"""
+){{ "," if not loop.last }}{% endfor %}"""
 )
 
 
@@ -83,12 +87,14 @@ class SQLQuery:
 
     def __str__(self) -> str:
         with_all = _get_dependencies(self._store, self._with_)
-        rendered_template = _template.render(
-            query=self._query, saved=self._store._data, with_=with_all
-        )
+
+        with_query = _with_template.render(saved=self._store._data, with_=with_all)
         if sql.connection.Connection.current:
-            return sql.connection.Connection.current._transpile_query(rendered_template)
-        return rendered_template
+            with_query = sql.connection.Connection.current._transpile_query(with_query)
+
+        # Final rendered query = (transpiled) with clause + user query clause
+        rendered_query = with_query + user_query_template.render(query=self._query)
+        return rendered_query
 
 
 def _get_dependencies(store, keys):
