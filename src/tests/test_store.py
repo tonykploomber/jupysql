@@ -1,6 +1,12 @@
 import pytest
+from sql.connection import Connection
 
 from sql.store import SQLStore
+
+
+@pytest.fixture(autouse=True)
+def setup_no_current_connect(monkeypatch):
+    monkeypatch.setattr(Connection, "current", None)
 
 
 def test_sqlstore_setitem():
