@@ -336,7 +336,7 @@ class Connection:
         self.__class__._close(self)
 
     @classmethod
-    def _get_curr_connection_info(self):
+    def _get_curr_connection_info(cls):
         """Returns the dialect, driver, and database server version info"""
         if not self.current:
             return None
