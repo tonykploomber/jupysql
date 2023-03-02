@@ -173,7 +173,7 @@ def test_parse_sql_when_passing_engine(ip, sql_magic, tmp_empty, line):
 def test_variable_substitution_legacy_warning_message_dollar_prefix(
     ip, sql_magic, capsys
 ):
-    with pytest.warns(PendingDeprecationWarning):
+    with pytest.warns(FutureWarning):
         ip.user_global_ns["limit_number"] = 1
         ip.run_cell_magic(
             "sql",
@@ -187,7 +187,7 @@ def test_variable_substitution_legacy_warning_message_dollar_prefix(
 def test_variable_substitution_legacy_warning_message_single_curly(
     ip, sql_magic, capsys
 ):
-    with pytest.warns(PendingDeprecationWarning):
+    with pytest.warns(FutureWarning):
         ip.user_global_ns["limit_number"] = 1
         ip.run_cell_magic(
             "sql",
@@ -199,7 +199,7 @@ def test_variable_substitution_legacy_warning_message_single_curly(
 
 
 def test_variable_substitution_legacy_warning_message_colon(ip, sql_magic, capsys):
-    with pytest.warns(PendingDeprecationWarning):
+    with pytest.warns(FutureWarning):
         ip.user_global_ns["limit_number"] = 1
         ip.run_cell_magic(
             "sql",
