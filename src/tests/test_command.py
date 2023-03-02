@@ -78,7 +78,7 @@ def test_parsed_sql_when_using_with(ip, sql_magic):
     )
 
     sql = (
-         'WITH "author_one" AS (SELECT * FROM author LIMIT 1) SELECT * FROM author_one'
+         'WITH author_one AS (SELECT * FROM author LIMIT 1) SELECT * FROM author_one'
     )
 
     sql_original = "\nSELECT * FROM author_one"
