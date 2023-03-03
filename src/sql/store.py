@@ -1,7 +1,7 @@
 from typing import Iterator, Iterable
 from collections.abc import MutableMapping
 from ploomber_core.exceptions import modify_exceptions
-from sqlglot import parse_one
+from sqlglot import parse_one, expressions
 
 
 class SQLStore(MutableMapping):
@@ -76,7 +76,8 @@ class SQLQuery:
             parsed_res = parse_one(self._query)
             for with_key in with_all:
                 with_query = self._store._data[with_key]._query
-                parsed_res = parsed_res.with_(with_key, with_query)
+                # with_key might contains `-` (dash symbol), use to_identifier to quote it
+                parsed_res = parsed_res.with_(expressions.to_identifier(with_key, True), with_query)
             return parsed_res.sql()
         return ""
 
