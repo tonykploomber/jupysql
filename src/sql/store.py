@@ -76,8 +76,10 @@ class SQLQuery:
             parsed_res = parse_one(self._query)
             for with_key in with_all:
                 with_query = self._store._data[with_key]._query
-                # with_key might contains `-` (dash symbol), use to_identifier to quote it
-                parsed_res = parsed_res.with_(expressions.to_identifier(with_key, True), with_query)
+                # with_key might contains `-` (dash symbol)
+                # use expressions.to_identifier to quote it
+                parsed_res = parsed_res.with_(
+                    expressions.to_identifier(with_key, True), with_query)
             return parsed_res.sql()
         return ""
 
