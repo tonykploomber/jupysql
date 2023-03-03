@@ -154,52 +154,22 @@ def test_telemetry_execute_command_has_connection_info(
     )
 
 
-BOX_PLOT_FAIL_REASON = (
-    "Known issue, the SQL engine must support percentile_disc() SQL clause"
-)
-
-
 @pytest.mark.parametrize(
     "cell",
     [
         ("%sqlplot histogram --table plot_something --column x"),
         ("%sqlplot hist --table plot_something --column x"),
         ("%sqlplot histogram --table plot_something --column x --bins 10"),
-        pytest.param(
-            "%sqlplot boxplot --table plot_something --column x",
-            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
-        ),
-        pytest.param(
-            "%sqlplot box --table plot_something --column x",
-            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
-        ),
-        pytest.param(
-            "%sqlplot boxplot --table plot_something --column x --orient h",
-            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
-        ),
-        pytest.param(
-            "%sqlplot boxplot --table subset --column x --with subset",
-            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
-        ),
-        pytest.param(
-            "%sqlplot boxplot -t subset -c x -w subset -o h",
-            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
-        ),
-        pytest.param(
-            "%sqlplot boxplot --table plot_something --column x",
-            marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON),
+        (
+            "%sqlplot histogram --with plot_something_subset"
+            " --table plot_something_subset --column x"
         ),
     ],
     ids=[
         "histogram",
         "hist",
         "histogram-bins",
-        "boxplot",
-        "box",
-        "boxplot-horizontal",
-        "boxplot-with",
-        "boxplot-shortcuts",
-        "boxplot-nas",
+        "histogram-with",
     ],
 )
 @pytest.mark.parametrize(
@@ -216,9 +186,19 @@ def test_sqlplot_histogram(ip_with_dynamic_db, cell, request):
     # clean current Axes
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     plt.cla()
+
+    ip_with_dynamic_db.run_cell(
+        "%sql --save plot_something_subset"
+        " --no-execute SELECT * from plot_something LIMIT 3"
+    )
     out = ip_with_dynamic_db.run_cell(cell)
 
     assert type(out.result).__name__ in {"Axes", "AxesSubplot"}
+
+
+BOX_PLOT_FAIL_REASON = (
+    "Known issue, the SQL engine must support percentile_disc() SQL clause"
+)
 
 
 @pytest.mark.parametrize(
@@ -227,8 +207,10 @@ def test_sqlplot_histogram(ip_with_dynamic_db, cell, request):
         "%sqlplot boxplot --table plot_something --column x",
         "%sqlplot box --table plot_something --column x",
         "%sqlplot boxplot --table plot_something --column x --orient h",
-        "%sqlplot boxplot --table subset --column x --with subset",
-        "%sqlplot boxplot -t subset -c x -w subset -o h",
+        "%sqlplot boxplot --with plot_something_subset"
+        " --table plot_something_subset --column x",
+        "%sqlplot boxplot --with plot_something_subset"
+        " -t plot_something_subset -c x -o h",
         "%sqlplot boxplot --table plot_something --column x",
     ],
     ids=[
@@ -243,9 +225,7 @@ def test_sqlplot_histogram(ip_with_dynamic_db, cell, request):
 @pytest.mark.parametrize(
     "ip_with_dynamic_db",
     [
-        pytest.param(
-            "ip_with_postgreSQL", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
-        ),
+        pytest.param("ip_with_postgreSQL"),
         pytest.param(
             "ip_with_mySQL", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
         ),
@@ -255,15 +235,18 @@ def test_sqlplot_histogram(ip_with_dynamic_db, cell, request):
         pytest.param(
             "ip_with_SQLite", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
         ),
-        pytest.param(
-            "ip_with_duckDB", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
-        ),
+        pytest.param("ip_with_duckDB"),
     ],
 )
 def test_sqlplot_boxplot(ip_with_dynamic_db, cell, request):
     # clean current Axes
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     plt.cla()
+    ip_with_dynamic_db.run_cell(
+        "%sql --save plot_something_subset"
+        " --no-execute SELECT * from plot_something LIMIT 3"
+    )
+
     out = ip_with_dynamic_db.run_cell(cell)
 
     assert type(out.result).__name__ in {"Axes", "AxesSubplot"}
