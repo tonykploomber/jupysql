@@ -93,8 +93,8 @@ class SQLCommand:
         parsed_sql = magic.shell.var_expand(sql, depth=2)
 
         has_SQLAlchemy_var_expand = ":" in sql
-        # parsed_sql != sql: Detect IPython interprets {a} or $a
-        # has_SQLAlchemy_var_expand: Detect using Sqlalchemy interprets :a
+        # parsed_sql != sql: detect if using IPython fashion - {a} or $a
+        # has_SQLAlchemy_var_expand: detect if using Sqlalchemy fashion - :a
         if parsed_sql != sql or has_SQLAlchemy_var_expand:
             warnings.warn(
                 "Variable substitution with $var and {var} has been "
