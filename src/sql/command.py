@@ -50,8 +50,8 @@ class SQLCommand:
                 self.command_text = infile.read() + "\n" + self.command_text
 
         self.parsed = parse.parse(self.command_text, magic)
-        # Support for the variable substition in the SQL clause
-        self.parsed["sql_original"] = self._var_expand(
+
+        self.parsed["sql_original"] = self.parsed["sql"] = self._var_expand(
             self.parsed["sql"], user_ns, magic
         )
 
