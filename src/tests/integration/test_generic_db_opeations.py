@@ -114,6 +114,7 @@ def test_close_and_connect(
 
     assert get_connection_count(ip_with_dynamic_db) == 1
 
+
 # Telemetry
 # Test - Number of active connection
 @pytest.mark.parametrize(
