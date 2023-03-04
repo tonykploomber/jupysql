@@ -1,4 +1,3 @@
-import re
 import warnings
 from IPython.core.magic_arguments import parse_argstring
 from jinja2 import Template
@@ -93,7 +92,9 @@ class SQLCommand:
         sql = Template(sql).render(user_ns)
         parsed_sql = magic.shell.var_expand(sql, depth=2)
 
-        has_SQLAlchemy_var_expand = re.search("(?<!://):[^/]+", sql)
+        has_SQLAlchemy_var_expand = ":" in sql
+        # parsed_sql != sql: Detect IPython interprets {a} or $a
+        # has_SQLAlchemy_var_expand: Detect using Sqlalchemy interprets :a
         if parsed_sql != sql or has_SQLAlchemy_var_expand:
             warnings.warn(
                 "Variable substitution with $var and {var} has been "
