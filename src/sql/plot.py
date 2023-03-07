@@ -371,9 +371,9 @@ def _histogram(table, column, bins, with_=None, conn=None):
     template = Template(
         """
 select
-  floor({{column}}/{{bin_size}})*{{bin_size}},
+  floor("{{column}}"/{{bin_size}})*{{bin_size}},
   count(*) as count
-from {{table}}
+from "{{table}}"
 group by 1
 order by 1;
 """
@@ -382,8 +382,11 @@ order by 1;
 
     if with_:
         query = str(store.render(query, with_=with_))
-    elif sql.connection.Connection.current:
+
+    if sql.connection.Connection.current:
         query = sql.connection.Connection.current._transpile_query(query)
+
+    print("Pre query: ", query, sql.connection.Connection.current)
     data = conn.execute(query).fetchall()
     bin_, height = zip(*data)
 
