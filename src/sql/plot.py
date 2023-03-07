@@ -373,7 +373,7 @@ def _histogram(table, column, bins, with_=None, conn=None):
 select
   floor({{column}}/{{bin_size}})*{{bin_size}},
   count(*) as count
-from "{{table}}"
+from {{table}}
 group by 1
 order by 1;
 """
