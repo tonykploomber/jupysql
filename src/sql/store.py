@@ -77,7 +77,7 @@ class SQLQuery:
             for with_key in with_all:
                 with_query = self._store._data[with_key]._query
                 parsed_res = parsed_res.with_(with_key, with_query)
-            return parsed_res.sql()
+            return str(parsed_res.sql())
         return ""
 
 
