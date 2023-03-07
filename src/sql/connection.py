@@ -359,6 +359,6 @@ class Connection:
             write_dialect = DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING.get(
                 connection_info["dialect"], connection_info["dialect"]
             )
-            query = sqlglot.transpile(query, read="duckdb", write=write_dialect)[0]
+            query = sqlglot.parse_one(query).sql(dialect=write_dialect)
         finally:
             return query
