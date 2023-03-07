@@ -270,3 +270,17 @@ def test_variable_substitution_double_curly_line_magic(ip, sql_magic):
     )
 
     assert cmd.parsed["sql"] == "SELECT first_name FROM author LIMIT 5;"
+
+def test_with_contains_dash_show_warning_message(
+    ip, sql_magic, capsys
+):
+    ip.run_cell_magic(
+        "sql",
+        "--save author-sub",
+        "SELECT last_name FROM author WHERE year_of_death > 1900",
+    )
+
+    out, _ = capsys.readouterr()
+    assert "Dash is not suggested in standard sql clause, please replace this with an underscore, e.g. no-nulls -> no_nulls" in out
+
+    print ("out: ", out)
