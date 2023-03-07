@@ -378,6 +378,9 @@ group by 1
 order by 1;
 """
     )
+
+    print("Pre query, raw: ", query)
+
     query = template.render(table=table, column=column, bin_size=bin_size)
 
     if with_:
