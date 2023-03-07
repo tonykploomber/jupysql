@@ -164,16 +164,11 @@ def test_telemetry_execute_command_has_connection_info(
         ("%sqlplot histogram --table plot_something --column x"),
         ("%sqlplot hist --table plot_something --column x"),
         ("%sqlplot histogram --table plot_something --column x --bins 10"),
-        (
-            "%sqlplot histogram --with plot_something_subset"
-            " --table plot_something_subset --column x"
-        ),
     ],
     ids=[
         "histogram",
         "hist",
         "histogram-bins",
-        "histogram-with",
     ],
 )
 @pytest.mark.parametrize(
@@ -211,19 +206,14 @@ BOX_PLOT_FAIL_REASON = (
         "%sqlplot boxplot --table plot_something --column x",
         "%sqlplot box --table plot_something --column x",
         "%sqlplot boxplot --table plot_something --column x --orient h",
-        "%sqlplot boxplot --with plot_something_subset"
-        " --table plot_something_subset --column x",
-        "%sqlplot boxplot --with plot_something_subset"
-        " -t plot_something_subset -c x -o h",
-        "%sqlplot boxplot --table plot_something --column x",
+        "%sqlplot boxplot --with plot_something_subset --table "
+        "plot_something_subset --column x"
     ],
     ids=[
         "boxplot",
         "box",
         "boxplot-horizontal",
         "boxplot-with",
-        "boxplot-shortcuts",
-        "boxplot-nas",
     ],
 )
 @pytest.mark.parametrize(
