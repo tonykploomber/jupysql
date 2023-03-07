@@ -384,6 +384,7 @@ order by 1;
 
     if with_:
         query = str(store.render(query, with_=with_))
+    print("Pre query, mid: ", query)
 
     if sql.connection.Connection.current:
         query = sql.connection.Connection.current._transpile_query(query)
