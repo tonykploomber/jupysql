@@ -379,9 +379,8 @@ order by 1;
 """
     )
 
-    print("Pre query, raw: ", query)
-
     query = template.render(table=table, column=column, bin_size=bin_size)
+    print("Pre query, raw: ", query)
 
     if with_:
         query = str(store.render(query, with_=with_))
