@@ -371,7 +371,7 @@ def _histogram(table, column, bins, with_=None, conn=None):
     template = Template(
         """
 select
-  floor("{{column}}"/{{bin_size}})*{{bin_size}} as bin,
+  floor({{column}}/{{bin_size}})*{{bin_size}},
   count(*) as count
 from "{{table}}"
 group by 1
