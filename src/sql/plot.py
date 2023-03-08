@@ -389,7 +389,6 @@ def _histogram(table, column, bins, with_=None, conn=None):
         .from_(table)
         .sql()
     )
-    # query = template.render(table=table, column=column, bin_size=bin_size)
     if with_:
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)

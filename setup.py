@@ -20,7 +20,7 @@ install_requires = [
     "ipython>=1.0",
     "sqlalchemy>=0.6.7,<2.0",
     "sqlparse",
-    "sqlglot",
+    "sqlglot<=11.2.3",
     "ipython-genutils>=0.1.0",
     "jinja2",
     "ploomber-core>=0.2.4",
