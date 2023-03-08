@@ -3,6 +3,7 @@ from collections.abc import MutableMapping
 from ploomber_core.exceptions import modify_exceptions
 
 from jinja2 import Template
+from sqlglot import parse_one
 
 
 class SQLStore(MutableMapping):
@@ -73,6 +74,11 @@ WITH{% for name in with_ %} "{{name}}" AS (
 )
 
 
+DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING = {
+    "postgresql": "postgres",
+}
+
+
 class SQLQuery:
     """Holds queries and renders them"""
 
@@ -82,10 +88,16 @@ class SQLQuery:
         self._with_ = with_ or []
 
     def __str__(self) -> str:
-        with_all = _get_dependencies(self._store, self._with_)
-        return _template.render(
-            query=self._query, saved=self._store._data, with_=with_all
-        )
+        if self._query:
+            with_all = _get_dependencies(self._store, self._with_)
+            parsed_res = parse_one(self._query)
+            for with_key in with_all:
+                with_query = self._store._data[with_key]._query
+                parsed_res = parsed_res.with_(with_key, as_=parse_one(with_query))
+
+            return str(parsed_res.sql())
+
+        return ""
 
 
 def _get_dependencies(store, keys):

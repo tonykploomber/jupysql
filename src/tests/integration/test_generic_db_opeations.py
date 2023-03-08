@@ -37,6 +37,15 @@ def test_query_count(ip_with_dynamic_db, excepted, request):
     out = ip_with_dynamic_db.run_line_magic("sql", "SELECT * FROM taxi LIMIT 3")
     assert len(out) == excepted
 
+    # Test query with --with & --save
+    ip_with_dynamic_db.run_cell(
+        "%sql --save taxi_subset --no-execute SELECT * FROM taxi LIMIT 3"
+    )
+    out_query_with_save_arg = ip_with_dynamic_db.run_cell(
+        "%sql --with taxi_subset SELECT * FROM taxi_subset"
+    )
+    assert len(out_query_with_save_arg.result) == excepted
+
 
 # Create
 @pytest.mark.parametrize(
