@@ -4,6 +4,7 @@ Plot using the SQL backend
 from ploomber_core.dependencies import requires
 from ploomber_core.exceptions import modify_exceptions
 from jinja2 import Template
+
 # import sqlglot
 try:
     import matplotlib.pyplot as plt
@@ -19,6 +20,7 @@ except ModuleNotFoundError:
 from sql.store import store
 import sql.connection
 from sql.telemetry import telemetry
+from sqlglot import select
 
 
 def _summary_stats(con, table, column, with_=None):
@@ -364,17 +366,30 @@ def _histogram(table, column, bins, with_=None, conn=None):
     range_ = max_ - min_
     bin_size = range_ / bins
 
-    template = Template(
-        """
-SELECT
-  floor({{column}}/{{bin_size}})*{{bin_size}},
-  count(*) as count
-FROM {{table}}
-GROUP BY 1
-ORDER BY 1;
-"""
+    #     template = Template(
+    #         """
+    # SELECT
+    #   floor({{column}}/{{bin_size}})*{{bin_size}},
+    #   count(*) as count
+    # FROM {{table}}
+    # GROUP BY 1
+    # ORDER BY 1;
+    # """
+    #     )
+
+    query = (
+        select(
+            Template("""FLOOR({{column}}/{{bin_size}})*{{bin_size}}""").render(
+                column=column, bin_size=bin_size
+            )
+        )
+        .select("COUNT(*)")
+        .group_by(1)
+        .order_by(1)
+        .from_(table)
+        .sql()
     )
-    query = template.render(table=table, column=column, bin_size=bin_size)
+    # query = template.render(table=table, column=column, bin_size=bin_size)
     if with_:
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)
