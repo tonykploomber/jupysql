@@ -4,7 +4,7 @@ Plot using the SQL backend
 from ploomber_core.dependencies import requires
 from ploomber_core.exceptions import modify_exceptions
 from jinja2 import Template
-
+# import sqlglot
 try:
     import matplotlib.pyplot as plt
 except ModuleNotFoundError:
@@ -366,16 +366,15 @@ def _histogram(table, column, bins, with_=None, conn=None):
 
     template = Template(
         """
-select
-  floor("{{column}}"/{{bin_size}})*{{bin_size}},
+SELECT
+  floor({{column}}/{{bin_size}})*{{bin_size}},
   count(*) as count
-from "{{table}}"
-group by 1
-order by 1;
+FROM {{table}}
+GROUP BY 1
+ORDER BY 1;
 """
     )
     query = template.render(table=table, column=column, bin_size=bin_size)
-
     if with_:
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)
