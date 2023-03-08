@@ -175,7 +175,7 @@ def test_telemetry_execute_command_has_connection_info(
     "ip_with_dynamic_db",
     [
         ("ip_with_postgreSQL"),
-        # ("ip_with_mySQL"),
+        ("ip_with_mySQL"),
         ("ip_with_mariaDB"),
         ("ip_with_SQLite"),
         ("ip_with_duckDB"),

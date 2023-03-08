@@ -353,15 +353,15 @@ class Connection:
             "server_version_info": getattr(engine.dialect, "server_version_info", None),
         }
 
-    def _transpile_query(self, query):
-        connection_info = self._get_curr_connection_info()
+    @classmethod
+    def _transpile_query(cls, query):
+        if not cls.current:
+            return query
+        connection_info = cls._get_curr_connection_info()
         try:
             write_dialect = DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING.get(
                 connection_info["dialect"], connection_info["dialect"]
             )
-            # print("original query: ", query)
-            # print("write_dialect", write_dialect)
             query = sqlglot.parse_one(query).sql(dialect=write_dialect)
-            # print("after query: ", query)
         finally:
             return query

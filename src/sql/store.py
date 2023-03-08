@@ -56,9 +56,11 @@ class SQLStore(MutableMapping):
 
     @modify_exceptions
     def store(self, key, query, with_=None):
-
         if "-" in key:
-            print ("Dash is not suggested in standard sql clause, please replace this with an underscore, e.g. no-nulls -> no_nulls")
+            print(
+                "Dash is not suggested in standard sql clause,"
+                " please replace this with an underscore, e.g. no-nulls -> no_nulls"
+            )
 
         if with_ and key in with_:
             raise ValueError(f"Script name ({key!r}) cannot appear in with_ argument")

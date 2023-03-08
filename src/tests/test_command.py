@@ -78,9 +78,7 @@ def test_parsed_sql_when_using_with(ip, sql_magic):
         sql_magic, ip.user_ns, line="--with author_one", cell="SELECT * FROM author_one"
     )
 
-    sql = (
-         'WITH author_one AS (SELECT * FROM author LIMIT 1) SELECT * FROM author_one'
-    )
+    sql = "WITH author_one AS (SELECT * FROM author LIMIT 1) SELECT * FROM author_one"
 
     sql_original = "\nSELECT * FROM author_one"
 
@@ -271,9 +269,8 @@ def test_variable_substitution_double_curly_line_magic(ip, sql_magic):
 
     assert cmd.parsed["sql"] == "SELECT first_name FROM author LIMIT 5;"
 
-def test_with_contains_dash_show_warning_message(
-    ip, sql_magic, capsys
-):
+
+def test_with_contains_dash_show_warning_message(ip, sql_magic, capsys):
     ip.run_cell_magic(
         "sql",
         "--save author-sub",
@@ -281,6 +278,10 @@ def test_with_contains_dash_show_warning_message(
     )
 
     out, _ = capsys.readouterr()
-    assert "Dash is not suggested in standard sql clause, please replace this with an underscore, e.g. no-nulls -> no_nulls" in out
+    assert (
+        "Dash is not suggested in standard sql clause, please"
+        " replace this with an underscore, e.g. no-nulls -> no_nulls"
+        in out
+    )
 
-    print ("out: ", out)
+    print("out: ", out)
