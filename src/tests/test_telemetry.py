@@ -119,8 +119,7 @@ def test_sqlrender_telemetry_execution(mock_log_api, ip, simple_file_path_iris):
         "%sql --save class_setosa --no-execute "
         "SELECT * FROM read_csv_auto('"
         + simple_file_path_iris
-        + "')"
-        + " WHERE class='Iris-setosa'"
+        + "') WHERE class='Iris-setosa'"
     )
     ip.run_cell("%sqlrender class_setosa")
 
