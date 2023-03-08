@@ -1,4 +1,5 @@
 import shutil
+from matplotlib import pyplot as plt
 import pytest
 import warnings
 from sql.telemetry import telemetry
@@ -153,3 +154,40 @@ def test_telemetry_execute_command_has_connection_info(
             },
         },
     )
+
+
+@pytest.mark.parametrize(
+    "cell",
+    [
+        ("%sqlplot histogram --table plot_something --column x"),
+        ("%sqlplot hist --table plot_something --column x"),
+        ("%sqlplot histogram --table plot_something --column x --bins 10"),
+    ],
+    ids=[
+        "histogram",
+        "hist",
+        "histogram-bins",
+    ],
+)
+@pytest.mark.parametrize(
+    "ip_with_dynamic_db",
+    [
+        ("ip_with_postgreSQL"),
+        ("ip_with_mySQL"),
+        ("ip_with_mariaDB"),
+        ("ip_with_SQLite"),
+        ("ip_with_duckDB"),
+    ],
+)
+def test_sqlplot_histogram(ip_with_dynamic_db, cell, request):
+    # clean current Axes
+    ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
+    plt.cla()
+
+    ip_with_dynamic_db.run_cell(
+        "%sql --save plot_something_subset"
+        " --no-execute SELECT * from plot_something LIMIT 3"
+    )
+    out = ip_with_dynamic_db.run_cell(cell)
+
+    assert type(out.result).__name__ in {"Axes", "AxesSubplot"}

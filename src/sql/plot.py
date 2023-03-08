@@ -281,6 +281,8 @@ FROM "{{table}}"
     if with_:
         query = str(store.render(query, with_=with_))
 
+    query = sql.connection.Connection._transpile_query(query)
+
     min_, max_ = con.execute(query).fetchone()
     return min_, max_
 
@@ -376,6 +378,7 @@ order by 1;
 
     if with_:
         query = str(store.render(query, with_=with_))
+    query = sql.connection.Connection._transpile_query(query)
 
     data = conn.execute(query).fetchall()
     bin_, height = zip(*data)

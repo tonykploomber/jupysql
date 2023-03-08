@@ -7,6 +7,8 @@ from sqlalchemy.exc import NoSuchModuleError
 from IPython.core.error import UsageError
 import difflib
 
+import sqlglot
+
 PLOOMBER_SUPPORT_LINK_STR = (
     "For technical support: https://ploomber.io/community"
     "\nDocumentation: https://jupysql.ploomber.io/en/latest/connecting.html"
@@ -40,6 +42,10 @@ MISSING_PACKAGE_LIST_EXCEPT_MATCHERS = {
     # MSSQL
     "pyodbc": "pyodbc",
     "pymssql": "pymssql",
+}
+
+DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING = {
+    "postgresql": "postgres",
 }
 
 
@@ -347,3 +353,14 @@ class Connection:
             "driver": getattr(engine.dialect, "driver", None),
             "server_version_info": getattr(engine.dialect, "server_version_info", None),
         }
+
+    @classmethod
+    def _transpile_query(cls, query):
+        connection_info = cls._get_curr_connection_info()
+        try:
+            write_dialect = DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING.get(
+                connection_info["dialect"], connection_info["dialect"]
+            )
+            query = sqlglot.parse_one(query).sql(dialect=write_dialect)
+        finally:
+            return query
