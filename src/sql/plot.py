@@ -379,7 +379,6 @@ order by 1;
     if with_:
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)
-    print("Query: ", query)
     data = conn.execute(query).fetchall()
     bin_, height = zip(*data)
 
