@@ -95,6 +95,7 @@ class SQLQuery:
                 with_query = self._store._data[with_key]._query
                 parsed_res = parsed_res.with_(with_key, as_=parse_one(with_query))
 
+            print("Parsed SQL: ", str(parsed_res.sql()))
             return str(parsed_res.sql())
 
         return ""

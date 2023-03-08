@@ -361,6 +361,6 @@ class Connection:
             write_dialect = DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING.get(
                 connection_info["dialect"], connection_info["dialect"]
             )
-            query = sqlglot.parse_one(query).sql(dialect=write_dialect)
+            query = sqlglot.parse_one(query, read=write_dialect).sql()
         finally:
             return query
