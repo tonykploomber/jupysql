@@ -60,8 +60,7 @@ FROM (
 
     if with_:
         query = str(store.render(query, with_=with_))
-    if sql.connection.Connection.current:
-        query = sql.connection.Connection.current._transpile_query(query)
+    query = sql.connection.Connection._transpile_query(query)
     values = con.execute(query).fetchone()
     keys = ["N", "wiskhi_max"]
     return {k: float(v) for k, v in zip(keys, values)}
@@ -83,7 +82,7 @@ FROM (
 
     if with_:
         query = str(store.render(query, with_=with_))
-    query = sql.connection.Connection.current._transpile_query(query)
+    query = sql.connection.Connection._transpile_query(query)
     values = con.execute(query).fetchone()
     keys = ["N", "wisklo_min"]
     return {k: float(v) for k, v in zip(keys, values)}
@@ -101,7 +100,7 @@ FROM "{{table}}"
 
     if with_:
         query = str(store.render(query, with_=with_))
-    query = sql.connection.Connection.current._transpile_query(query)
+    query = sql.connection.Connection._transpile_query(query)
     values = con.execute(query).fetchone()[0]
     return values
 
@@ -119,8 +118,7 @@ OR  "{{column}}" > {{whishi}}
 
     if with_:
         query = str(store.render(query, with_=with_))
-    query = sql.connection.Connection.current._transpile_query(query)
-
+    query = sql.connection.Connection._transpile_query(query)
     results = [float(n[0]) for n in con.execute(query).fetchall()]
     return results
 
@@ -282,7 +280,7 @@ FROM "{{table}}"
 
     if with_:
         query = str(store.render(query, with_=with_))
-    query = sql.connection.Connection.current._transpile_query(query)
+    query = sql.connection.Connection._transpile_query(query)
     min_, max_ = con.execute(query).fetchone()
     return min_, max_
 
@@ -380,8 +378,7 @@ order by 1;
     if with_:
         query = str(store.render(query, with_=with_))
 
-    query = sql.connection.Connection.current._transpile_query(query)
-
+    query = sql.connection.Connection._transpile_query(query)
     data = conn.execute(query).fetchall()
     bin_, height = zip(*data)
 
