@@ -1,5 +1,8 @@
 import json
 import re
+import pandas as pd
+import ipywidgets as widgets
+from ipywidgets import interact
 from ploomber_core.exceptions import modify_exceptions
 from IPython.core.magic import (
     Magics,
@@ -206,6 +209,14 @@ class SqlMagic(Magics, Configurable):
         type=str,
         help="Assign an alias to the connection",
     )
+    @argument(
+        "--interactive",
+        type=str,
+        action="append",
+        nargs=2,
+        metavar=("NAME", "VALUE"),
+        help="Interactive mode",
+    )
     def execute(self, line="", cell="", local_ns=None):
         """
         Runs SQL statement against a database, specified by
@@ -317,7 +328,28 @@ class SqlMagic(Magics, Configurable):
 
         if not command.sql:
             return
+        # print ("args: ", args)
+        if args.interactive:
+            # @interact
+            # def show_articles_more_than(column='x', x=1):
+            #     df = pd.DataFrame({"x": range(3), "y": range(3)})
 
+            #     return df.loc[df[column] > x]
+            # @interact
+            # def show_query_limit(query='SELECT * FROM penguins.csv', limit=1):
+            #     query_w_limit = query + " LIMIT " + str(limit)
+            #     return self.execute(query_w_limit)
+            # return
+            def wrapper(query, **kwargs):
+                print ("command.sql: ", query)
+                print ("kwargs", kwargs)
+                return self.execute(query)
+            # print ("args.interactive", args.interactive)
+            # print ("local_ns", local_ns)
+            # query_w_limit = "SELECT * FROM penguins.csv"
+            # interact(wrapper, query=query_w_limit, limit=0)
+            # interact(wrapper, **{"query": command.sql, "limit": (0, 10, 1)})
+            # print ("command.sql: ", command.sql)
         # store the query if needed
         if args.save:
             if "-" in args.save:
@@ -418,3 +450,5 @@ def load_ipython_extension(ip):
     ip.register_magics(RenderMagic)
     ip.register_magics(SqlPlotMagic)
     ip.register_magics(SqlCmdMagic)
+
+# %%
