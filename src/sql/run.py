@@ -381,7 +381,7 @@ def _commit(conn, config):
             pass  # not all engines can commit
 
 
-def run(conn, sql, config, user_namespace):
+def run(conn, sql, config):
     if sql.strip():
         for statement in sqlparse.split(sql):
             first_word = sql.strip().split()[0].lower()
@@ -399,7 +399,7 @@ def run(conn, sql, config, user_namespace):
                 result = FakeResultProxy(cur, headers)
             else:
                 txt = sqlalchemy.sql.text(statement)
-                result = conn.session.execute(txt, user_namespace)
+                result = conn.session.execute(txt)
             _commit(conn=conn, config=config)
             if result and config.feedback:
                 print(interpret_rowcount(result.rowcount))

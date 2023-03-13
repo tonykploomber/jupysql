@@ -4,16 +4,11 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.4
+    jupytext_version: 1.14.5
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
   name: python3
-myst:
-  html_meta:
-    description lang=en: Use DuckDB from Jupyter using JupySQL
-    keywords: jupyter, sql, jupysql, duckdb, plotting
-    property=og:locale: en_US
 ---
 
 # DuckDB integration
