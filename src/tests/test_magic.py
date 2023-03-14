@@ -682,13 +682,14 @@ def test_save_with_number_table(
     assert with_cell_2_excepted == with_cell_2_out
 
 
-def test_save_with_non_existing(ip):
+def test_save_with_non_existing_with(ip):
     out = ip.run_cell(
         "%sql --with non_existing_sub_query " "SELECT * FROM non_existing_sub_query"
     )
     assert isinstance(out.error_in_exec, KeyError)
 
 
-def test_save_with_conflict_preserved_keyword(ip):
-    ip.run_cell("%sql --save DELETE SELECT * FROM number_table")
-    # We are expecting we will see some error here, now we don't have
+def test_save_with_non_existing_table(ip, capsys):
+    ip.run_cell("%sql --save my_query SELECT * FROM non_existing_table")
+    out, _ = capsys.readouterr()
+    assert "(sqlite3.OperationalError) no such table: non_existing_table" in out
