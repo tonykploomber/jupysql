@@ -590,3 +590,29 @@ def test_jupysql_alias():
         "line": {"jupysql": "execute", "sql": "execute"},
         "cell": {"jupysql": "execute", "sql": "execute"},
     }
+
+
+@pytest.mark.xfail(reason="will be fixed once we deprecate the $name parametrization")
+def test_columns_with_dollar_sign(ip_empty):
+    ip_empty.run_cell("%sql sqlite://")
+    result = ip_empty.run_cell(
+        """
+    %sql SELECT $2 FROM (VALUES (1, 'one'), (2, 'two'), (3, 'three'))"""
+    )
+
+    html = result.result._repr_html_()
+
+    assert "$2" in html
+
+
+def test_save_with(ip):
+    ip.run_cell(
+        "%sql --save shakespeare SELECT * FROM author WHERE last_name = 'Shakespeare'"
+    )
+    ip.run_cell(
+        "%sql --with shakespeare --save shake_born_in_1616 SELECT * FROM "
+        "shakespeare WHERE year_of_death = 1616"
+    )
+
+    out = ip.run_cell("%sql --with shake_born_in_1616 SELECT * from shake_born_in_1616")
+    assert out.result == [("William", "Shakespeare", 1616)]
