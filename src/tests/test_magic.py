@@ -606,13 +606,28 @@ def test_columns_with_dollar_sign(ip_empty):
 
 
 def test_save_with(ip):
+    # First Query
     ip.run_cell(
         "%sql --save shakespeare SELECT * FROM author WHERE last_name = 'Shakespeare'"
     )
+    # Second Query
     ip.run_cell(
         "%sql --with shakespeare --save shake_born_in_1616 SELECT * FROM "
         "shakespeare WHERE year_of_death = 1616"
     )
 
-    out = ip.run_cell("%sql --with shake_born_in_1616 SELECT * from shake_born_in_1616")
-    assert out.result == [("William", "Shakespeare", 1616)]
+    # Third Query
+    ip.run_cell(
+        "%sql --save shake_born_in_1616_limit_10 --with shake_born_in_1616"
+        " SELECT * FROM shake_born_in_1616 LIMIT 10"
+    )
+
+    second_out = ip.run_cell(
+        "%sql --with shake_born_in_1616 SELECT * FROM shake_born_in_1616"
+    )
+    third_out = ip.run_cell(
+        "%sql --with shake_born_in_1616_limit_10"
+        " SELECT * FROM shake_born_in_1616_limit_10"
+    )
+    assert second_out.result == [("William", "Shakespeare", 1616)]
+    assert third_out.result == [("William", "Shakespeare", 1616)]
