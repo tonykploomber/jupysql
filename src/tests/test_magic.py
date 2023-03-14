@@ -590,4 +590,3 @@ def test_jupysql_alias():
         "line": {"jupysql": "execute", "sql": "execute"},
         "cell": {"jupysql": "execute", "sql": "execute"},
     }
-
