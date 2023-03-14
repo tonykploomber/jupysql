@@ -631,3 +631,64 @@ def test_save_with(ip):
     )
     assert second_out.result == [("William", "Shakespeare", 1616)]
     assert third_out.result == [("William", "Shakespeare", 1616)]
+
+
+@pytest.mark.parametrize(
+    "prep_cell_1, prep_cell_2, prep_cell_3, with_cell_1,"
+    " with_cell_2, with_cell_1_excepted, with_cell_2_excepted",
+    [
+        [
+            "%sql --save everything SELECT * FROM number_table",
+            "%sql --with everything --no-execute --save positive_x"
+            " SELECT * FROM everything WHERE x > 0",
+            "%sql --with positive_x --no-execute --save "
+            "positive_x_and_y SELECT * FROM positive_x WHERE y > 0",
+            "%sql --with positive_x SELECT * FROM positive_x",
+            "%sql --with positive_x_and_y SELECT * FROM positive_x_and_y",
+            [(4, -2), (2, 4), (2, -5), (4, 3)],
+            [(2, 4), (4, 3)],
+        ],
+        [
+            "%sql --save everything SELECT * FROM number_table",
+            "%sql --with everything --no-execute --save odd_x "
+            "SELECT * FROM everything WHERE x % 2 != 0",
+            "%sql --with odd_x --no-execute --save odd_x_and_y "
+            "SELECT * FROM odd_x WHERE y % 2 != 0",
+            "%sql --with odd_x SELECT * FROM odd_x",
+            "%sql --with odd_x_and_y SELECT * FROM odd_x_and_y",
+            [(-5, 0), (-5, -1)],
+            [(-5, -1)],
+        ],
+    ],
+)
+def test_save_with_number_table(
+    ip,
+    prep_cell_1,
+    prep_cell_2,
+    prep_cell_3,
+    with_cell_1,
+    with_cell_2,
+    with_cell_1_excepted,
+    with_cell_2_excepted,
+):
+    ip.run_cell(prep_cell_1)
+    ip.run_cell(prep_cell_2)
+    ip.run_cell(prep_cell_3)
+    ip.run_cell(prep_cell_1)
+
+    with_cell_1_out = ip.run_cell(with_cell_1).result
+    with_cell_2_out = ip.run_cell(with_cell_2).result
+    assert with_cell_1_excepted == with_cell_1_out
+    assert with_cell_2_excepted == with_cell_2_out
+
+
+def test_save_with_non_existing(ip):
+    out = ip.run_cell(
+        "%sql --with non_existing_sub_query " "SELECT * FROM non_existing_sub_query"
+    )
+    assert isinstance(out.error_in_exec, KeyError)
+
+
+def test_save_with_conflict_preserved_keyword(ip):
+    ip.run_cell("%sql --save DELETE SELECT * FROM number_table")
+    # We are expecting we will see some error here, now we don't have
