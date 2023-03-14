@@ -591,15 +591,3 @@ def test_jupysql_alias():
         "cell": {"jupysql": "execute", "sql": "execute"},
     }
 
-
-@pytest.mark.xfail(reason="will be fixed once we deprecate the $name parametrization")
-def test_columns_with_dollar_sign(ip_empty):
-    ip_empty.run_cell("%sql sqlite://")
-    result = ip_empty.run_cell(
-        """
-    %sql SELECT $2 FROM (VALUES (1, 'one'), (2, 'two'), (3, 'three'))"""
-    )
-
-    html = result.result._repr_html_()
-
-    assert "$2" in html
