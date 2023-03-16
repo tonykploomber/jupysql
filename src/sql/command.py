@@ -1,7 +1,7 @@
 from IPython.core.magic_arguments import parse_argstring
 from jinja2 import Template
 from sqlalchemy.engine import Engine
-
+import warnings
 from sql import parse
 from sql.store import store
 from sql.connection import Connection
