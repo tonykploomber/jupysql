@@ -1,7 +1,5 @@
 import json
 import re
-import pandas as pd
-import ipywidgets as widgets
 from ipywidgets import interact
 from ploomber_core.exceptions import modify_exceptions
 from IPython.core.magic import (
@@ -210,10 +208,10 @@ class SqlMagic(Magics, Configurable):
         help="Assign an alias to the connection",
     )
     @argument(
-        "--interactive",
+        "--interact-slider",
         type=str,
-        action="append",
         nargs=2,
+        action="append",
         metavar=("NAME", "VALUE"),
         help="Interactive mode",
     )
@@ -244,10 +242,17 @@ class SqlMagic(Magics, Configurable):
           mysql+pymysql://me:mypw@localhost/mydb
 
         """
-        return self._execute(line=line, cell=cell, local_ns=local_ns)
+        return self._execute(
+            line=line, cell=cell, local_ns=local_ns, is_interactive_mode=False
+        )
 
     @telemetry.log_call("execute", payload=True)
-    def _execute(self, payload, line, cell, local_ns):
+    def _execute(self, payload, line, cell, local_ns, is_interactive_mode=False):
+        def interactive_execute_wrapper(**kwargs):
+            for key, value in kwargs.items():
+                local_ns[key] = value
+            return self._execute(line, cell, local_ns, is_interactive_mode=True)
+
         """
         This function implements the cell logic; we create this private
         method so we can control how the function is called. Otherwise,
@@ -263,7 +268,6 @@ class SqlMagic(Magics, Configurable):
 
         # %%sql {line}
         # {cell}
-
         if local_ns is None:
             local_ns = {}
 
@@ -275,6 +279,17 @@ class SqlMagic(Magics, Configurable):
         # args.line: contains the line after the magic with all options removed
 
         args = command.args
+        # Create the interactive slider
+        if args.interact_slider and not is_interactive_mode:
+            interactive_dict = {}
+            for key, value in args.interact_slider:
+                interactive_dict[key] = (0, int(value), 1)
+
+            print(
+                "Interactive mode, please use below slider(s) to control the variable"
+            )
+            interact(interactive_execute_wrapper, **interactive_dict)
+            return
         if args.connections:
             return sql.connection.Connection.connections
         elif args.close:
@@ -328,28 +343,6 @@ class SqlMagic(Magics, Configurable):
 
         if not command.sql:
             return
-        # print ("args: ", args)
-        if args.interactive:
-            # @interact
-            # def show_articles_more_than(column='x', x=1):
-            #     df = pd.DataFrame({"x": range(3), "y": range(3)})
-
-            #     return df.loc[df[column] > x]
-            # @interact
-            # def show_query_limit(query='SELECT * FROM penguins.csv', limit=1):
-            #     query_w_limit = query + " LIMIT " + str(limit)
-            #     return self.execute(query_w_limit)
-            # return
-            def wrapper(query, **kwargs):
-                print ("command.sql: ", query)
-                print ("kwargs", kwargs)
-                return self.execute(query)
-            # print ("args.interactive", args.interactive)
-            # print ("local_ns", local_ns)
-            # query_w_limit = "SELECT * FROM penguins.csv"
-            # interact(wrapper, query=query_w_limit, limit=0)
-            # interact(wrapper, **{"query": command.sql, "limit": (0, 10, 1)})
-            # print ("command.sql: ", command.sql)
         # store the query if needed
         if args.save:
             if "-" in args.save:
@@ -408,6 +401,12 @@ class SqlMagic(Magics, Configurable):
             else:
                 raise
 
+        finally:
+            # Cleanup local namespace by interactive slider
+            if is_interactive_mode:
+                for key, _ in args.interact_slider:
+                    del local_ns[key]
+
     legal_sql_identifier = re.compile(r"^[A-Za-z0-9#_$]+")
 
     @modify_exceptions
@@ -450,5 +449,6 @@ def load_ipython_extension(ip):
     ip.register_magics(RenderMagic)
     ip.register_magics(SqlPlotMagic)
     ip.register_magics(SqlCmdMagic)
+
 
 # %%

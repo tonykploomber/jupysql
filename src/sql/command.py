@@ -1,8 +1,5 @@
 from IPython.core.magic_arguments import parse_argstring
 from jinja2 import Template
-import ipywidgets as widgets
-from ipywidgets import interact
-
 from sqlalchemy.engine import Engine
 
 from sql import parse
@@ -22,16 +19,6 @@ class SQLCommand:
     """
 
     def __init__(self, magic, user_ns, line, cell) -> None:
-        # def update_user_ns(my_limit):
-            # print ("user_ns", user_ns)
-            # print ("key", key)
-            # print ("Value", value)
-            # user_ns["my_limit"] = my_limit
-        def dynamic_user_namespace(my_limit):
-            # print ("cloned_user_ns", cloned_user_ns)
-            self.user_ns["my_limit"] = my_limit
-            print ("update", self.user_ns["my_limit"])
-
         self.user_ns = user_ns
         self.args = parse.magic_args(magic.execute, line)
         # self.args.line (everything that appears after %sql/%%sql in the first line)
@@ -62,24 +49,9 @@ class SQLCommand:
 
         self.parsed = parse.parse(self.command_text, magic)
 
-        cloned_user_ns = dict(user_ns)
-        if self.args.interactive:
-            # print ("self.args.interactive", self.args.interactive)
-            # print ("Type", type(user_ns))
-            # for key, value in self.args.interactive:
-                # self.update_user_ns(cloned_user_ns, name, value)
-                # cloned_user_ns[name] = value
-                # interact(update_user_ns)
-                # cloned_user_ns[name] = value
-            # interact(update_user_ns)
-
-        # interact
-            interact(dynamic_user_namespace, my_limit = 5)
-
         self.parsed["sql_original"] = self.parsed["sql"] = self._var_expand(
             self.parsed["sql"], user_ns, magic
         )
-        print ("self.parsed['sql']", self.parsed["sql"] )
         if add_conn:
             self.parsed["connection"] = user_ns[self.args.line[0]]
 
@@ -116,7 +88,6 @@ class SQLCommand:
 
     def _var_expand(self, sql, user_ns, magic):
         sql = Template(sql).render(user_ns)
-        print ("user_ns", user_ns)
         parsed_sql = magic.shell.var_expand(sql, depth=2)
 
         has_SQLAlchemy_var_expand = ":" in sql and any(
