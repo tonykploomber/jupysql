@@ -189,6 +189,7 @@ def complete_with_defaults(mapping):
         "append": False,
         "connection_arguments": None,
         "file": None,
+        "interact_slider": None,
         "save": None,
         "with_": None,
         "no_execute": False,
