@@ -12,6 +12,7 @@ PLOOMBER_SUPPORT_LINK_STR = (
     "For technical support: https://ploomber.io/community"
     "\nDocumentation: https://jupysql.ploomber.io/en/latest/connecting.html"
 )
+IS_SQLALCHEMY_ONE = int(sqlalchemy.__version__.split(".")[0]) == 1
 
 # Check Full List: https://docs.sqlalchemy.org/en/20/dialects
 MISSING_PACKAGE_LIST_EXCEPT_MATCHERS = {
@@ -198,11 +199,23 @@ class Connection:
         return ModuleNotFoundError("test")
 
     def __init__(self, engine, alias=None):
-        self.dialect = engine.url.get_dialect()
-        self.metadata = sqlalchemy.MetaData(bind=engine)
+        self.url = engine.url
         self.name = self.assign_name(engine)
+        self.dialect = self.url.get_dialect()
         self.session = engine.connect()
-        self.connections[alias or repr(self.metadata.bind.url)] = self
+
+        if IS_SQLALCHEMY_ONE:
+            self.metadata = sqlalchemy.MetaData(bind=engine)
+
+        self.connections[
+            alias
+            or (
+                repr(sqlalchemy.MetaData(bind=engine).bind.url)
+                if IS_SQLALCHEMY_ONE
+                else repr(engine.url)
+            )
+        ] = self
+
         self.connect_args = None
         self.alias = alias
         Connection.current = self
@@ -303,7 +316,7 @@ class Connection:
         result = []
         for key in sorted(cls.connections):
             conn = cls.connections[key]
-            engine_url = conn.metadata.bind.url  # type: sqlalchemy.engine.url.URL
+            engine_url = conn.metadata.bind.url if IS_SQLALCHEMY_ONE else conn.url
 
             prefix = "* " if conn == cls.current else "  "
 
@@ -317,7 +330,7 @@ class Connection:
         return "\n".join(result)
 
     @classmethod
-    def _close(cls, descriptor):
+    def close(cls, descriptor):
         if isinstance(descriptor, Connection):
             conn = descriptor
         else:
@@ -333,12 +346,10 @@ class Connection:
         if descriptor in cls.connections:
             cls.connections.pop(descriptor)
         else:
-            cls.connections.pop(str(conn.metadata.bind.url))
-
-        conn.session.close()
-
-    def close(self):
-        self.__class__._close(self)
+            cls.connections.pop(
+                str(conn.metadata.bind.url) if IS_SQLALCHEMY_ONE else str(conn.url)
+            )
+            conn.session.close()
 
     @classmethod
     def _get_curr_connection_info(cls):
@@ -346,7 +357,7 @@ class Connection:
         if not cls.current:
             return None
 
-        engine = cls.current.metadata.bind
+        engine = cls.current.metadata.bind if IS_SQLALCHEMY_ONE else cls.current
         return {
             "dialect": getattr(engine.dialect, "name", None),
             "driver": getattr(engine.dialect, "driver", None),
