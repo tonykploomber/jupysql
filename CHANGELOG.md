@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## 0.6.6dev
+## 0.7dev
+
+* [Fix] `--save` + `--with` double quotes syntax error in MySQL ([#145](https://github.com/ploomber/jupysql/issues/145))
 
 ## 0.6.5 (2023-03-15)
 
@@ -27,8 +29,6 @@
 
 * [Feature] Support new variable substitution using `{{variable}}` format ([#137](https://github.com/ploomber/jupysql/pull/137))
 * [Fix] Adds support for newer versions of prettytable
-
-* [Fix] `--save` + `--with` double quotes syntax error in MySQL ([#145](https://github.com/ploomber/jupysql/issues/145))
 
 ## 0.6.0 (2023-02-27)
 
