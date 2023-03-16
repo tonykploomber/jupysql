@@ -21,7 +21,7 @@ from sql.store import store
 from sql.command import SQLCommand
 from sql.magic_plot import SqlPlotMagic
 from sql.magic_cmd import SqlCmdMagic
-
+from ast import literal_eval
 
 from traitlets.config.configurable import Configurable
 from traitlets import Bool, Int, Unicode, observe
@@ -283,8 +283,10 @@ class SqlMagic(Magics, Configurable):
         if args.interact_slider and not is_interactive_mode:
             interactive_dict = {}
             for key, value in args.interact_slider:
-                interactive_dict[key] = (0, int(value), 1)
-
+                if value.isdigit():
+                    interactive_dict[key] = (0, int(value), 1)
+                else:
+                    interactive_dict[key] = literal_eval(value)
             print(
                 "Interactive mode, please use below slider(s) to control the variable"
             )
