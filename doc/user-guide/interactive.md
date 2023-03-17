@@ -50,7 +50,9 @@ body_mass_min = 3500
 ```
 
 ```{code-cell} ipython3
-island = "Torgersen" # Try to change Torgersen to Biscoe, Torgersen or Dream in the below textbox
+island = (  # Try to change Torgersen to Biscoe, Torgersen or Dream in the below textbox
+    "Torgersen"
+)
 %sql --interact island SELECT * FROM penguins.csv WHERE island == '{{island}}' LIMIT 5
 ```
 
@@ -73,29 +75,29 @@ body_mass_lower_bound = widgets.IntSlider(min=2500, max=3500, step=25, value=310
 ### FloatSlider
 
 ```{code-cell} ipython3
-bill_length_mm_lower_bound = widgets.FloatSlider(min=35.0, max=45.0, step=0.1, value=40.0)
+bill_length_mm_lower_bound = widgets.FloatSlider(
+    min=35.0, max=45.0, step=0.1, value=40.0
+)
 
 %sql --interact bill_length_mm_lower_bound SELECT * FROM penguins.csv WHERE bill_length_mm <= {{bill_length_mm_lower_bound}} LIMIT 5
 ```
 
 ## Complete Example
 
-To demostrate the way to combine basic data type and ipywidgets into our interactive SQL Clause 
+To demostrate the way to combine basic data type and ipywidgets into our interactive SQL Clause
 
 ```{code-cell} ipython3
 body_mass_lower_bound = 3600
-show_limit = (0,50,1)
+show_limit = (0, 50, 1)
 sex_selection = widgets.RadioButtons(
-    options=['MALE', 'FEMALE'],
-    description='Sex',
-    disabled=False
+    options=["MALE", "FEMALE"], description="Sex", disabled=False
 )
-species_selections= widgets.SelectMultiple(
-    options=['Adelie', 'Chinstrap', 'Gentoo'],
-    value=['Adelie', 'Chinstrap'],
-    #rows=10,
-    description='Species',
-    disabled=False
+species_selections = widgets.SelectMultiple(
+    options=["Adelie", "Chinstrap", "Gentoo"],
+    value=["Adelie", "Chinstrap"],
+    # rows=10,
+    description="Species",
+    disabled=False,
 )
 ```
 
