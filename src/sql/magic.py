@@ -21,7 +21,6 @@ from sql.store import store
 from sql.command import SQLCommand
 from sql.magic_plot import SqlPlotMagic
 from sql.magic_cmd import SqlCmdMagic
-from ast import literal_eval
 
 from traitlets.config.configurable import Configurable
 from traitlets import Bool, Int, Unicode, observe
@@ -33,6 +32,8 @@ except ImportError:
     Series = None
 
 from sql.telemetry import telemetry
+
+SUPPORT_INTERACTIVE_WIDGETS = ["Checkbox", "Text", "IntSlider", ""]
 
 
 @magics_class
@@ -208,11 +209,9 @@ class SqlMagic(Magics, Configurable):
         help="Assign an alias to the connection",
     )
     @argument(
-        "--interact-slider",
+        "--interact",
         type=str,
-        nargs=2,
         action="append",
-        metavar=("NAME", "VALUE"),
         help="Interactive mode",
     )
     def execute(self, line="", cell="", local_ns=None):
@@ -280,13 +279,10 @@ class SqlMagic(Magics, Configurable):
 
         args = command.args
         # Create the interactive slider
-        if args.interact_slider and not is_interactive_mode:
+        if args.interact and not is_interactive_mode:
             interactive_dict = {}
-            for key, value in args.interact_slider:
-                if value.isdigit():
-                    interactive_dict[key] = (0, int(value), 1)
-                else:
-                    interactive_dict[key] = literal_eval(value)
+            for key in args.interact:
+                interactive_dict[key] = local_ns[key]
             print(
                 "Interactive mode, please use below slider(s) to control the variable"
             )
@@ -402,12 +398,6 @@ class SqlMagic(Magics, Configurable):
                 print(e)
             else:
                 raise
-
-        finally:
-            # Cleanup local namespace by interactive slider
-            if is_interactive_mode:
-                for key, _ in args.interact_slider:
-                    del local_ns[key]
 
     legal_sql_identifier = re.compile(r"^[A-Za-z0-9#_$]+")
 
