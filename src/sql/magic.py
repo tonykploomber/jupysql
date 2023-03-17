@@ -284,7 +284,8 @@ class SqlMagic(Magics, Configurable):
             for key in args.interact:
                 interactive_dict[key] = local_ns[key]
             print(
-                "Interactive mode, please use below slider(s) to control the variable"
+                "Interactive mode, please interact with below "
+                "widget(s) to control the variable"
             )
             interact(interactive_execute_wrapper, **interactive_dict)
             return
