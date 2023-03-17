@@ -1,8 +1,13 @@
 # CHANGELOG
 
-## 0.7dev
+## 0.7.0dev
 
+* [API Change] Deprecates old SQL parametrization: `$var`, `:var`, and `{var}` in favor of `{{var}}`
 * [Fix] `--save` + `--with` double quotes syntax error in MySQL ([#145](https://github.com/ploomber/jupysql/issues/145))
+
+## 0.6.6 (2023-03-16)
+
+* [Fix] Pinning SQLAlchemy 1.x
 
 ## 0.6.5 (2023-03-15)
 
