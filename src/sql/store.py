@@ -2,6 +2,7 @@ from typing import Iterator, Iterable
 from collections.abc import MutableMapping
 from ploomber_core.exceptions import modify_exceptions
 from sqlglot import parse_one
+from IPython.core.error import UsageError
 import warnings
 
 
@@ -58,7 +59,7 @@ class SQLStore(MutableMapping):
     @modify_exceptions
     def store(self, key, query, with_=None):
         if "-" in key:
-            raise SyntaxError(
+            raise UsageError(
                 "Using hyphens in save argument isn't allowed."
                 " Please use dashes(-) instead"
             )
