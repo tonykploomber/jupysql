@@ -207,7 +207,7 @@ BOX_PLOT_FAIL_REASON = (
         "%sqlplot box --table plot_something --column x",
         "%sqlplot boxplot --table plot_something --column x --orient h",
         "%sqlplot boxplot --with plot_something_subset --table "
-        "plot_something_subset --column x"
+        "plot_something_subset --column x",
     ],
     ids=[
         "boxplot",
@@ -244,6 +244,7 @@ def test_sqlplot_boxplot(ip_with_dynamic_db, cell, request):
     out = ip_with_dynamic_db.run_cell(cell)
 
     assert type(out.result).__name__ in {"Axes", "AxesSubplot"}
+
 
 @pytest.mark.parametrize(
     "ip_with_dynamic_db",
