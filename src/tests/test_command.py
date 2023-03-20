@@ -1,4 +1,5 @@
 from pathlib import Path
+from IPython.core.error import UsageError
 
 import pytest
 from sqlalchemy import create_engine
@@ -193,7 +194,7 @@ def test_variable_substitution_double_curly_line_magic(ip, sql_magic):
 
 
 def test_with_contains_dash_show_warning_message(ip, sql_magic, capsys):
-    with pytest.raises(SyntaxError) as error:
+    with pytest.raises(UsageError) as error:
         ip.run_cell_magic(
             "sql",
             "--save author-sub",
