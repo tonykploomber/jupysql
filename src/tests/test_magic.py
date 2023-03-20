@@ -8,7 +8,7 @@ from textwrap import dedent
 import pytest
 from sqlalchemy import create_engine
 from IPython.core.error import UsageError
-
+from ipywidgets import widgets
 from sql.connection import Connection
 from sql.magic import SqlMagic
 from sql.run import ResultSet
@@ -604,17 +604,23 @@ def test_interact_basic_data_types(ip, capsys):
     print("out", out)
 
 
-# @pytest.fixture
-# def mockValueWidget(monkeypatch):
-#     mockWidget = widgets.IntSlider
-#     monkeypatch.setattr(mockWidget, "value", 5)
-#     yield mockWidget
+@pytest.fixture
+def mockValueWidget(monkeypatch):
+    mockWidget = widgets.IntSlider(min=-10, max=30, step=1, value=10)
+    monkeypatch.setattr(mockWidget, "value", 15)
+    yield mockWidget
 
-# def test_interact_basic_widgets(ip, mockValueWidget):
-#     ip.user_global_ns["my_widget"] = mockValueWidget
-#     out = ip.run_cell("%sql --interact my_widget
-# SELECT * FROM author LIMIT {{my_widget}}")
-#     print ("out: ", out)
+
+def test_interact_basic_widgets(ip, mockValueWidget):
+    ip.user_global_ns["my_widget"] = mockValueWidget
+
+    # ip.user_global_ns["my_widget"].value = 20
+
+    out = ip.run_cell(
+        "%sql --interact my_widget SELECT * FROM author LIMIT {{my_widget}}"
+    )
+    # print ("out: ", out)
+
 
 # out = ip.run_cell("%sql SELECT * FROM author")
 # print ("out: ", out)
