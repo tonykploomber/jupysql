@@ -4,6 +4,8 @@ import os.path
 import re
 import tempfile
 from textwrap import dedent
+from unittest.mock import Mock
+import ipywidgets as widgets
 
 import pytest
 from sqlalchemy import create_engine
@@ -590,3 +592,24 @@ def test_jupysql_alias():
         "line": {"jupysql": "execute", "sql": "execute"},
         "cell": {"jupysql": "execute", "sql": "execute"},
     }
+
+
+def test_interact_basic_data_types(ip):
+    ip.user_global_ns["my_variable"] = 5
+    out = ip.run_cell("%sql --interact my_variable SELECT * FROM author LIMIT 5")
+
+    print (out)
+
+# @pytest.fixture
+# def mockValueWidget(monkeypatch):
+#     mockWidget = widgets.IntSlider
+#     monkeypatch.setattr(mockWidget, "value", 5)
+#     yield mockWidget
+
+# def test_interact_basic_widgets(ip, mockValueWidget):
+#     ip.user_global_ns["my_widget"] = mockValueWidget
+#     out = ip.run_cell("%sql --interact my_widget SELECT * FROM author LIMIT {{my_widget}}")
+#     print ("out: ", out)
+
+    # out = ip.run_cell("%sql SELECT * FROM author")
+    # print ("out: ", out)
