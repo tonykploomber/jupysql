@@ -1,9 +1,13 @@
+import os
 import shutil
 import pandas as pd
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 from sql import _testing
+is_on_github = False
+if "GITHUB_ACTIONS" in os.environ:
+    is_on_github = True
 
 TMP_DIR = "tmp"
 databaseConfig = {
@@ -119,7 +123,7 @@ def load_numeric_data(engine):
 
 @pytest.fixture(scope="session")
 def setup_postgreSQL():
-    with _testing.postgres():
+    with _testing.postgres(is_on_github):
         engine = create_engine(_get_database_url("postgreSQL"))
         # Load taxi_data
         load_taxi_data(engine)
@@ -143,7 +147,7 @@ def ip_with_postgreSQL(ip_empty, setup_postgreSQL):
 
 @pytest.fixture(scope="session")
 def setup_mySQL():
-    with _testing.mysql():
+    with _testing.mysql(is_on_github):
         engine = create_engine(
             "mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33306/db"
         )
@@ -169,7 +173,7 @@ def ip_with_mySQL(ip_empty, setup_mySQL):
 
 @pytest.fixture(scope="session")
 def setup_mariaDB():
-    with _testing.mariadb():
+    with _testing.mariadb(is_on_github):
         engine = create_engine(
             "mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33309/db"
         )
