@@ -403,7 +403,3 @@ def test_sql_cmd_magic_dos(ip_with_dynamic_db, request):
 
     #         assert criteria in expected
     #         assert cell_value == str(expected[criteria][i])
-
-
-def test_fake_env(ip_with_postgreSQL):
-    return
