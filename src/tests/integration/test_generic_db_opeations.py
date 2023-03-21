@@ -404,3 +404,7 @@ def test_profile_query(request, ip_with_dynamic_db, table, table_columns, expect
 
             assert criteria in expected
             assert cell_value == str(expected[criteria][i])
+
+
+def test_fake_env(ip_with_postgreSQL):
+    return

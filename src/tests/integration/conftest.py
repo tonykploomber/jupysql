@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
-
+from sql import _testing
 TMP_DIR = "tmp"
 databaseConfig = {
     "postgreSQL": {
@@ -22,6 +22,7 @@ databaseConfig = {
         "database": "db",
         "host": "localhost",
         "port": "33306",
+        # "port": "3307",
         "alias": "mySQLTest",
     },
     "mariaDB": {
@@ -117,13 +118,14 @@ def load_numeric_data(engine):
 
 @pytest.fixture(scope="session")
 def setup_postgreSQL():
-    engine = create_engine(_get_database_url("postgreSQL"))
-    # Load taxi_data
-    load_taxi_data(engine)
-    load_plot_data(engine)
-    load_numeric_data(engine)
-    yield engine
-    engine.dispose()
+    with _testing.postgres():
+        engine = create_engine(_get_database_url("postgreSQL"))
+        # Load taxi_data
+        load_taxi_data(engine)
+        load_plot_data(engine)
+        load_numeric_data(engine)
+        yield engine
+        engine.dispose()
 
 
 @pytest.fixture
@@ -140,13 +142,15 @@ def ip_with_postgreSQL(ip_empty, setup_postgreSQL):
 
 @pytest.fixture(scope="session")
 def setup_mySQL():
-    engine = create_engine(_get_database_url("mySQL"))
-    # Load taxi_data
-    load_taxi_data(engine)
-    load_plot_data(engine)
-    load_numeric_data(engine)
-    yield engine
-    engine.dispose()
+    with _testing.mysql():
+        # print ("create_engine(_get_database_url", create_engine(_get_database_url("mySQL")))
+        engine = create_engine("mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33306/db")
+        # Load taxi_dataz
+        load_taxi_data(engine)
+        load_plot_data(engine)
+        load_numeric_data(engine)
+        yield engine
+        engine.dispose()
 
 
 @pytest.fixture
@@ -163,13 +167,14 @@ def ip_with_mySQL(ip_empty, setup_mySQL):
 
 @pytest.fixture(scope="session")
 def setup_mariaDB():
-    engine = create_engine(_get_database_url("mariaDB"), pool_recycle=1800)
-    # Load taxi_data
-    load_taxi_data(engine)
-    load_plot_data(engine)
-    load_numeric_data(engine)
-    yield engine
-    engine.dispose()
+    with _testing.mariadb():
+        engine = create_engine("mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33309/db")
+        # Load taxi_data
+        load_taxi_data(engine)
+        load_plot_data(engine)
+        load_numeric_data(engine)
+        yield engine
+        engine.dispose()
 
 
 @pytest.fixture
@@ -228,3 +233,10 @@ def ip_with_duckDB(ip_empty, setup_duckDB):
     yield ip_empty
     # Disconnect database
     ip_empty.run_cell("%sql -x " + alias)
+
+
+@pytest.fixture
+def setup_fake_post():
+    with _testing.postgres():
+        print("Outer")
+        yield "Outer"
