@@ -91,7 +91,7 @@ def mariadb_ready(
 @contextmanager
 def postgres():
     if is_on_github:
-        return
+        yield None
     try:
         client = docker.from_env(version="auto")
         container = client.containers.get("mariadb")
@@ -127,7 +127,7 @@ def postgres():
 @contextmanager
 def mysql():
     if is_on_github:
-        return
+        yield None
     try:
         client = docker.from_env(version="auto")
         container = client.containers.get("mariadb")
@@ -167,7 +167,7 @@ def mysql():
 @contextmanager
 def mariadb():
     if is_on_github:
-        return
+        yield None
     try:
         client = docker.from_env(version="auto")
         curr = client.containers.get("mariadb")
