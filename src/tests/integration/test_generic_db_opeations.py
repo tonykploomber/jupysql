@@ -391,8 +391,7 @@ def test_profile_query(request, ip_with_dynamic_db, table, table_columns, expect
     ).result
 
     stats_table = out._table
-    print("stats_table", stats_table.rowcount, type(stats_table))
-    # assert len(stats_table.rows) == len(expected)
+    assert len(stats_table.rows) == len(expected)
 
     for row in stats_table:
         criteria = row.get_string(fields=[" "], border=False).strip()
