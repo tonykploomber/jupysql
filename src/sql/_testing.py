@@ -87,7 +87,8 @@ def mariadb_ready(
 @contextmanager
 def postgres(is_bypass=False):
     if is_bypass:
-        yield None
+        return
+        yield
     try:
         client = docker.from_env(version="auto")
         container = client.containers.get("mariadb")
@@ -123,7 +124,8 @@ def postgres(is_bypass=False):
 @contextmanager
 def mysql(is_bypass=False):
     if is_bypass:
-        yield None
+        return
+        yield
     try:
         client = docker.from_env(version="auto")
         container = client.containers.get("mariadb")
@@ -163,7 +165,8 @@ def mysql(is_bypass=False):
 @contextmanager
 def mariadb(is_bypass=False):
     if is_bypass:
-        yield None
+        return
+        yield
     try:
         client = docker.from_env(version="auto")
         curr = client.containers.get("mariadb")
