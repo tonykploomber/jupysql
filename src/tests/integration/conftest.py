@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 from sql import _testing
+
 TMP_DIR = "tmp"
 databaseConfig = {
     "postgreSQL": {
@@ -143,8 +144,9 @@ def ip_with_postgreSQL(ip_empty, setup_postgreSQL):
 @pytest.fixture(scope="session")
 def setup_mySQL():
     with _testing.mysql():
-        # print ("create_engine(_get_database_url", create_engine(_get_database_url("mySQL")))
-        engine = create_engine("mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33306/db")
+        engine = create_engine(
+            "mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33306/db"
+        )
         # Load taxi_dataz
         load_taxi_data(engine)
         load_plot_data(engine)
@@ -168,7 +170,9 @@ def ip_with_mySQL(ip_empty, setup_mySQL):
 @pytest.fixture(scope="session")
 def setup_mariaDB():
     with _testing.mariadb():
-        engine = create_engine("mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33309/db")
+        engine = create_engine(
+            "mysql+pymysql://ploomber_app:ploomber_app_password@localhost:33309/db"
+        )
         # Load taxi_data
         load_taxi_data(engine)
         load_plot_data(engine)
