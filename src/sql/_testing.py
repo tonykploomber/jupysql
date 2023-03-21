@@ -4,6 +4,10 @@ import sys
 import time
 import docker
 from docker import errors
+import os
+is_on_github = False
+if "GITHUB_ACTIONS" in os.environ:
+    is_on_github = True
 
 client = docker.from_env()
 
@@ -86,6 +90,8 @@ def mariadb_ready(
 
 @contextmanager
 def postgres():
+    if is_on_github:
+        return
     try:
         client = docker.from_env(version="auto")
         container = client.containers.get("mariadb")
@@ -120,6 +126,8 @@ def postgres():
 
 @contextmanager
 def mysql():
+    if is_on_github:
+        return
     try:
         client = docker.from_env(version="auto")
         container = client.containers.get("mariadb")
@@ -158,6 +166,8 @@ def mysql():
 
 @contextmanager
 def mariadb():
+    if is_on_github:
+        return
     try:
         client = docker.from_env(version="auto")
         curr = client.containers.get("mariadb")
