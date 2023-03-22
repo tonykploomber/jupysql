@@ -1,31 +1,17 @@
 from contextlib import contextmanager
+from multiprocessing import Process
+import os
+import signal
+import threading
 import time
 from sql import _testing
-
-# from multiprocessing import Process
-
-
-def test_start_containers_from_cmd(monkeypatch):
-    @contextmanager
-    def mockPostgre():
-        time.sleep(1)
-        yield None
-
-    monkeypatch.setattr("sql._testing.postgres", mockPostgre)
-    monkeypatch.setattr("sql._testing.mysql", mockPostgre)
-    monkeypatch.setattr("sql._testing.mariadb", mockPostgre)
-
-    # p = Process(target=_testing.main())
-    # p.start()
-    # time.sleep(3)
-    # p.terminate()
-    # p.join()
-
-    # _testing.main()
-
+from signal import pthread_kill, SIGTSTP, SIGINT
+is_on_github = False
+if "GITHUB_ACTIONS" in os.environ:
+    is_on_github = True
 
 def test_postgres_container():
-    with _testing.postgres() as container:
+    with _testing.postgres(is_bypass_init=is_on_github) as container:
         assert any(
             "database system is ready to accept connections" in str(line, "utf-8")
             for line in container.logs(stream=True)
@@ -34,7 +20,7 @@ def test_postgres_container():
 
 
 def test_mysql_container():
-    with _testing.mysql() as container:
+    with _testing.mysql(is_bypass_init=is_on_github) as container:
         assert any(
             "mysqld: ready for connections" in str(line, "utf-8")
             for line in container.logs(stream=True)
@@ -43,7 +29,7 @@ def test_mysql_container():
 
 
 def test_mariadb_container():
-    with _testing.mariadb() as container:
+    with _testing.mariadb(is_bypass_init=is_on_github) as container:
         assert any(
             "mysqld: ready for connections" in str(line, "utf-8")
             for line in container.logs(stream=True)
