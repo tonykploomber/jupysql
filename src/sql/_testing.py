@@ -202,7 +202,7 @@ def mysql(is_bypass_init=False):
                     "--password=ploomber_app_root_password",
                 ],
                 "timeout": 5000000000,
-            }
+            },
         ) as container:
             yield container
 
@@ -247,7 +247,7 @@ def mariadb(is_bypass_init=False):
             yield container
 
 
-if __name__ == "__main__":
+def main():
     print("Starting test containers...")
 
     with postgres(), mysql(), mariadb():
@@ -258,3 +258,7 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("Exit, containers will be killed")
             sys.exit()
+
+
+if __name__ == "__main__":
+    main()
