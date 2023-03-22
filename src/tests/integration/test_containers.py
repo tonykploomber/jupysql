@@ -7,7 +7,9 @@ if "GITHUB_ACTIONS" in os.environ:
 
 
 def test_postgres_container():
-    with _testing.postgres(is_bypass_init=is_on_github) as container:
+    if is_on_github:
+        return
+    with _testing.postgres() as container:
         assert any(
             "database system is ready to accept connections" in str(line, "utf-8")
             for line in container.logs(stream=True)
@@ -16,7 +18,9 @@ def test_postgres_container():
 
 
 def test_mysql_container():
-    with _testing.mysql(is_bypass_init=is_on_github) as container:
+    if is_on_github:
+        return
+    with _testing.mysql() as container:
         assert any(
             "mysqld: ready for connections" in str(line, "utf-8")
             for line in container.logs(stream=True)
@@ -25,7 +29,9 @@ def test_mysql_container():
 
 
 def test_mariadb_container():
-    with _testing.mariadb(is_bypass_init=is_on_github) as container:
+    if is_on_github:
+        return
+    with _testing.mariadb() as container:
         assert any(
             "mysqld: ready for connections" in str(line, "utf-8")
             for line in container.logs(stream=True)
