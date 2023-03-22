@@ -701,6 +701,7 @@ def test_save_with_bad_query_save(ip, capsys):
     out, _ = capsys.readouterr()
     assert '(sqlite3.OperationalError) near "non_existing_table": syntax error' in out
 
+
 def test_interact_basic_data_types(ip, capsys):
     ip.user_global_ns["my_variable"] = 5
     ip.run_cell("%sql --interact my_variable SELECT * FROM author LIMIT 5")
