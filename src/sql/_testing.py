@@ -42,19 +42,31 @@ databaseConfig = {
         "drivername": "mysql+pymysql",
         "username": "ploomber_app",
         "password": "ploomber_app_password",
+        "root_password": "ploomber_app_root_password",
         "database": "db",
         "host": "localhost",
         "port": "33306",
         "alias": "mySQLTest",
+        "docker_ct": {
+            "name": "mysql",
+            "image": "mysql",
+            "ports": {3306: 33306},
+        },
     },
     "mariaDB": {
         "drivername": "mysql+pymysql",
         "username": "ploomber_app",
         "password": "ploomber_app_password",
+        "root_password": "ploomber_app_root_password",
         "database": "db",
         "host": "localhost",
         "port": "33309",
-        "alias": "mySQLTest",
+        "alias": "mariaDBTest",
+        "docker_ct": {
+            "name": "mariadb",
+            "image": "mariadb",
+            "ports": {3306: 33309},
+        },
     },
     "SQLite": {
         "drivername": "sqlite",
@@ -134,7 +146,7 @@ def postgres(is_bypass_init=False):
         container = client.containers.get(db_config["docker_ct"]["name"])
         yield container
     except errors.NotFound:
-        print("Creating new container")
+        print("Creating new container: postgreSQL")
         with new_container(
             new_container_name=db_config["docker_ct"]["name"],
             image_name=db_config["docker_ct"]["image"],
@@ -160,22 +172,22 @@ def mysql(is_bypass_init=False):
     if is_bypass_init:
         yield None
         return
+    db_config = DatabaseConfigHelper.get_database_config("mySQL")
     try:
         client = docker.from_env(version="auto")
-        container = client.containers.get("mariadb")
+        container = client.containers.get(db_config["docker_ct"]["name"])
         yield container
     except errors.NotFound:
-        print("Creating new container")
+        print("Creating new container: mysql")
         with new_container(
-            new_container_name="mysql",
-            image_name="mysql",
-            ports={"3306": "33306"},
-            # ports={"33306":3306},
+            new_container_name=db_config["docker_ct"]["name"],
+            image_name=db_config["docker_ct"]["image"],
+            ports=db_config["docker_ct"]["ports"],
             environment={
-                "MYSQL_DATABASE": "db",
-                "MYSQL_USER": "ploomber_app",
-                "MYSQL_PASSWORD": "ploomber_app_password",
-                "MYSQL_ROOT_PASSWORD": "ploomber_app_root_password",
+                "MYSQL_DATABASE": db_config["database"],
+                "MYSQL_USER": db_config["username"],
+                "MYSQL_PASSWORD": db_config["password"],
+                "MYSQL_ROOT_PASSWORD": db_config["root_password"],
             },
             command="mysqld --default-authentication-plugin=mysql_native_password",
             ready_test=lambda: database_ready(database="mySQL"),
@@ -191,7 +203,6 @@ def mysql(is_bypass_init=False):
                 ],
                 "timeout": 5000000000,
             }
-            # persist=lambda: True
         ) as container:
             yield container
 
@@ -201,25 +212,25 @@ def mariadb(is_bypass_init=False):
     if is_bypass_init:
         yield None
         return
+    db_config = DatabaseConfigHelper.get_database_config("mariaDB")
     try:
         client = docker.from_env(version="auto")
-        curr = client.containers.get("mariadb")
+        curr = client.containers.get(db_config["docker_ct"]["name"])
         yield curr
     except errors.NotFound:
-        print("Creating new container")
+        print("Creating new container: mariaDB")
         with new_container(
-            new_container_name="mariadb",
-            image_name="mariadb",
-            ports={"3306": "33309"},
+            new_container_name=db_config["docker_ct"]["name"],
+            image_name=db_config["docker_ct"]["image"],
+            ports=db_config["docker_ct"]["ports"],
             environment={
-                "MYSQL_DATABASE": "db",
-                "MYSQL_USER": "ploomber_app",
-                "MYSQL_PASSWORD": "ploomber_app_password",
-                "MYSQL_ROOT_PASSWORD": "ploomber_app_root_password",
+                "MYSQL_DATABASE": db_config["database"],
+                "MYSQL_USER": db_config["username"],
+                "MYSQL_PASSWORD": db_config["password"],
+                "MYSQL_ROOT_PASSWORD": db_config["root_password"],
             },
             command="mysqld --default-authentication-plugin=mysql_native_password",
             ready_test=lambda: database_ready(database="mariaDB"),
-            # ready_test=lambda: time.sleep(50000) or True,
             healthcheck={
                 "test": [
                     "CMD",
@@ -237,12 +248,13 @@ def mariadb(is_bypass_init=False):
 
 
 if __name__ == "__main__":
-    print("I am running as module")
+    print("Starting test containers...")
 
     with postgres(), mysql(), mariadb():
+        print("Press CTRL+C to exit")
         try:
             while True:
                 time.sleep(5)
         except KeyboardInterrupt:
-            print("User press out")
+            print("Exit, containers will be killed")
             sys.exit()
