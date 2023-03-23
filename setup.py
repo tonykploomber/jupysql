@@ -25,9 +25,7 @@ install_requires = [
     "jinja2",
     "sqlglot>=11.3.7",
     "ploomber-core>=0.2.4",
-    'importlib-metadata;python_version<"3.8"',
-    "dockerctx",
-    "docker"
+    'importlib-metadata;python_version<"3.8"'
 ]
 
 DEV = [
