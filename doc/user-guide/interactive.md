@@ -13,8 +13,15 @@ kernelspec:
 
 # Interactive SQL Queries
 
-```{versionadded} 0.7
+```{note}
+This feature will be released in version 0.7, but you can give it a try now!
+
+~~~
+pip uninstall jupysql -y
+pip install git+https://github.com/ploomber/jupysql
+~~~
 ```
+
 
 Interactive command allows you to visualize and manipulate widget and interact with your SQL cluase.
 We will demonstrate how to create widgets and dynamically query the dataset.
