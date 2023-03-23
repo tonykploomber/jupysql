@@ -43,7 +43,7 @@ DEV = [
     "matplotlib",
     "black",
     "dockerctx",
-    "docker"
+    "docker",
     # for %%sql --interact
     "ipywidgets",
 ]
