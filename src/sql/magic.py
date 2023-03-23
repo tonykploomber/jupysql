@@ -24,6 +24,7 @@ from sql.store import store
 from sql.command import SQLCommand
 from sql.magic_plot import SqlPlotMagic
 from sql.magic_cmd import SqlCmdMagic
+from ploomber_core.dependencies import check_installed
 
 from traitlets.config.configurable import Configurable
 from traitlets import Bool, Int, Unicode, observe
@@ -283,6 +284,7 @@ class SqlMagic(Magics, Configurable):
         args = command.args
         # Create the interactive slider
         if args.interact and not is_interactive_mode:
+            check_installed(["ipywidget"], "--interactive argument")
             interactive_dict = {}
             for key in args.interact:
                 interactive_dict[key] = local_ns[key]

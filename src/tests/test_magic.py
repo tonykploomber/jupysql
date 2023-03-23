@@ -2,6 +2,7 @@ import platform
 from pathlib import Path
 import os.path
 import re
+import sys
 import tempfile
 from textwrap import dedent
 from unittest.mock import patch
@@ -704,7 +705,9 @@ def test_save_with_bad_query_save(ip, capsys):
 
 def test_interact_basic_data_types(ip, capsys):
     ip.user_global_ns["my_variable"] = 5
-    ip.run_cell("%sql --interact my_variable SELECT * FROM author LIMIT 5")
+    ip.run_cell(
+        "%sql --interact my_variable SELECT * FROM author LIMIT {{my_variable}}"
+    )
     out, _ = capsys.readouterr()
 
     assert (
@@ -732,3 +735,13 @@ def test_interact_basic_widgets(ip, mockValueWidget, capsys):
         "Interactive mode, please interact with below widget(s)"
         " to control the variable" in out
     )
+
+
+def test_interact_and_missing_ipywidgets_installed(ip):
+    with patch.dict(sys.modules):
+        sys.modules["ipywidget"] = None
+        ip.user_global_ns["my_variable"] = 5
+        out = ip.run_cell(
+            "%sql --interact my_variable SELECT * FROM author LIMIT {{my_variable}}"
+        )
+        assert isinstance(out.error_in_exec, ModuleNotFoundError)
