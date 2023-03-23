@@ -761,7 +761,7 @@ def test_interact_basic_widgets(ip, mockValueWidget, capsys):
 
 def test_interact_and_missing_ipywidgets_installed(ip):
     with patch.dict(sys.modules):
-        sys.modules["ipywidget"] = None
+        sys.modules["ipywidgets"] = None
         ip.user_global_ns["my_variable"] = 5
         out = ip.run_cell(
             "%sql --interact my_variable SELECT * FROM author LIMIT {{my_variable}}"

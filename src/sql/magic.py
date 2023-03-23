@@ -1,5 +1,6 @@
 import json
 import re
+
 try:
     from ipywidgets import interact
 except ModuleNotFoundError:
@@ -284,7 +285,7 @@ class SqlMagic(Magics, Configurable):
         args = command.args
         # Create the interactive slider
         if args.interact and not is_interactive_mode:
-            check_installed(["ipywidget"], "--interactive argument")
+            check_installed(["ipywidgets"], "--interactive argument")
             interactive_dict = {}
             for key in args.interact:
                 interactive_dict[key] = local_ns[key]
