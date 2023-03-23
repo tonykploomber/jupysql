@@ -7,7 +7,7 @@
 * [Feature] Adds sql magic test to list of possible magics to test datasets
 * [Feature] Adds `--interact` argument to `%%sql` to enable interactivity in parametrized SQL queries (#293)
 * [Feature] Results parse HTTP URLs to make them clickable (#230)
-* [Featurue] Adds `ggplot` plotting API (histogram and boxplot)
+* [Feature] Adds `ggplot` plotting API (histogram and boxplot)
 
 ## 0.6.6 (2023-03-16)
 
