@@ -24,8 +24,7 @@ install_requires = [
     "sqlglot",
     "jinja2",
     "sqlglot>=11.3.7",
-    "ploomber-core>=0.2.4",
-    "ipywidgets",
+    "ploomber-core>=0.2.7",
     'importlib-metadata;python_version<"3.8"',
 ]
 
