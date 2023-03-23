@@ -13,17 +13,20 @@ kernelspec:
 
 # Interactive SQL Queries
 
+```{versionadded} 0.7
+```
+
 Interactive command allows you to visualize and manipulate widget and interact with your SQL cluase.
 We will demonstrate how to create widgets and dynamically query the dataset.
 
 ```{note}
-`%sql --interactive` requires `ipywidgets`: `pip install ipywidgets`
+`%sql --interact` requires `ipywidgets`: `pip install ipywidgets`
 ```
 
-## `%sql --interacrive {{widget_variable}}`
+## `%sql --interact {{widget_variable}}`
 
 First, you need to define the variable as the form of basic data type or ipywidgets Widget.
-Then pass the variable name into `--interactive` argument
+Then pass the variable name into `--interact` argument
 
 ```{code-cell} ipython3
 %load_ext sql

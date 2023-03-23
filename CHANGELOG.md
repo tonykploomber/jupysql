@@ -5,7 +5,7 @@
 * [API Change] Deprecates old SQL parametrization: `$var`, `:var`, and `{var}` in favor of `{{var}}`
 * [Fix] `--save` + `--with` double quotes syntax error in MySQL ([#145](https://github.com/ploomber/jupysql/issues/145))
 * [Feature] Adds sql magic test to list of possible magics to test datasets
-* [Feature] Adds `--interactive` with ipywidgets Widget (#256)
+* [Feature] Adds `--interact` argument to `%%sql` to enable interactivity in parametrized SQL queries (#293)
 
 ## 0.6.6 (2023-03-16)
 
