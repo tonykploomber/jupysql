@@ -2,6 +2,7 @@ import sys
 from unittest.mock import Mock, patch
 import pytest
 from sqlalchemy.engine import Engine
+import sql.connection
 from sql.connection import Connection
 from IPython.core.error import UsageError
 
@@ -43,6 +44,88 @@ def test_get_curr_connection_info(mock_postgres):
         "driver": "psycopg2",
         "server_version_info": None,
     }
+
+
+def test_get_curr_sqlglot_dialect_no_curr_connection(monkeypatch):
+    monkeypatch.setattr(Connection, "_get_curr_connection_info", lambda: None)
+    assert Connection._get_curr_sqlglot_dialect() is None
+
+
+@pytest.mark.parametrize(
+    "sqlalchemy_connection_info, expected_sqlglot_dialect",
+    [
+        (
+            {
+                "dialect": "duckdb",
+                "driver": "duckdb_engine",
+                "server_version_info": [8, 0],
+            },
+            "duckdb",
+        ),
+        (
+            {
+                "dialect": "mysql",
+                "driver": "pymysql",
+                "server_version_info": [10, 10, 3, 10, 3],
+            },
+            "mysql",
+        ),
+        # sqlalchemy and sqlglot have different dialect name, test the mapping dict
+        (
+            {
+                "dialect": "sqlalchemy_mock_dialect_name",
+                "driver": "sqlalchemy_mock_driver_name",
+                "server_version_info": [0],
+            },
+            "sqlglot_mock_dialect",
+        ),
+        # dialect only support in sqlalchemy
+        # This should raise some error
+        (
+            {
+                "dialect": "only_support_in_sqlalchemy_dialect",
+                "driver": "sqlalchemy_mock_driver_name",
+                "server_version_info": [0],
+            },
+            "only_support_in_sqlalchemy_dialect",
+        ),
+    ],
+)
+def test_get_curr_sqlglot_dialect(
+    monkeypatch, sqlalchemy_connection_info, expected_sqlglot_dialect
+):
+    monkeypatch.setattr(
+        Connection, "_get_curr_connection_info", lambda: sqlalchemy_connection_info
+    )
+    monkeypatch.setattr(
+        sql.connection,
+        "DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING",
+        {"sqlalchemy_mock_dialect_name": "sqlglot_mock_dialect"},
+    )
+    assert Connection._get_curr_sqlglot_dialect() == expected_sqlglot_dialect
+
+
+@pytest.mark.parametrize(
+    "cur_dialect, expected_support_backtick",
+    [
+        ("mysql", True),
+        ("sqlite", True),
+        ("postgres", False),
+    ],
+)
+def test_is_curr_dialect_support_backtick(
+    monkeypatch, cur_dialect, expected_support_backtick
+):
+    monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: cur_dialect)
+    assert Connection._is_curr_dialect_support_backtick() == expected_support_backtick
+
+
+def test_is_curr_dialect_support_backtick_sqlglot_missing_dialect(monkeypatch):
+    monkeypatch.setattr(
+        Connection, "_get_curr_sqlglot_dialect", lambda: "something_weird_dialect"
+    )
+    with pytest.raises(ValueError):
+        Connection._is_curr_dialect_support_backtick()
 
 
 # Mock the missing package

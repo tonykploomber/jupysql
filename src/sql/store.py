@@ -107,11 +107,9 @@ class SQLQuery:
             """WITH{% for name in with_ %} `{{name}}` AS ({{saved[name]._query}})\
 {{ "," if not loop.last }}{% endfor %}{{query}}"""
         )
-        # def is_dialect
         is_use_backtick_template = (
             sql.connection.Connection._is_curr_dialect_support_backtick()
         )
-        print("Support :", is_use_backtick_template)
         with_all = _get_dependencies(self._store, self._with_)
 
         if is_use_backtick_template:

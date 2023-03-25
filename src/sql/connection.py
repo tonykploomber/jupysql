@@ -366,8 +366,6 @@ class Connection:
 
     @classmethod
     def _get_curr_sqlglot_dialect(cls):
-        if not cls.current:
-            return None
         connection_info = cls._get_curr_connection_info()
         if not connection_info:
             return None
@@ -381,9 +379,14 @@ class Connection:
         cur_dialect = cls._get_curr_sqlglot_dialect()
         if not cur_dialect:
             return False
-        print("cur_dialect:", cur_dialect)
-        return "`" in sqlglot.Dialect.get_or_raise(cur_dialect).Tokenizer.IDENTIFIERS
+        try:
+            return (
+                "`" in sqlglot.Dialect.get_or_raise(cur_dialect).Tokenizer.IDENTIFIERS
+            )
+        except Exception as e:
+            raise e
 
+    # TODO: Remove this
     @classmethod
     def _transpile_query(cls, query):
         write_dialect = cls._get_curr_sqlglot_dialect()
