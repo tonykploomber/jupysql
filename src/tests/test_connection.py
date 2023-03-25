@@ -79,8 +79,6 @@ def test_get_curr_sqlglot_dialect_no_curr_connection(monkeypatch):
             },
             "sqlglot_mock_dialect",
         ),
-        # dialect only support in sqlalchemy
-        # This should raise some error
         (
             {
                 "dialect": "only_support_in_sqlalchemy_dialect",
