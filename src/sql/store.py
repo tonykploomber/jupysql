@@ -116,14 +116,10 @@ class SQLQuery:
 
         with_all = _get_dependencies(self._store, self._with_)
 
-        if is_use_backtick_template:
-            return with_template_backtick.render(
-                query=self._query, saved=self._store._data, with_=with_all
-            )
-        else:
-            return with_template.render(
-                query=self._query, saved=self._store._data, with_=with_all
-            )
+        template = with_template_backtick if is_use_backtick_template else with_template
+        return template.render(
+            query=self._query, saved=self._store._data, with_=with_all
+        )
 
 
 def _get_dependencies(store, keys):
