@@ -367,12 +367,14 @@ class Connection:
     @classmethod
     def _transpile_query(cls, query):
         if not cls.current:
+            print("No cls.current")
             return query
         connection_info = cls._get_curr_connection_info()
         try:
             write_dialect = DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING.get(
                 connection_info["dialect"], connection_info["dialect"]
             )
+            print("write_dialect: ", write_dialect)
             query = sqlglot.parse_one(query).sql(dialect=write_dialect)
         finally:
             return query
