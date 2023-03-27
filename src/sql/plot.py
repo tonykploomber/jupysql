@@ -41,6 +41,7 @@ def _summary_stats(con, table, column, with_=None):
     if with_:
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)
+    print ("query: ", query)
     values = con.execute(query).fetchone()
     # Flatten the ([q1, med, q3], mean, N) to (q1, med, q3, mean, N)
     values = tuple(values[0]) + (values[1],) + (values[2],)
