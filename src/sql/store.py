@@ -2,7 +2,7 @@ from typing import Iterator, Iterable
 from collections.abc import MutableMapping
 from jinja2 import Template
 from ploomber_core.exceptions import modify_exceptions
-import sql
+import sql.connection
 from IPython.core.error import UsageError
 import warnings
 import difflib
@@ -115,7 +115,7 @@ class SQLQuery:
             is_use_backtick_template = False
 
         with_all = _get_dependencies(self._store, self._with_)
-
+        print("with_all", with_all)
         template = with_template_backtick if is_use_backtick_template else with_template
         return template.render(
             query=self._query, saved=self._store._data, with_=with_all
