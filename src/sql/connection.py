@@ -44,9 +44,7 @@ MISSING_PACKAGE_LIST_EXCEPT_MATCHERS = {
     "pymssql": "pymssql",
 }
 
-DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING = {
-    "postgresql": "postgres",
-}
+DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING = {"postgresql": "postgres", "mssql": "tsql"}
 
 
 def extract_module_name_from_ModuleNotFoundError(e):
@@ -353,7 +351,13 @@ class Connection:
 
     @classmethod
     def _get_curr_connection_info(cls):
-        """Returns the dialect, driver, and database server version info"""
+        """Get the dialect, driver, and database server version info of current
+        connected dialect
+
+        Returns:
+            Dict: The dictionary which contains the SQLAlchemy-based dialect
+            information, or None if there is no current connection.
+        """
         if not cls.current:
             return None
 
@@ -366,6 +370,12 @@ class Connection:
 
     @classmethod
     def _get_curr_sqlglot_dialect(cls):
+        """Get the dialect name in sqlglot package scope
+
+        Returns:
+            str: Available dialect in sqlglot package, see more:
+            https://github.com/tobymao/sqlglot/blob/main/sqlglot/dialects/dialect.py
+        """
         connection_info = cls._get_curr_connection_info()
         if not connection_info:
             return None
@@ -376,6 +386,14 @@ class Connection:
 
     @classmethod
     def _is_curr_dialect_support_backtick(cls):
+        """Get if the dialect support backtick (`) syntax as identifier
+
+        Raises:
+            Exception: Indicate there is unknown dialect support
+
+        Returns:
+            bool: If the dialect can use backtick identifier in the SQL clause
+        """
         cur_dialect = cls._get_curr_sqlglot_dialect()
         if not cur_dialect:
             return False
@@ -389,6 +407,15 @@ class Connection:
     # TODO: Remove this
     @classmethod
     def _transpile_query(cls, query):
+        """Translate the given SQL clause that's compatible to current connected
+        dialect by sqlglot
+
+        Args:
+            query (str): Original SQL clause
+
+        Returns:
+            str: SQL clause that's compatible to current connected dialect
+        """
         write_dialect = cls._get_curr_sqlglot_dialect()
         try:
             query = sqlglot.parse_one(query).sql(dialect=write_dialect)
