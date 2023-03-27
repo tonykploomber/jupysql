@@ -192,8 +192,6 @@ def test_sqlplot_histogram(ip_with_dynamic_db, cell, request):
         " --no-execute SELECT * from plot_something LIMIT 3"
     )
     out = ip_with_dynamic_db.run_cell(cell)
-    # print ("out: ", out)
-    # out = ip_with_dynamic_db.run_cell(cell)
 
     assert type(out.result).__name__ in {"Axes", "AxesSubplot"}
 
