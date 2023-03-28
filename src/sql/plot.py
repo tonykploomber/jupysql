@@ -246,7 +246,9 @@ def boxplot(payload, table, column, *, orient="v", with_=None, conn=None, ax=Non
     if not conn:
         conn = sql.connection.Connection.current.session
 
-    payload["connection_info"] = sql.connection.Connection._get_curr_connection_info()
+    payload[
+        "connection_info"
+    ] = sql.connection.Connection._get_current_sqlalchemy_connection_info()
 
     ax = plt.gca()
     vert = orient == "v"
@@ -362,7 +364,9 @@ def histogram(
     .. plot:: ../examples/plot_histogram_many.py
     """
     ax = ax or plt.gca()
-    payload["connection_info"] = sql.connection.Connection._get_curr_connection_info()
+    payload[
+        "connection_info"
+    ] = sql.connection.Connection._get_current_sqlalchemy_connection_info()
     if category:
         if isinstance(column, list):
             if len(column) > 1:
@@ -433,7 +437,7 @@ def histogram(
             width=width,
             color=color,
             edgecolor=edgecolor or "None",
-            label=column
+            label=column,
         )
         ax.set_title(f"{column!r} from {table!r}")
         ax.set_xlabel(column)
@@ -537,10 +541,16 @@ def _histogram(table, column, bins, with_=None, conn=None, facet=None):
 
 @modify_exceptions
 def _histogram_stacked(
-    table, column, category, bins, bin_size, with_=None, conn=None, facet=None,
+    table,
+    column,
+    category,
+    bins,
+    bin_size,
+    with_=None,
+    conn=None,
+    facet=None,
 ):
-    """Compute the corresponding heights of each bin based on the category
-    """
+    """Compute the corresponding heights of each bin based on the category"""
     if not conn:
         conn = sql.connection.Connection.current.session
 
@@ -567,12 +577,14 @@ def _histogram_stacked(
         GROUP BY {{category}};
         """
     )
-    query = template.render(table=table,
-                            column=column,
-                            bin_size=bin_size,
-                            category=category,
-                            filter_query=filter_query,
-                            cases=cases)
+    query = template.render(
+        table=table,
+        column=column,
+        bin_size=bin_size,
+        category=category,
+        filter_query=filter_query,
+        cases=cases,
+    )
 
     if with_:
         query = str(store.render(query, with_=with_))
