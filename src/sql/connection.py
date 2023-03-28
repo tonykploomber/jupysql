@@ -403,7 +403,7 @@ class Connection:
             )
         # Might catch ValueError, AttributeError, TypeError while detecting
         except Exception:
-            raise
+            return False
 
     @classmethod
     def _transpile_query(cls, query):
