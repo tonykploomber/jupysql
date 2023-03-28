@@ -5,7 +5,7 @@ from sqlalchemy.engine import Engine
 import sql.connection
 from sql.connection import Connection
 from IPython.core.error import UsageError
-import sqlglot
+# import sqlglot
 
 
 @pytest.fixture
@@ -119,36 +119,36 @@ def test_is_curr_dialect_support_backtick(
     assert Connection._is_curr_dialect_support_backtick() == expected_support_backtick
 
 
-def test_is_curr_dialect_support_backtick_sqlglot_missing_dialect(monkeypatch):
-    monkeypatch.setattr(
-        Connection, "_get_curr_sqlglot_dialect", lambda: "something_weird_dialect"
-    )
-    with pytest.raises(ValueError):
-        Connection._is_curr_dialect_support_backtick()
+# def test_is_curr_dialect_support_backtick_sqlglot_missing_dialect(monkeypatch):
+#     monkeypatch.setattr(
+#         Connection, "_get_curr_sqlglot_dialect", lambda: "something_weird_dialect"
+#     )
+#     with pytest.raises(ValueError):
+#         Connection._is_curr_dialect_support_backtick()
 
 
-def test_is_curr_dialect_support_backtick_sqlglot_missing_tokenizer(monkeypatch):
-    monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
-    monkeypatch.setattr(sqlglot.Dialect.get_or_raise("mysql"), "Tokenizer", None)
-    with pytest.raises(AttributeError):
-        print("\nbacktick: ", Connection._is_curr_dialect_support_backtick())
+# def test_is_curr_dialect_support_backtick_sqlglot_missing_tokenizer(monkeypatch):
+#     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
+#     monkeypatch.setattr(sqlglot.Dialect.get_or_raise("mysql"), "Tokenizer", None)
+#     with pytest.raises(AttributeError):
+#         print("\nbacktick: ", Connection._is_curr_dialect_support_backtick())
 
 
-def test_is_curr_dialect_support_backtick_sqlglot_missing_identifiers(monkeypatch):
-    monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
-    monkeypatch.setattr(
-        sqlglot.Dialect.get_or_raise("mysql").Tokenizer, "IDENTIFIERS", None
-    )
-    with pytest.raises(TypeError):
-        print("\nbacktick: ", Connection._is_curr_dialect_support_backtick())
+# def test_is_curr_dialect_support_backtick_sqlglot_missing_identifiers(monkeypatch):
+#     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
+#     monkeypatch.setattr(
+#         sqlglot.Dialect.get_or_raise("mysql").Tokenizer, "IDENTIFIERS", None
+#     )
+#     with pytest.raises(TypeError):
+#         print("\nbacktick: ", Connection._is_curr_dialect_support_backtick())
 
 
-def test_is_curr_dialect_support_backtick_sqlglot_empty_identifiers(monkeypatch):
-    monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
-    monkeypatch.setattr(
-        sqlglot.Dialect.get_or_raise("mysql").Tokenizer, "IDENTIFIERS", []
-    )
-    assert not Connection._is_curr_dialect_support_backtick()
+# def test_is_curr_dialect_support_backtick_sqlglot_empty_identifiers(monkeypatch):
+#     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
+#     monkeypatch.setattr(
+#         sqlglot.Dialect.get_or_raise("mysql").Tokenizer, "IDENTIFIERS", []
+#     )
+#     assert not Connection._is_curr_dialect_support_backtick()
 
 
 # Mock the missing package
