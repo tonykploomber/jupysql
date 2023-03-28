@@ -367,7 +367,6 @@ class Connection:
     @classmethod
     def _transpile_query(cls, query):
         if not cls.current:
-            print("No cls.current")
             return query
         connection_info = cls._get_curr_connection_info()
         try:
