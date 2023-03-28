@@ -401,10 +401,10 @@ class Connection:
             return (
                 "`" in sqlglot.Dialect.get_or_raise(cur_dialect).Tokenizer.IDENTIFIERS
             )
-        except Exception as e:
-            raise e
+        # Might catch ValueError, AttributeError, TypeError while detecting
+        except Exception:
+            raise
 
-    # TODO: Remove this
     @classmethod
     def _transpile_query(cls, query):
         """Translate the given SQL clause that's compatible to current connected
