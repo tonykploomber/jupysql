@@ -401,8 +401,7 @@ class Connection:
             return (
                 "`" in sqlglot.Dialect.get_or_raise(cur_dialect).Tokenizer.IDENTIFIERS
             )
-        # Might catch ValueError, AttributeError, TypeError while detecting
-        except Exception:
+        except (ValueError, AttributeError, TypeError):
             return False
 
     @classmethod
