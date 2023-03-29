@@ -5,6 +5,8 @@ import time
 import docker
 from docker import errors
 from sqlalchemy.engine import URL
+import os
+
 
 TMP_DIR = "tmp"
 
@@ -112,8 +114,8 @@ databaseConfig = {
     },
     "Snowflake": {
         "drivername": "snowflake",
-        "username": "tony",
-        "password": "Ploomber2",
+        "username": os.getenv("SF_USERNAME"),
+        "password": os.getenv("SF_PASSWORD"),
         # database/schema
         "database": "JUPYSQL/TESTING",
         "host": "lpb17716.us-east-1",
