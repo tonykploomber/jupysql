@@ -85,6 +85,9 @@ def setup_postgreSQL(test_table_name_dict):
         load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
         load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
         yield engine
+        drop_table(engine, table_name=test_table_name_dict["taxi"])
+        drop_table(engine, table_name=test_table_name_dict["plot_something"])
+        drop_table(engine, table_name=test_table_name_dict["numbers"])
         engine.dispose()
 
 
@@ -114,6 +117,9 @@ def setup_mySQL(test_table_name_dict):
         load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
         load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
         yield engine
+        drop_table(engine, table_name=test_table_name_dict["taxi"])
+        drop_table(engine, table_name=test_table_name_dict["plot_something"])
+        drop_table(engine, table_name=test_table_name_dict["numbers"])
         engine.dispose()
 
 
@@ -145,6 +151,9 @@ def setup_mariaDB(test_table_name_dict):
         load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
         load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
         yield engine
+        drop_table(engine, table_name=test_table_name_dict["taxi"])
+        drop_table(engine, table_name=test_table_name_dict["plot_something"])
+        drop_table(engine, table_name=test_table_name_dict["numbers"])
         engine.dispose()
 
 
@@ -173,6 +182,9 @@ def setup_SQLite(test_table_name_dict):
     load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
     load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
     yield engine
+    drop_table(engine, table_name=test_table_name_dict["taxi"])
+    drop_table(engine, table_name=test_table_name_dict["plot_something"])
+    drop_table(engine, table_name=test_table_name_dict["numbers"])
     engine.dispose()
 
 
@@ -201,6 +213,9 @@ def setup_duckDB(test_table_name_dict):
     load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
     load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
     yield engine
+    drop_table(engine, table_name=test_table_name_dict["taxi"])
+    drop_table(engine, table_name=test_table_name_dict["plot_something"])
+    drop_table(engine, table_name=test_table_name_dict["numbers"])
     engine.dispose()
 
 
@@ -230,6 +245,9 @@ def setup_MSSQL(test_table_name_dict):
         load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
         load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
         yield engine
+        drop_table(engine, table_name=test_table_name_dict["taxi"])
+        drop_table(engine, table_name=test_table_name_dict["plot_something"])
+        drop_table(engine, table_name=test_table_name_dict["numbers"])
         engine.dispose()
 
 
