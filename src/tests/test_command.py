@@ -81,7 +81,6 @@ def test_parsed_sql_when_using_with(ip, sql_magic):
     sql = "WITH `author_one` AS (\n\n        SELECT * FROM author LIMIT 1\n        )\n\
 SELECT * FROM author_one"
 
-    print("cmd.sql: ", cmd.sql)
     sql_original = "\nSELECT * FROM author_one"
 
     assert cmd.parsed == {

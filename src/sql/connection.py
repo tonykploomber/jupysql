@@ -385,7 +385,7 @@ class Connection:
         )
 
     @classmethod
-    def _is_curr_dialect_support_backtick(cls):
+    def is_use_backtick_template(cls):
         """Get if the dialect support backtick (`) syntax as identifier
 
         Raises:

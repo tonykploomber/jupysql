@@ -125,7 +125,7 @@ def test_get_curr_sqlglot_dialect(
         ("postgres", False),
     ],
 )
-def test_is_curr_dialect_support_backtick(
+def test_is_use_backtick_template(
     monkeypatch, cur_dialect, expected_support_backtick
 ):
     """To test if we can get the backtick supportive information from different dialects
@@ -137,37 +137,37 @@ def test_is_curr_dialect_support_backtick(
         if the dialect supports backtick identifier
     """
     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: cur_dialect)
-    assert Connection._is_curr_dialect_support_backtick() == expected_support_backtick
+    assert Connection.is_use_backtick_template() == expected_support_backtick
 
 
-def test_is_curr_dialect_support_backtick_sqlglot_missing_dialect(monkeypatch):
+def test_is_use_backtick_template_sqlglot_missing_dialect(monkeypatch):
     monkeypatch.setattr(
         Connection, "_get_curr_sqlglot_dialect", lambda: "something_weird_dialect"
     )
-    assert Connection._is_curr_dialect_support_backtick() is False
+    assert Connection.is_use_backtick_template() is False
 
 
-def test_is_curr_dialect_support_backtick_sqlglot_missing_tokenizer(monkeypatch):
+def test_is_use_backtick_template_sqlglot_missing_tokenizer(monkeypatch):
     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
     monkeypatch.setattr(sqlglot.Dialect.get_or_raise("mysql"), "Tokenizer", None)
 
-    assert Connection._is_curr_dialect_support_backtick() is False
+    assert Connection.is_use_backtick_template() is False
 
 
-def test_is_curr_dialect_support_backtick_sqlglot_missing_identifiers(monkeypatch):
+def test_is_use_backtick_template_sqlglot_missing_identifiers(monkeypatch):
     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
     monkeypatch.setattr(
         sqlglot.Dialect.get_or_raise("mysql").Tokenizer, "IDENTIFIERS", None
     )
-    assert Connection._is_curr_dialect_support_backtick() is False
+    assert Connection.is_use_backtick_template() is False
 
 
-def test_is_curr_dialect_support_backtick_sqlglot_empty_identifiers(monkeypatch):
+def test_is_use_backtick_template_sqlglot_empty_identifiers(monkeypatch):
     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
     monkeypatch.setattr(
         sqlglot.Dialect.get_or_raise("mysql").Tokenizer, "IDENTIFIERS", []
     )
-    assert Connection._is_curr_dialect_support_backtick() is False
+    assert Connection.is_use_backtick_template() is False
 
 
 # Mock the missing package
