@@ -39,7 +39,7 @@ def test_alias(cleanup):
     assert list(Connection.connections) == ["some-alias"]
 
 
-def test_get_curr_connection_info(mock_postgres):
+def test_get_current_sqlalchemy_connection_info(mock_postgres):
     Connection.from_connect_str("postgresql://user:topsecret@somedomain.com/db")
     assert Connection._get_current_sqlalchemy_connection_info() == {
         "dialect": "postgresql",
@@ -96,8 +96,17 @@ def test_get_curr_sqlglot_dialect_no_curr_connection(monkeypatch):
 def test_get_curr_sqlglot_dialect(
     monkeypatch, sqlalchemy_connection_info, expected_sqlglot_dialect
 ):
+    """To test if we can get the dialect name in sqlglot package scope
+
+    Args:
+        monkeypatch (fixture): A convenient fixture for monkey-patching
+        sqlalchemy_connection_info (dict): The metadata about the current dialect
+        expected_sqlglot_dialect (str): Expected sqlglot dialect name
+    """
     monkeypatch.setattr(
-        Connection, "_get_curr_connection_info", lambda: sqlalchemy_connection_info
+        Connection,
+        "_get_current_sqlalchemy_connection_info",
+        lambda: sqlalchemy_connection_info,
     )
     monkeypatch.setattr(
         sql.connection,
@@ -118,6 +127,14 @@ def test_get_curr_sqlglot_dialect(
 def test_is_curr_dialect_support_backtick(
     monkeypatch, cur_dialect, expected_support_backtick
 ):
+    """To test if we can get the backtick supportive information from different dialects
+
+    Args:
+        monkeypatch (fixture): A convenient fixture for monkey-patching
+        cur_dialect (bool): Patched dialect name
+        expected_support_backtick (bool): Excepted boolean value to indicate
+        if the dialect supports backtick identifier
+    """
     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: cur_dialect)
     assert Connection._is_curr_dialect_support_backtick() == expected_support_backtick
 
