@@ -35,13 +35,16 @@ def mock_log_api(monkeypatch):
         ("ip_with_Snowflake", 3),
     ],
 )
-def test_query_count(ip_with_dynamic_db, excepted, request):
+def test_query_count(ip_with_dynamic_db, excepted, request, test_table_name_dict):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
-    out = ip_with_dynamic_db.run_line_magic("sql", "SELECT * FROM taxi LIMIT 3")
+    out = ip_with_dynamic_db.run_line_magic(
+        "sql", f"SELECT * FROM {test_table_name_dict['taxi']} LIMIT 3"
+    )
 
     # Test query with --with & --save
     ip_with_dynamic_db.run_cell(
-        "%sql --save taxi_subset --no-execute SELECT * FROM taxi LIMIT 3"
+        f"%sql --save taxi_subset --no-execute SELECT * FROM\
+          {test_table_name_dict['taxi']} LIMIT 3"
     )
     out_query_with_save_arg = ip_with_dynamic_db.run_cell(
         "%sql --with taxi_subset SELECT * FROM taxi_subset"
@@ -63,16 +66,30 @@ def test_query_count(ip_with_dynamic_db, excepted, request):
         # Snowflake doesn't support index, skip that
     ],
 )
-def test_create_table_with_indexed_df(ip_with_dynamic_db, excepted, request):
+def test_create_table_with_indexed_df(
+    ip_with_dynamic_db, excepted, request, test_table_name_dict
+):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     # Clean up
-    ip_with_dynamic_db.run_cell("%sql DROP TABLE new_table_from_df")
+
+    ip_with_dynamic_db.run_cell(
+        f"%sql DROP TABLE {test_table_name_dict['new_table_from_df']}"
+    )
     # Prepare DF
-    ip_with_dynamic_db.run_cell("results = %sql SELECT * FROM taxi LIMIT 15")
-    ip_with_dynamic_db.run_cell("new_table_from_df = results.DataFrame()")
+    ip_with_dynamic_db.run_cell(
+        f"results = %sql SELECT * FROM {test_table_name_dict['taxi']}\
+          LIMIT 15"
+    )
+    ip_with_dynamic_db.run_cell(
+        f"{test_table_name_dict['new_table_from_df']} = results.DataFrame()"
+    )
     # Create table from DF
-    persist_out = ip_with_dynamic_db.run_cell("%sql --persist new_table_from_df")
-    query_out = ip_with_dynamic_db.run_cell("%sql SELECT * FROM new_table_from_df")
+    persist_out = ip_with_dynamic_db.run_cell(
+        f"%sql --persist {test_table_name_dict['new_table_from_df']}"
+    )
+    query_out = ip_with_dynamic_db.run_cell(
+        f"%sql SELECT * FROM {test_table_name_dict['new_table_from_df']}"
+    )
     assert persist_out.error_in_exec is None and query_out.error_in_exec is None
     assert len(query_out.result) == excepted
 
@@ -169,9 +186,18 @@ def test_telemetry_execute_command_has_connection_info(
 @pytest.mark.parametrize(
     "cell",
     [
-        ("%sqlplot histogram --table plot_something --column x"),
-        ("%sqlplot hist --table plot_something --column x"),
-        ("%sqlplot histogram --table plot_something --column x --bins 10"),
+        (
+            "%sqlplot histogram --with plot_something_subset --table\
+              plot_something_subset --column x"
+        ),
+        (
+            "%sqlplot hist --with plot_something_subset --table\
+              plot_something_subset --column x"
+        ),
+        (
+            "%sqlplot histogram --with plot_something_subset --table\
+              plot_something_subset --column x --bins 10"
+        ),
     ],
     ids=[
         "histogram",
@@ -195,14 +221,14 @@ def test_telemetry_execute_command_has_connection_info(
         ),
     ],
 )
-def test_sqlplot_histogram(ip_with_dynamic_db, cell, request):
+def test_sqlplot_histogram(ip_with_dynamic_db, cell, request, test_table_name_dict):
     # clean current Axes
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     plt.cla()
 
     ip_with_dynamic_db.run_cell(
-        "%sql --save plot_something_subset"
-        " --no-execute SELECT * from plot_something LIMIT 3"
+        f"%sql --save plot_something_subset\
+         --no-execute SELECT * from {test_table_name_dict['plot_something']} LIMIT 3"
     )
     out = ip_with_dynamic_db.run_cell(cell)
 
@@ -217,16 +243,19 @@ BOX_PLOT_FAIL_REASON = (
 @pytest.mark.parametrize(
     "cell",
     [
-        "%sqlplot boxplot --table plot_something --column x",
-        "%sqlplot box --table plot_something --column x",
-        "%sqlplot boxplot --table plot_something --column x --orient h",
-        "%sqlplot boxplot --with plot_something_subset --table "
-        "plot_something_subset --column x",
+        "%sqlplot boxplot --with plot_something_subset \
+        --table plot_something_subset --column x",
+        "%sqlplot box --with plot_something_subset \
+        --table plot_something_subset --column x",
+        "%sqlplot boxplot --with plot_something_subset \
+        --table plot_something_subset --column x --orient h",
+        "%sqlplot boxplot --with plot_something_subset \
+        --table plot_something_subset --column x",
     ],
     ids=[
         "boxplot",
         "box",
-        "boxplot-horizontal",
+        "boxplot-with-horizontal",
         "boxplot-with",
     ],
 )
@@ -234,6 +263,7 @@ BOX_PLOT_FAIL_REASON = (
     "ip_with_dynamic_db",
     [
         pytest.param("ip_with_postgreSQL"),
+        pytest.param("ip_with_duckDB"),
         pytest.param(
             "ip_with_mySQL", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
         ),
@@ -243,7 +273,6 @@ BOX_PLOT_FAIL_REASON = (
         pytest.param(
             "ip_with_SQLite", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
         ),
-        pytest.param("ip_with_duckDB"),
         pytest.param(
             "ip_with_Snowflake",
             marks=pytest.mark.xfail(
@@ -252,13 +281,13 @@ BOX_PLOT_FAIL_REASON = (
         ),
     ],
 )
-def test_sqlplot_boxplot(ip_with_dynamic_db, cell, request):
+def test_sqlplot_boxplot(ip_with_dynamic_db, cell, request, test_table_name_dict):
     # clean current Axes
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     plt.cla()
     ip_with_dynamic_db.run_cell(
-        "%sql --save plot_something_subset"
-        " --no-execute SELECT * from plot_something LIMIT 3"
+        f"%sql --save plot_something_subset --no-execute\
+          SELECT * from {test_table_name_dict['plot_something']} LIMIT 3"
     )
 
     out = ip_with_dynamic_db.run_cell(cell)
@@ -278,12 +307,12 @@ def test_sqlplot_boxplot(ip_with_dynamic_db, cell, request):
         ("ip_with_Snowflake"),
     ],
 )
-def test_sql_cmd_magic_uno(ip_with_dynamic_db, request):
+def test_sql_cmd_magic_uno(ip_with_dynamic_db, request, test_table_name_dict):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
 
     result = ip_with_dynamic_db.run_cell(
-        "%sqlcmd test --table numbers --column numbers_elements"
-        " --less-than 5 --greater 1"
+        f"%sqlcmd test --table {test_table_name_dict['numbers']}\
+              --column numbers_elements --less-than 5 --greater 1"
     ).result
 
     assert len(result) == 2
@@ -308,11 +337,13 @@ def test_sql_cmd_magic_uno(ip_with_dynamic_db, request):
         ),
     ],
 )
-def test_sql_cmd_magic_dos(ip_with_dynamic_db, request):
+def test_sql_cmd_magic_dos(ip_with_dynamic_db, request, test_table_name_dict):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
 
     result = ip_with_dynamic_db.run_cell(
-        "%sqlcmd test --table numbers --column numbers_elements" " --greater-or-equal 3"
+        f"%sqlcmd test --table {test_table_name_dict['numbers']}\
+          --column numbers_elements"
+        " --greater-or-equal 3"
     ).result
 
     assert len(result) == 1
@@ -424,12 +455,14 @@ def test_sql_cmd_magic_dos(ip_with_dynamic_db, request):
         ),
     ],
 )
-def test_profile_query(request, ip_with_dynamic_db, table, table_columns, expected):
+def test_profile_query(
+    request, ip_with_dynamic_db, table, table_columns, expected, test_table_name_dict
+):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
 
     out = ip_with_dynamic_db.run_cell(
         f"""
-        %sqlcmd profile --table "{table}"
+        %sqlcmd profile --table "{test_table_name_dict[table]}"
         """
     ).result
 

@@ -2,8 +2,10 @@ import os
 import shutil
 import pandas as pd
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import MetaData, create_engine
 from sql import _testing
+from sqlalchemy.ext.declarative import declarative_base
+import uuid
 
 is_on_github = False
 if "GITHUB_ACTIONS" in os.environ:
@@ -29,8 +31,27 @@ def run_around_tests(tmpdir_factory):
     shutil.rmtree(str(my_tmpdir))
 
 
-def load_taxi_data(engine, index=True):
-    table_name = "taxi"
+@pytest.fixture(scope="session")
+def test_table_name_dict():
+    return {
+        "taxi": f"taxi_{str(uuid.uuid4())[:6]}",
+        "numbers": f"taxi_{str(uuid.uuid4())[:6]}",
+        "plot_something": f"plot_something_{str(uuid.uuid4())[:6]}",
+        "new_table_from_df": f"new_table_from_df_{str(uuid.uuid4())[:6]}",
+    }
+
+
+def drop_table(engine, table_name):
+    Base = declarative_base()
+    metadata = MetaData()
+    metadata.reflect(bind=engine)
+    table = metadata.tables[table_name]
+    if table is not None:
+        Base.metadata.drop_all(engine, [table], checkfirst=True)
+
+
+def load_taxi_data(engine, table_name, index=True):
+    table_name = table_name
     df = pd.DataFrame(
         {"taxi_driver_name": ["Eric Ken", "John Smith", "Kevin Kelly"] * 15}
     )
@@ -39,16 +60,14 @@ def load_taxi_data(engine, index=True):
     )
 
 
-def load_plot_data(engine, index=True):
-    table_name = "plot_something"
+def load_plot_data(engine, table_name, index=True):
     df = pd.DataFrame({"x": range(0, 5), "y": range(5, 10)})
     df.to_sql(
         name=table_name, con=engine, chunksize=1000, if_exists="replace", index=index
     )
 
 
-def load_numeric_data(engine, index=True):
-    table_name = "numbers"
+def load_numeric_data(engine, table_name, index=True):
     df = pd.DataFrame({"numbers_elements": [1, 2, 3]})
     df.to_sql(
         name=table_name, con=engine, chunksize=100_000, if_exists="replace", index=index
@@ -56,15 +75,15 @@ def load_numeric_data(engine, index=True):
 
 
 @pytest.fixture(scope="session")
-def setup_postgreSQL():
+def setup_postgreSQL(test_table_name_dict):
     with _testing.postgres(is_bypass_init=is_on_github):
         engine = create_engine(
             _testing.DatabaseConfigHelper.get_database_url("postgreSQL")
         )
         # Load pre-defined datasets
-        load_taxi_data(engine)
-        load_plot_data(engine)
-        load_numeric_data(engine)
+        load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
+        load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
+        load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
         yield engine
         engine.dispose()
 
@@ -87,13 +106,13 @@ def ip_with_postgreSQL(ip_empty, setup_postgreSQL):
 
 
 @pytest.fixture(scope="session")
-def setup_mySQL():
+def setup_mySQL(test_table_name_dict):
     with _testing.mysql(is_bypass_init=is_on_github):
         engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("mySQL"))
         # Load pre-defined datasets
-        load_taxi_data(engine)
-        load_plot_data(engine)
-        load_numeric_data(engine)
+        load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
+        load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
+        load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
         yield engine
         engine.dispose()
 
@@ -116,15 +135,15 @@ def ip_with_mySQL(ip_empty, setup_mySQL):
 
 
 @pytest.fixture(scope="session")
-def setup_mariaDB():
+def setup_mariaDB(test_table_name_dict):
     with _testing.mariadb(is_bypass_init=is_on_github):
         engine = create_engine(
             _testing.DatabaseConfigHelper.get_database_url("mariaDB")
         )
         # Load pre-defined datasets
-        load_taxi_data(engine)
-        load_plot_data(engine)
-        load_numeric_data(engine)
+        load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
+        load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
+        load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
         yield engine
         engine.dispose()
 
@@ -147,12 +166,12 @@ def ip_with_mariaDB(ip_empty, setup_mariaDB):
 
 
 @pytest.fixture(scope="session")
-def setup_SQLite():
+def setup_SQLite(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("SQLite"))
     # Load pre-defined datasets
-    load_taxi_data(engine)
-    load_plot_data(engine)
-    load_numeric_data(engine)
+    load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
+    load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
+    load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
     yield engine
     engine.dispose()
 
@@ -175,12 +194,12 @@ def ip_with_SQLite(ip_empty, setup_SQLite):
 
 
 @pytest.fixture(scope="session")
-def setup_duckDB():
+def setup_duckDB(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("duckDB"))
     # Load pre-defined datasets
-    load_taxi_data(engine)
-    load_plot_data(engine)
-    load_numeric_data(engine)
+    load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
+    load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
+    load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
     yield engine
     engine.dispose()
 
@@ -203,13 +222,13 @@ def ip_with_duckDB(ip_empty, setup_duckDB):
 
 
 @pytest.fixture(scope="session")
-def setup_MSSQL():
+def setup_MSSQL(test_table_name_dict):
     with _testing.mssql(is_bypass_init=is_on_github):
         engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("MSSQL"))
-        # Load taxi_data
-        load_taxi_data(engine)
-        load_plot_data(engine)
-        load_numeric_data(engine)
+        # Load pre-defined datasets
+        load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
+        load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
+        load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
         yield engine
         engine.dispose()
 
@@ -232,14 +251,19 @@ def ip_with_MSSQL(ip_empty, setup_MSSQL):
 
 
 @pytest.fixture(scope="session")
-def setup_Snowflake():
+def setup_Snowflake(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("Snowflake"))
     engine.connect()
     # Load pre-defined datasets
-    load_taxi_data(engine, index=False)
-    load_plot_data(engine, index=False)
-    load_numeric_data(engine, index=False)
+    load_taxi_data(engine, table_name=test_table_name_dict["taxi"], index=False)
+    load_plot_data(
+        engine, table_name=test_table_name_dict["plot_something"], index=False
+    )
+    load_numeric_data(engine, table_name=test_table_name_dict["numbers"], index=False)
     yield engine
+    drop_table(engine, table_name=test_table_name_dict["taxi"])
+    drop_table(engine, table_name=test_table_name_dict["plot_something"])
+    drop_table(engine, table_name=test_table_name_dict["numbers"])
     engine.dispose()
 
 
