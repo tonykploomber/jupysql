@@ -17,7 +17,8 @@ parts:
     - file: user-guide/interactive
     - file: user-guide/data-profiling
     - file: user-guide/ggplot
-    
+    - file: user-guide/FAQ
+
   - caption: Integrations
     chapters:
       - file: integrations/duckdb
@@ -48,6 +49,7 @@ parts:
   - caption: Tutorials
     chapters:
     - file: tutorials/duckdb-github
+    - file: tutorials/etl
 
   - caption: Community
     chapters:

@@ -32,13 +32,14 @@ DEV = [
     "flake8",
     "pytest",
     "pandas",
-    "polars",
+    "polars==0.16.14",  # 03/24/23 this breaks our CI
     "invoke",
     "pkgmt",
     "twine",
     # tests
     "duckdb",
     "duckdb-engine",
+    "pyodbc",
     # sql.plot module tests
     "matplotlib",
     "black",
