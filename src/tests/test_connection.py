@@ -7,8 +7,6 @@ from sql.connection import Connection
 from IPython.core.error import UsageError
 import sqlglot
 
-# import sqlglot
-
 
 @pytest.fixture
 def cleanup():
@@ -125,9 +123,7 @@ def test_get_curr_sqlglot_dialect(
         ("postgres", False),
     ],
 )
-def test_is_use_backtick_template(
-    monkeypatch, cur_dialect, expected_support_backtick
-):
+def test_is_use_backtick_template(monkeypatch, cur_dialect, expected_support_backtick):
     """To test if we can get the backtick supportive information from different dialects
 
     Args:

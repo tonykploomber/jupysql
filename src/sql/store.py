@@ -99,19 +99,19 @@ class SQLQuery:
             )
 
     def __str__(self) -> str:
-        with_template = Template(
+        with_clause_template = Template(
             """WITH{% for name in with_ %} "{{name}}" AS ({{saved[name]._query}})\
 {{ "," if not loop.last }}{% endfor %}{{query}}"""
         )
-        with_template_backtick = Template(
+        with_clause_template_backtick = Template(
             """WITH{% for name in with_ %} `{{name}}` AS ({{saved[name]._query}})\
 {{ "," if not loop.last }}{% endfor %}{{query}}"""
         )
-        is_use_backtick = (
-            sql.connection.Connection.is_use_backtick_template()
-        )
+        is_use_backtick = sql.connection.Connection.is_use_backtick_template()
         with_all = _get_dependencies(self._store, self._with_)
-        template = with_template_backtick if is_use_backtick else with_template
+        template = (
+            with_clause_template_backtick if is_use_backtick else with_clause_template
+        )
         return template.render(
             query=self._query, saved=self._store._data, with_=with_all
         )
