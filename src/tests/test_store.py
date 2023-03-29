@@ -133,6 +133,17 @@ def test_serial(with_, is_dialect_support_backtick, monkeypatch):
     [(True), (False)],
 )
 def test_branch_root(is_dialect_support_backtick, monkeypatch):
+    """To test if SQLStore can store multiple with sql clause,
+    but with each with clause has it's own sub-query.
+    To see if SQLStore can parse into final combined sql clause
+
+    Args:
+        with_ (string): The key to use in with sql clause
+        is_dialect_support_backtick (bool): If the current connected dialect
+        support `(backtick) syntax
+        monkeypatch (Monkeypatch): A convenient fixture for monkey-patching
+    """
+
     monkeypatch.setattr(
         Connection,
         "is_use_backtick_template",
