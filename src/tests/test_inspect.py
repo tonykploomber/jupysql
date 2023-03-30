@@ -83,6 +83,34 @@ def test_get_column(sample_db, name, first, second, schema):
         [
             "some_table",
             "schema",
+            "There is no table with name 'some_table' in schema 'schema'",
+        ],
+        [
+            "name",
+            None,
+            "There is no table with name 'name' in the default schema",
+        ],
+    ],
+)
+@pytest.mark.skipif(
+    sqlalchemy.__version__.split(".")[0] == "2", reason="Only available to test in V1"
+)
+def test_nonexistent_table_sqlalchemey_version_v1(sample_db, name, schema, error):
+    print(
+        'sqlalchemy.__version__.split(".")[0] == 2',
+        sqlalchemy.__version__.split(".")[0] == 2,
+    )
+    with pytest.raises(ValueError) as excinfo:
+        inspect.get_columns(name, schema)
+    assert error.lower() in str(excinfo.value).lower()
+
+
+@pytest.mark.parametrize(
+    "name, schema, error",
+    [
+        [
+            "some_table",
+            "schema",
             "schema.some_table",
         ],
         [
@@ -91,6 +119,9 @@ def test_get_column(sample_db, name, first, second, schema):
             "name",
         ],
     ],
+)
+@pytest.mark.skipif(
+    sqlalchemy.__version__.split(".")[0] != "2", reason="Only available to test in V2"
 )
 def test_nonexistent_table(sample_db, name, schema, error):
     with pytest.raises(sqlalchemy.exc.NoSuchTableError) as excinfo:
