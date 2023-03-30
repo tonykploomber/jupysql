@@ -8,14 +8,18 @@ import sqlalchemy
 
 
 @pytest.fixture
-def sample_db(tmp_empty, ip_empty):
-    ip_empty.run_cell("%sql duckdb://")
-    ip_empty.run_cell("%sql CREATE TABLE one (x INT, y TEXT)")
-    ip_empty.run_cell("%sql CREATE TABLE another (i INT, j TEXT)")
-    ip_empty.run_cell("%sql duckdb:///:my.db")
-    ip_empty.run_cell("%sql CREATE TABLE uno (x INT, y TEXT)")
-    ip_empty.run_cell("%sql CREATE TABLE dos (i INT, j TEXT)")
-    ip_empty.run_cell("%sql --close duckdb:///:my.db")
+def sample_db(tmp_empty):
+    conn = connection.Connection.from_connect_str("sqlite://")
+
+    conn.session.execute(sqlalchemy.text("CREATE TABLE one (x INT, y TEXT)"))
+    conn.session.execute(sqlalchemy.text("CREATE TABLE another (i INT, j TEXT)"))
+
+    conn_mydb = sqlite3.connect("my.db")
+    conn_mydb.execute(("CREATE TABLE uno (x INT, y TEXT)"))
+    conn_mydb.execute(("CREATE TABLE dos (i INT, j TEXT)"))
+    conn_mydb.close()
+
+    conn.session.execute(sqlalchemy.text("ATTACH DATABASE 'my.db' AS schema"))
 
 
 @pytest.mark.parametrize(
@@ -40,7 +44,7 @@ def test_no_active_session(function, monkeypatch):
 )
 def test_tables(sample_db, first, second, schema):
     tables = inspect.get_table_names(schema=schema)
-    print("tables: ", tables)
+
     assert "Name" in repr(tables)
     assert first in repr(tables)
     assert second in repr(tables)
@@ -79,17 +83,17 @@ def test_get_column(sample_db, name, first, second, schema):
         [
             "some_table",
             "schema",
-            "There is no table with name 'some_table' in schema 'schema'",
+            "schema.some_table",
         ],
         [
             "name",
             None,
-            "There is no table with name 'name' in the default schema",
+            "name",
         ],
     ],
 )
-def test_nonexistent_table(name, schema, error):
-    with pytest.raises(ValueError) as excinfo:
+def test_nonexistent_table(sample_db, name, schema, error):
+    with pytest.raises(sqlalchemy.exc.NoSuchTableError) as excinfo:
         inspect.get_columns(name, schema)
 
     assert error.lower() in str(excinfo.value).lower()
