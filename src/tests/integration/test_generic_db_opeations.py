@@ -34,9 +34,9 @@ def mock_log_api(monkeypatch):
         pytest.param(
             "ip_with_duckDB",
             3,
-            marks=pytest.mark.xfail(
-                reason="Migration issue with CursorResult and LegacyCursorResult"
-            ),
+            # marks=pytest.mark.xfail(
+            #     reason="Migration issue with CursorResult and LegacyCursorResult"
+            # ),
         ),
     ],
 )
