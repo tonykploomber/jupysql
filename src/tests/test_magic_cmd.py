@@ -4,8 +4,6 @@ import pytest
 from IPython.core.error import UsageError
 from pathlib import Path
 
-import sqlalchemy
-
 
 @pytest.mark.parametrize(
     "cell, error_type, error_message",
