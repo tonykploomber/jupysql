@@ -4,6 +4,8 @@ import pytest
 from IPython.core.error import UsageError
 from pathlib import Path
 
+import sqlalchemy
+
 
 @pytest.mark.parametrize(
     "cell, error_type, error_message",
@@ -61,7 +63,7 @@ def test_tables(ip):
 
 def test_tables_with_schema(ip, tmp_empty):
     with sqlite3.connect("my.db") as conn:
-        conn.execute("CREATE TABLE numbers (some_number FLOAT)")
+        conn.execute(sqlalchemy.text("CREATE TABLE numbers (some_number FLOAT)"))
 
     ip.run_cell(
         """%%sql
@@ -83,7 +85,7 @@ def test_columns(ip):
 
 def test_columns_with_schema(ip, tmp_empty):
     with sqlite3.connect("my.db") as conn:
-        conn.execute("CREATE TABLE numbers (some_number FLOAT)")
+        conn.execute(sqlalchemy.text("CREATE TABLE numbers (some_number FLOAT)"))
 
     ip.run_cell(
         """%%sql
@@ -150,16 +152,16 @@ def test_table_profile(ip, tmp_empty):
 
 def test_table_schema_profile(ip, tmp_empty):
     with sqlite3.connect("a.db") as conn:
-        conn.execute("CREATE TABLE t (n FLOAT)")
-        conn.execute("INSERT INTO t VALUES (1)")
-        conn.execute("INSERT INTO t VALUES (2)")
-        conn.execute("INSERT INTO t VALUES (3)")
+        conn.execute(sqlalchemy.text("CREATE TABLE t (n FLOAT)"))
+        conn.execute(sqlalchemy.text("INSERT INTO t VALUES (1)"))
+        conn.execute(sqlalchemy.text("INSERT INTO t VALUES (2)"))
+        conn.execute(sqlalchemy.text("INSERT INTO t VALUES (3)"))
 
     with sqlite3.connect("b.db") as conn:
-        conn.execute("CREATE TABLE t (n FLOAT)")
-        conn.execute("INSERT INTO t VALUES (11)")
-        conn.execute("INSERT INTO t VALUES (22)")
-        conn.execute("INSERT INTO t VALUES (33)")
+        conn.execute(sqlalchemy.text("CREATE TABLE t (n FLOAT)"))
+        conn.execute(sqlalchemy.text("INSERT INTO t VALUES (11)"))
+        conn.execute(sqlalchemy.text("INSERT INTO t VALUES (22)"))
+        conn.execute(sqlalchemy.text("INSERT INTO t VALUES (33)"))
 
     ip.run_cell(
         """

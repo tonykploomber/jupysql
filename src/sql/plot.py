@@ -104,7 +104,7 @@ FROM "{{table}}"
     if with_:
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)
-    values = con.execute(query).fetchone()[0]
+    values = con.execute(sqlalchemy.text(query)).fetchone()[0]
     return values
 
 
@@ -587,6 +587,6 @@ def _histogram_stacked(
         query = str(store.render(query, with_=with_))
 
     query = sql.connection.Connection._transpile_query(query)
-    data = conn.execute(query).fetchall()
+    data = conn.execute(sqlalchemy.text(query)).fetchall()
 
     return data
