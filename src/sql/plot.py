@@ -42,7 +42,7 @@ FROM "{{table}}"
     if with_:
         query = str(store.render(query, with_=with_))
 
-    values = con.execute(query).fetchone()
+    values = con.execute(sqlalchemy.text(query)).fetchone()
     keys = ["q1", "med", "q3", "mean", "N"]
     return {k: float(v) for k, v in zip(keys, values)}
 
@@ -64,7 +64,7 @@ FROM (
     if with_:
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)
-    values = con.execute(query).fetchone()
+    values = con.execute(sqlalchemy.text(query)).fetchone()
     keys = ["N", "wiskhi_max"]
     return {k: float(v) for k, v in zip(keys, values)}
 
@@ -86,7 +86,7 @@ FROM (
     if with_:
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)
-    values = con.execute(query).fetchone()
+    values = con.execute(sqlalchemy.text(query)).fetchone()
     keys = ["N", "wisklo_min"]
     return {k: float(v) for k, v in zip(keys, values)}
 
@@ -122,7 +122,7 @@ OR  "{{column}}" > {{whishi}}
     if with_:
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)
-    results = [float(n[0]) for n in con.execute(query).fetchall()]
+    results = [float(n[0]) for n in con.execute(sqlalchemy.text(query)).fetchall()]
     return results
 
 
