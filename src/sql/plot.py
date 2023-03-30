@@ -4,6 +4,7 @@ Plot using the SQL backend
 from ploomber_core.dependencies import requires
 from ploomber_core.exceptions import modify_exceptions
 from jinja2 import Template
+import sqlalchemy
 
 try:
     import matplotlib.pyplot as plt
@@ -283,7 +284,7 @@ FROM "{{table}}"
     if with_:
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)
-    min_, max_ = con.execute(query).fetchone()
+    min_, max_ = con.execute(sqlalchemy.text(query)).fetchone()
     return min_, max_
 
 
@@ -526,7 +527,7 @@ def _histogram(table, column, bins, with_=None, conn=None, facet=None):
         query = str(store.render(query, with_=with_))
 
     query = sql.connection.Connection._transpile_query(query)
-    data = conn.execute(query).fetchall()
+    data = conn.execute(sqlalchemy.text(query)).fetchall()
     bin_, height = zip(*data)
 
     if bin_[0] is None:
