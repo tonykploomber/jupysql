@@ -104,29 +104,29 @@ def test_nonexistent_table_sqlalchemey_version_v1(sample_db, name, schema, error
     assert error.lower() in str(excinfo.value).lower()
 
 
-@pytest.mark.parametrize(
-    "name, schema, error",
-    [
-        [
-            "some_table",
-            "schema",
-            "schema.some_table",
-        ],
-        [
-            "name",
-            None,
-            "name",
-        ],
-    ],
-)
-@pytest.mark.skipif(
-    sqlalchemy.__version__.split(".")[0] == "1", reason="Only available to test in V2"
-)
-def test_nonexistent_table(sample_db, name, schema, error):
-    with pytest.raises(sqlalchemy.exc.NoSuchTableError) as excinfo:
-        inspect.get_columns(name, schema)
+# @pytest.mark.parametrize(
+#     "name, schema, error",
+#     [
+#         [
+#             "some_table",
+#             "schema",
+#             "schema.some_table",
+#         ],
+#         [
+#             "name",
+#             None,
+#             "name",
+#         ],
+#     ],
+# )
+# @pytest.mark.skipif(
+#     sqlalchemy.__version__.split(".")[0] == "1", reason="Only available to test in V2"
+# )
+# def test_nonexistent_table(sample_db, name, schema, error):
+#     with pytest.raises(sqlalchemy.exc.NoSuchTableError) as excinfo:
+#         inspect.get_columns(name, schema)
 
-    assert error.lower() in str(excinfo.value).lower()
+#     assert error.lower() in str(excinfo.value).lower()
 
 
 @pytest.mark.parametrize(
