@@ -8,7 +8,6 @@ import sqlalchemy
 
 @pytest.fixture
 def sample_db(ip):
-
     ip.run_cell("%sql sqlite://")
     ip.run_cell("%sql CREATE TABLE one (x INT, y TEXT)")
     ip.run_cell("%sql CREATE TABLE another (i INT, j TEXT)")
