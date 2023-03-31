@@ -1,5 +1,4 @@
 from inspect import getsource
-import sqlite3
 import pytest
 from functools import partial
 
@@ -8,18 +7,18 @@ import sqlalchemy
 
 
 @pytest.fixture
-def sample_db(tmp_empty):
-    conn = connection.Connection.from_connect_str("sqlite://")
+def sample_db(ip):
 
-    conn.session.execute(sqlalchemy.text("CREATE TABLE one (x INT, y TEXT)"))
-    conn.session.execute(sqlalchemy.text("CREATE TABLE another (i INT, j TEXT)"))
+    ip.run_cell("%sql sqlite://")
+    ip.run_cell("%sql CREATE TABLE one (x INT, y TEXT)")
+    ip.run_cell("%sql CREATE TABLE another (i INT, j TEXT)")
+    ip.run_cell("%sql sqlite:///my.db")
+    ip.run_cell("%sql CREATE TABLE uno (x INT, y TEXT)")
+    ip.run_cell("%sql CREATE TABLE dos (i INT, j TEXT)")
+    ip.run_cell("%sql --close sqlite:///my.db")
+    ip.run_cell("%sql sqlite://")
 
-    conn_mydb = sqlite3.connect("my.db")
-    conn_mydb.execute(("CREATE TABLE uno (x INT, y TEXT)"))
-    conn_mydb.execute(("CREATE TABLE dos (i INT, j TEXT)"))
-    conn_mydb.close()
-
-    conn.session.execute(sqlalchemy.text("ATTACH DATABASE 'my.db' AS schema"))
+    ip.run_cell("%sql ATTACH DATABASE 'my.db' AS schema")
 
 
 @pytest.mark.parametrize(
@@ -121,7 +120,7 @@ def test_nonexistent_table_sqlalchemey_version_v1(sample_db, name, schema, error
     ],
 )
 @pytest.mark.skipif(
-    sqlalchemy.__version__.split(".")[0] != "2", reason="Only available to test in V2"
+    sqlalchemy.__version__.split(".")[0] == "1", reason="Only available to test in V2"
 )
 def test_nonexistent_table(sample_db, name, schema, error):
     with pytest.raises(sqlalchemy.exc.NoSuchTableError) as excinfo:
