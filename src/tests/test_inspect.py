@@ -90,7 +90,7 @@ def test_get_column(sample_db, name, first, second, schema):
         ],
     ],
 )
-def test_nonexistent_table_sqlalchemey_version_v1(sample_db, name, schema, error):
+def test_nonexistent_table(sample_db, name, schema, error):
     with pytest.raises(ValueError) as excinfo:
         inspect.get_columns(name, schema)
     assert error.lower() in str(excinfo.value).lower()
