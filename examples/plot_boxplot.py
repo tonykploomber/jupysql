@@ -1,8 +1,8 @@
 from pathlib import Path
 import urllib.request
+from sql.connection import Connection
 
 # this requires duckdb: pip install duckdb
-import duckdb
 
 from sql import plot
 
@@ -13,6 +13,6 @@ if not Path("iris.csv").is_file():
         "iris.csv",
     )
 
-conn = duckdb.connect(database=":memory:")
+conn = Connection.from_connect_str("duckdb://").session
 
 plot.boxplot("iris.csv", "petal width", conn=conn)
