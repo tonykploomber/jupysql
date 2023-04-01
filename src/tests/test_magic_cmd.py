@@ -208,5 +208,4 @@ def test_table_profile_store(ip, tmp_empty):
     ip.run_cell("%sqlcmd profile -t test_store --output test_report.html")
 
     report = Path("test_report.html")
-    print("report: ", report)
-    # assert report.is_file()
+    assert report.is_file()

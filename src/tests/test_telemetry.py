@@ -40,7 +40,6 @@ def simple_file_path_penguins(tmpdir):
 @pytest.fixture
 def simple_db_conn():
     return Connection.from_connect_str("duckdb://").session
-    # return conn
 
 
 @pytest.fixture
