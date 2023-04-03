@@ -74,7 +74,7 @@ def load_numeric_data(engine, table_name, index=True):
     )
 
 
-def load_generic_testing_data(engine, index=True):
+def load_generic_testing_data(engine, test_table_name_dict, index=True):
     load_taxi_data(engine, table_name=test_table_name_dict["taxi"], index=index)
     load_plot_data(
         engine, table_name=test_table_name_dict["plot_something"], index=index
@@ -82,7 +82,7 @@ def load_generic_testing_data(engine, index=True):
     load_numeric_data(engine, table_name=test_table_name_dict["numbers"], index=index)
 
 
-def tear_down_generic_testing_data(engine):
+def tear_down_generic_testing_data(engine, test_table_name_dict):
     drop_table(engine, table_name=test_table_name_dict["taxi"])
     drop_table(engine, table_name=test_table_name_dict["plot_something"])
     drop_table(engine, table_name=test_table_name_dict["numbers"])
@@ -95,9 +95,9 @@ def setup_postgreSQL(test_table_name_dict):
             _testing.DatabaseConfigHelper.get_database_url("postgreSQL")
         )
         # Load pre-defined datasets
-        load_generic_testing_data(engine)
+        load_generic_testing_data(engine, test_table_name_dict)
         yield engine
-        tear_down_generic_testing_data(engine)
+        tear_down_generic_testing_data(engine, test_table_name_dict)
         engine.dispose()
 
 
@@ -123,9 +123,9 @@ def setup_mySQL(test_table_name_dict):
     with _testing.mysql(is_bypass_init=is_on_github):
         engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("mySQL"))
         # Load pre-defined datasets
-        load_generic_testing_data(engine)
+        load_generic_testing_data(engine, test_table_name_dict)
         yield engine
-        tear_down_generic_testing_data(engine)
+        tear_down_generic_testing_data(engine, test_table_name_dict)
         engine.dispose()
 
 
@@ -153,9 +153,9 @@ def setup_mariaDB(test_table_name_dict):
             _testing.DatabaseConfigHelper.get_database_url("mariaDB")
         )
         # Load pre-defined datasets
-        load_generic_testing_data(engine)
+        load_generic_testing_data(engine, test_table_name_dict)
         yield engine
-        tear_down_generic_testing_data(engine)
+        tear_down_generic_testing_data(engine, test_table_name_dict)
         engine.dispose()
 
 
@@ -180,9 +180,9 @@ def ip_with_mariaDB(ip_empty, setup_mariaDB):
 def setup_SQLite(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("SQLite"))
     # Load pre-defined datasets
-    load_generic_testing_data(engine)
+    load_generic_testing_data(engine, test_table_name_dict)
     yield engine
-    tear_down_generic_testing_data(engine)
+    tear_down_generic_testing_data(engine, test_table_name_dict)
     engine.dispose()
 
 
@@ -207,9 +207,9 @@ def ip_with_SQLite(ip_empty, setup_SQLite):
 def setup_duckDB(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("duckDB"))
     # Load pre-defined datasets
-    load_generic_testing_data(engine)
+    load_generic_testing_data(engine, test_table_name_dict)
     yield engine
-    tear_down_generic_testing_data(engine)
+    tear_down_generic_testing_data(engine, test_table_name_dict)
     engine.dispose()
 
 
@@ -235,9 +235,9 @@ def setup_MSSQL(test_table_name_dict):
     with _testing.mssql(is_bypass_init=is_on_github):
         engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("MSSQL"))
         # Load pre-defined datasets
-        load_generic_testing_data(engine)
+        load_generic_testing_data(engine, test_table_name_dict)
         yield engine
-        tear_down_generic_testing_data(engine)
+        tear_down_generic_testing_data(engine, test_table_name_dict)
         engine.dispose()
 
 
@@ -263,9 +263,9 @@ def setup_Snowflake(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("Snowflake"))
     engine.connect()
     # Load pre-defined datasets
-    load_generic_testing_data(engine, index=False)
+    load_generic_testing_data(engine, test_table_name_dict, index=False)
     yield engine
-    tear_down_generic_testing_data(engine)
+    tear_down_generic_testing_data(engine, test_table_name_dict)
     engine.dispose()
 
 
