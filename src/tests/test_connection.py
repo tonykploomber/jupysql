@@ -136,21 +136,30 @@ def test_is_use_backtick_template(monkeypatch, cur_dialect, expected_support_bac
     assert Connection.is_use_backtick_template() == expected_support_backtick
 
 
-def test_is_use_backtick_template_sqlglot_missing_dialect(monkeypatch):
+def test_is_use_backtick_template_sqlglot_missing_dialect_ValueError(monkeypatch):
+    """Since accessing missing dialect will raise ValueError from sqlglot, we assume
+    that's not support case
+    """
     monkeypatch.setattr(
         Connection, "_get_curr_sqlglot_dialect", lambda: "something_weird_dialect"
     )
     assert Connection.is_use_backtick_template() is False
 
 
-def test_is_use_backtick_template_sqlglot_missing_tokenizer(monkeypatch):
+def test_is_use_backtick_template_sqlglot_missing_tokenizer_AttributeError(monkeypatch):
+    """Since accessing the dialect without Tokenizer Class will raise AttributeError
+    from sqlglot, we assume that's not support case
+    """
     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
     monkeypatch.setattr(sqlglot.Dialect.get_or_raise("mysql"), "Tokenizer", None)
 
     assert Connection.is_use_backtick_template() is False
 
 
-def test_is_use_backtick_template_sqlglot_missing_identifiers(monkeypatch):
+def test_is_use_backtick_template_sqlglot_missing_identifiers_TypeError(monkeypatch):
+    """Since accessing the IDENTIFIERS list of the dialect's Tokenizer Class
+    will raise TypeError from sqlglot, we assume that's not support case
+    """
     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
     monkeypatch.setattr(
         sqlglot.Dialect.get_or_raise("mysql").Tokenizer, "IDENTIFIERS", None
@@ -159,6 +168,9 @@ def test_is_use_backtick_template_sqlglot_missing_identifiers(monkeypatch):
 
 
 def test_is_use_backtick_template_sqlglot_empty_identifiers(monkeypatch):
+    """Since looking up the "`" symbol in IDENTIFIERS list of the dialect's
+    Tokenizer Class will raise TypeError from sqlglot, we assume that's not support case
+    """
     monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
     monkeypatch.setattr(
         sqlglot.Dialect.get_or_raise("mysql").Tokenizer, "IDENTIFIERS", []
