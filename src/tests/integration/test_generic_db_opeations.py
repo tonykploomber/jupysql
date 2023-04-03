@@ -56,18 +56,18 @@ def test_query_count(ip_with_dynamic_db, excepted, request, test_table_name_dict
 
 # Create
 @pytest.mark.parametrize(
-    "ip_with_dynamic_db, excepted",
+    "ip_with_dynamic_db, excepted, limit",
     [
-        ("ip_with_postgreSQL", 15),
-        ("ip_with_mySQL", 15),
-        ("ip_with_mariaDB", 15),
-        ("ip_with_SQLite", 15),
-        ("ip_with_duckDB", 15),
+        ("ip_with_postgreSQL", 15, 15),
+        ("ip_with_mySQL", 15, 15),
+        ("ip_with_mariaDB", 15, 15),
+        ("ip_with_SQLite", 15, 15),
+        ("ip_with_duckDB", 15, 15),
         # Snowflake doesn't support index, skip that
     ],
 )
 def test_create_table_with_indexed_df(
-    ip_with_dynamic_db, excepted, request, test_table_name_dict
+    ip_with_dynamic_db, excepted, limit, request, test_table_name_dict
 ):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     # Clean up
@@ -78,7 +78,7 @@ def test_create_table_with_indexed_df(
     # Prepare DF
     ip_with_dynamic_db.run_cell(
         f"results = %sql SELECT * FROM {test_table_name_dict['taxi']}\
-          LIMIT 15"
+          LIMIT {limit}"
     )
     ip_with_dynamic_db.run_cell(
         f"{test_table_name_dict['new_table_from_df']} = results.DataFrame()"
