@@ -48,6 +48,7 @@ DEV = [
     # for %%sql --interact
     "ipywidgets",
     "snowflake-sqlalchemy",
+    "pytest-xdist",
 ]
 
 setup(
