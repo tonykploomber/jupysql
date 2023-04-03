@@ -354,8 +354,10 @@ class Connection:
         """Get the dialect, driver, and database server version info of current
         connected dialect
 
-        Returns:
-            Dict: The dictionary which contains the SQLAlchemy-based dialect
+        Returns
+        -------
+        dict
+            The dictionary which contains the SQLAlchemy-based dialect
             information, or None if there is no current connection.
         """
         if not cls.current:
@@ -372,8 +374,10 @@ class Connection:
     def _get_curr_sqlglot_dialect(cls):
         """Get the dialect name in sqlglot package scope
 
-        Returns:
-            str: Available dialect in sqlglot package, see more:
+        Returns
+        -------
+        str
+            Available dialect in sqlglot package, see more:
             https://github.com/tobymao/sqlglot/blob/main/sqlglot/dialects/dialect.py
         """
         connection_info = cls._get_current_sqlalchemy_connection_info()
@@ -388,11 +392,10 @@ class Connection:
     def is_use_backtick_template(cls):
         """Get if the dialect support backtick (`) syntax as identifier
 
-        Raises:
-            Exception: Indicate there is unknown dialect support
-
-        Returns:
-            bool: If the dialect can use backtick identifier in the SQL clause
+        Returns
+        -------
+        bool
+            Indicate if the dialect can use backtick identifier in the SQL clause
         """
         cur_dialect = cls._get_curr_sqlglot_dialect()
         if not cur_dialect:
@@ -409,11 +412,15 @@ class Connection:
         """Translate the given SQL clause that's compatible to current connected
         dialect by sqlglot
 
-        Args:
-            query (str): Original SQL clause
+        Parameters
+        ----------
+        query : str
+            Original SQL clause
 
-        Returns:
-            str: SQL clause that's compatible to current connected dialect
+        Returns
+        -------
+        str
+            SQL clause that's compatible to current connected dialect
         """
         write_dialect = cls._get_curr_sqlglot_dialect()
         try:

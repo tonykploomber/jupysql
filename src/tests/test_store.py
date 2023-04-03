@@ -97,11 +97,14 @@ def test_serial(with_, is_dialect_support_backtick, monkeypatch):
     """To test if SQLStore can store multiple with sql clause
     and parse into final combined sql clause
 
-    Args:
-        with_ (string): The key to use in with sql clause
-        is_dialect_support_backtick (bool): If the current connected dialect
-        support `(backtick) syntax
-        monkeypatch (Monkeypatch): A convenient fixture for monkey-patching
+    Parameters
+    ----------
+    with_ : string
+        The key to use in with sql clause
+    is_dialect_support_backtick : bool
+        If the current connected dialect support `(backtick) syntax
+    monkeypatch : Monkeypatch
+        A convenient fixture for monkey-patching
     """
     monkeypatch.setattr(
         Connection,
@@ -137,11 +140,14 @@ def test_branch_root(is_dialect_support_backtick, monkeypatch):
     but with each with clause has it's own sub-query.
     To see if SQLStore can parse into final combined sql clause
 
-    Args:
-        with_ (string): The key to use in with sql clause
-        is_dialect_support_backtick (bool): If the current connected dialect
-        support `(backtick) syntax
-        monkeypatch (Monkeypatch): A convenient fixture for monkey-patching
+    Parameters
+    ----------
+    with_ : string
+        The key to use in with sql clause
+    is_dialect_support_backtick : bool
+        If the current connected dialect support `(backtick) syntax
+    monkeypatch : Monkeypatch
+        A convenient fixture for monkey-patching
     """
 
     monkeypatch.setattr(
@@ -179,11 +185,14 @@ def test_branch_root_reverse_final_with(is_dialect_support_backtick, monkeypatch
     but with different reverse order in with_ parameter.
     To see if SQLStore can parse into final combined sql clause
 
-    Args:
-        with_ (string): The key to use in with sql clause
-        is_dialect_support_backtick (bool): If the current connected dialect
-        support `(backtick) syntax
-        monkeypatch (Monkeypatch): A convenient fixture for monkey-patching
+    Parameters
+    ----------
+    with_ : string
+        The key to use in with sql clause
+    is_dialect_support_backtick : bool
+        If the current connected dialect support `(backtick) syntax
+    monkeypatch : Monkeypatch
+        A convenient fixture for monkey-patching
     """
     monkeypatch.setattr(
         Connection,
@@ -221,11 +230,12 @@ def test_branch(is_dialect_support_backtick, monkeypatch):
     but some sub-queries have same with_ dependency.
     To see if SQLStore can parse into final combined sql clause
 
-    Args:
-        with_ (string): The key to use in with sql clause
-        is_dialect_support_backtick (bool): If the current connected dialect
-        support `(backtick) syntax
-        monkeypatch (Monkeypatch): A convenient fixture for monkey-patching
+    Parameters
+    ----------
+    with_ : string
+        The key to use in with sql clause
+    monkeypatch : Monkeypatch
+        A convenient fixture for monkey-patching
     """
     monkeypatch.setattr(
         Connection,
