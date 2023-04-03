@@ -80,6 +80,11 @@ def test_create_table_with_indexed_df(
         f"results = %sql SELECT * FROM {test_table_name_dict['taxi']}\
           LIMIT {limit}"
     )
+    # Prepare expected df
+    excepted_df = ip_with_dynamic_db.run_cell(
+        f"%sql SELECT * FROM {test_table_name_dict['taxi']}\
+          LIMIT {limit}"
+    )
     ip_with_dynamic_db.run_cell(
         f"{test_table_name_dict['new_table_from_df']} = results.DataFrame()"
     )
@@ -87,11 +92,14 @@ def test_create_table_with_indexed_df(
     persist_out = ip_with_dynamic_db.run_cell(
         f"%sql --persist {test_table_name_dict['new_table_from_df']}"
     )
-    query_out = ip_with_dynamic_db.run_cell(
+    out_df = ip_with_dynamic_db.run_cell(
         f"%sql SELECT * FROM {test_table_name_dict['new_table_from_df']}"
     )
-    assert persist_out.error_in_exec is None and query_out.error_in_exec is None
-    assert len(query_out.result) == excepted
+    assert persist_out.error_in_exec is None and out_df.error_in_exec is None
+    assert len(out_df.result) == excepted
+    assert excepted_df.result.DataFrame().equals(
+        out_df.result.DataFrame().loc[:, out_df.result.DataFrame().columns != "level_0"]
+    )
 
 
 # Connection

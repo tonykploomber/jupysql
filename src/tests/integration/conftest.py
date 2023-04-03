@@ -74,6 +74,20 @@ def load_numeric_data(engine, table_name, index=True):
     )
 
 
+def load_generic_testing_data(engine, index=True):
+    load_taxi_data(engine, table_name=test_table_name_dict["taxi"], index=index)
+    load_plot_data(
+        engine, table_name=test_table_name_dict["plot_something"], index=index
+    )
+    load_numeric_data(engine, table_name=test_table_name_dict["numbers"], index=index)
+
+
+def tear_down_generic_testing_data(engine):
+    drop_table(engine, table_name=test_table_name_dict["taxi"])
+    drop_table(engine, table_name=test_table_name_dict["plot_something"])
+    drop_table(engine, table_name=test_table_name_dict["numbers"])
+
+
 @pytest.fixture(scope="session")
 def setup_postgreSQL(test_table_name_dict):
     with _testing.postgres(is_bypass_init=is_on_github):
@@ -81,13 +95,9 @@ def setup_postgreSQL(test_table_name_dict):
             _testing.DatabaseConfigHelper.get_database_url("postgreSQL")
         )
         # Load pre-defined datasets
-        load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
-        load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
-        load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
+        load_generic_testing_data(engine)
         yield engine
-        drop_table(engine, table_name=test_table_name_dict["taxi"])
-        drop_table(engine, table_name=test_table_name_dict["plot_something"])
-        drop_table(engine, table_name=test_table_name_dict["numbers"])
+        tear_down_generic_testing_data(engine)
         engine.dispose()
 
 
@@ -113,13 +123,9 @@ def setup_mySQL(test_table_name_dict):
     with _testing.mysql(is_bypass_init=is_on_github):
         engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("mySQL"))
         # Load pre-defined datasets
-        load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
-        load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
-        load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
+        load_generic_testing_data(engine)
         yield engine
-        drop_table(engine, table_name=test_table_name_dict["taxi"])
-        drop_table(engine, table_name=test_table_name_dict["plot_something"])
-        drop_table(engine, table_name=test_table_name_dict["numbers"])
+        tear_down_generic_testing_data(engine)
         engine.dispose()
 
 
@@ -147,13 +153,9 @@ def setup_mariaDB(test_table_name_dict):
             _testing.DatabaseConfigHelper.get_database_url("mariaDB")
         )
         # Load pre-defined datasets
-        load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
-        load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
-        load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
+        load_generic_testing_data(engine)
         yield engine
-        drop_table(engine, table_name=test_table_name_dict["taxi"])
-        drop_table(engine, table_name=test_table_name_dict["plot_something"])
-        drop_table(engine, table_name=test_table_name_dict["numbers"])
+        tear_down_generic_testing_data(engine)
         engine.dispose()
 
 
@@ -178,13 +180,9 @@ def ip_with_mariaDB(ip_empty, setup_mariaDB):
 def setup_SQLite(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("SQLite"))
     # Load pre-defined datasets
-    load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
-    load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
-    load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
+    load_generic_testing_data(engine)
     yield engine
-    drop_table(engine, table_name=test_table_name_dict["taxi"])
-    drop_table(engine, table_name=test_table_name_dict["plot_something"])
-    drop_table(engine, table_name=test_table_name_dict["numbers"])
+    tear_down_generic_testing_data(engine)
     engine.dispose()
 
 
@@ -209,13 +207,9 @@ def ip_with_SQLite(ip_empty, setup_SQLite):
 def setup_duckDB(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("duckDB"))
     # Load pre-defined datasets
-    load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
-    load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
-    load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
+    load_generic_testing_data(engine)
     yield engine
-    drop_table(engine, table_name=test_table_name_dict["taxi"])
-    drop_table(engine, table_name=test_table_name_dict["plot_something"])
-    drop_table(engine, table_name=test_table_name_dict["numbers"])
+    tear_down_generic_testing_data(engine)
     engine.dispose()
 
 
@@ -241,13 +235,9 @@ def setup_MSSQL(test_table_name_dict):
     with _testing.mssql(is_bypass_init=is_on_github):
         engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("MSSQL"))
         # Load pre-defined datasets
-        load_taxi_data(engine, table_name=test_table_name_dict["taxi"])
-        load_plot_data(engine, table_name=test_table_name_dict["plot_something"])
-        load_numeric_data(engine, table_name=test_table_name_dict["numbers"])
+        load_generic_testing_data(engine)
         yield engine
-        drop_table(engine, table_name=test_table_name_dict["taxi"])
-        drop_table(engine, table_name=test_table_name_dict["plot_something"])
-        drop_table(engine, table_name=test_table_name_dict["numbers"])
+        tear_down_generic_testing_data(engine)
         engine.dispose()
 
 
@@ -273,15 +263,9 @@ def setup_Snowflake(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("Snowflake"))
     engine.connect()
     # Load pre-defined datasets
-    load_taxi_data(engine, table_name=test_table_name_dict["taxi"], index=False)
-    load_plot_data(
-        engine, table_name=test_table_name_dict["plot_something"], index=False
-    )
-    load_numeric_data(engine, table_name=test_table_name_dict["numbers"], index=False)
+    load_generic_testing_data(engine, index=False)
     yield engine
-    drop_table(engine, table_name=test_table_name_dict["taxi"])
-    drop_table(engine, table_name=test_table_name_dict["plot_something"])
-    drop_table(engine, table_name=test_table_name_dict["numbers"])
+    tear_down_generic_testing_data(engine)
     engine.dispose()
 
 
