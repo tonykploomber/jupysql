@@ -25,7 +25,7 @@ def mock_log_api(monkeypatch):
 
 # Query
 @pytest.mark.parametrize(
-    "ip_with_dynamic_db, excepted",
+    "ip_with_dynamic_db, expected",
     [
         ("ip_with_postgreSQL", 3),
         ("ip_with_mySQL", 3),
@@ -35,7 +35,7 @@ def mock_log_api(monkeypatch):
         ("ip_with_Snowflake", 3),
     ],
 )
-def test_query_count(ip_with_dynamic_db, excepted, request, test_table_name_dict):
+def test_query_count(ip_with_dynamic_db, expected, request, test_table_name_dict):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     out = ip_with_dynamic_db.run_line_magic(
         "sql", f"SELECT * FROM {test_table_name_dict['taxi']} LIMIT 3"
@@ -50,13 +50,13 @@ def test_query_count(ip_with_dynamic_db, excepted, request, test_table_name_dict
         "%sql --with taxi_subset SELECT * FROM taxi_subset"
     )
 
-    assert len(out) == excepted
-    assert len(out_query_with_save_arg.result) == excepted
+    assert len(out) == expected
+    assert len(out_query_with_save_arg.result) == expected
 
 
 # Create
 @pytest.mark.parametrize(
-    "ip_with_dynamic_db, excepted, limit",
+    "ip_with_dynamic_db, expected, limit",
     [
         ("ip_with_postgreSQL", 15, 15),
         ("ip_with_mySQL", 15, 15),
@@ -67,7 +67,7 @@ def test_query_count(ip_with_dynamic_db, excepted, request, test_table_name_dict
     ],
 )
 def test_create_table_with_indexed_df(
-    ip_with_dynamic_db, excepted, limit, request, test_table_name_dict
+    ip_with_dynamic_db, expected, limit, request, test_table_name_dict
 ):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
     # Clean up
@@ -81,7 +81,7 @@ def test_create_table_with_indexed_df(
           LIMIT {limit}"
     )
     # Prepare expected df
-    excepted_df = ip_with_dynamic_db.run_cell(
+    expected_df = ip_with_dynamic_db.run_cell(
         f"%sql SELECT * FROM {test_table_name_dict['taxi']}\
           LIMIT {limit}"
     )
@@ -96,8 +96,8 @@ def test_create_table_with_indexed_df(
         f"%sql SELECT * FROM {test_table_name_dict['new_table_from_df']}"
     )
     assert persist_out.error_in_exec is None and out_df.error_in_exec is None
-    assert len(out_df.result) == excepted
-    assert excepted_df.result.DataFrame().equals(
+    assert len(out_df.result) == expected
+    assert expected_df.result.DataFrame().equals(
         out_df.result.DataFrame().loc[:, out_df.result.DataFrame().columns != "level_0"]
     )
 
@@ -112,7 +112,7 @@ def get_connection_count(ip_with_dynamic_db):
 
 # Test - Number of active connection
 @pytest.mark.parametrize(
-    "ip_with_dynamic_db, excepted",
+    "ip_with_dynamic_db, expected",
     [
         ("ip_with_postgreSQL", 1),
         ("ip_with_mySQL", 1),
@@ -123,9 +123,9 @@ def get_connection_count(ip_with_dynamic_db):
         ("ip_with_Snowflake", 1),
     ],
 )
-def test_active_connection_number(ip_with_dynamic_db, excepted, request):
+def test_active_connection_number(ip_with_dynamic_db, expected, request):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
-    assert get_connection_count(ip_with_dynamic_db) == excepted
+    assert get_connection_count(ip_with_dynamic_db) == expected
 
 
 @pytest.mark.parametrize(
@@ -161,7 +161,7 @@ def test_close_and_connect(
 # Telemetry
 # Test - Number of active connection
 @pytest.mark.parametrize(
-    "ip_with_dynamic_db, excepted_dialect, excepted_driver",
+    "ip_with_dynamic_db, expected_dialect, expected_driver",
     [
         ("ip_with_postgreSQL", "postgresql", "psycopg2"),
         ("ip_with_mySQL", "mysql", "pymysql"),
@@ -173,7 +173,7 @@ def test_close_and_connect(
     ],
 )
 def test_telemetry_execute_command_has_connection_info(
-    ip_with_dynamic_db, excepted_dialect, excepted_driver, mock_log_api, request
+    ip_with_dynamic_db, expected_dialect, expected_driver, mock_log_api, request
 ):
     ip_with_dynamic_db = request.getfixturevalue(ip_with_dynamic_db)
 
@@ -183,8 +183,8 @@ def test_telemetry_execute_command_has_connection_info(
         metadata={
             "argv": ANY,
             "connection_info": {
-                "dialect": excepted_dialect,
-                "driver": excepted_driver,
+                "dialect": expected_dialect,
+                "driver": expected_driver,
                 "server_version_info": ANY,
             },
         },
