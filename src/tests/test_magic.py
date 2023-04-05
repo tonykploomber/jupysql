@@ -141,10 +141,6 @@ def test_persist_no_index(ip):
     assert persisted == [(1, "foo"), (2, "bar")]
 
 
-@pytest.mark.skipif(
-    sys.version_info[0] == 3 and sys.version_info[1] == 7,
-    reason="Not support in Python 3.7",
-)
 def test_append(ip):
     runsql(ip, "")
     ip.run_cell("results = %sql SELECT * FROM test;")
@@ -178,10 +174,6 @@ def test_persist_bare(ip):
     assert result.error_in_exec
 
 
-@pytest.mark.skipif(
-    sys.version_info[0] == 3 and sys.version_info[1] == 7,
-    reason="Not support in Python 3.7",
-)
 def test_persist_frame_at_its_creation(ip):
     ip.run_cell("results = %sql SELECT * FROM author;")
     ip.run_cell("%sql --persist sqlite:// results.DataFrame()")
