@@ -206,3 +206,40 @@ pytest src/tests/integration/test_generic_db_operations.py::test_profile_query
 We run integration tests against cloud databases like Snowflake, which requires using pre-registered accounts to evaluate their behavior. To initiate these tests, please create a branch in our [ploomber/jupyter repository](https://github.com/ploomber/jupysql).
 
 Please note that if you submit a pull request from a forked repository, the integration testing phase will be skipped because the pre-registered accounts won't be accessible.
+## General SQL Clause for Multiple Database Dialects
+
+### Context
+
+As our codebase is expanding, we have noticed that we need to write SQL queries for different database dialects such as MySQL, PostgreSQL, SQLite, and more. Writing and maintaining separate queries for each database can be time-consuming and error-prone.
+
+To address this issue, we have created a general SQL clause that can be used across multiple database dialects. This clause will allow us to write a single SQL query that can be translated to different database dialects, then use it for calculating the metadata (e.g. metadata used by boxplot)
+
+In this document, we will provide an overview of the general SQL clause, explain how it works, and provide examples of how it can be used in our codebase. We will also include instructions on how to add support for additional database dialects.
+
+### Example
+
+We can use [SQLGlot](https://sqlglot.com/sqlglot.html) to build the general sql expressions
+
+```python
+from sqlglot import select, condition
+
+where = condition("x=1").and_("y=1")
+general_sql = select("*").from_("y").where(where).sql()
+```
+```python
+'SELECT x FROM y, z'
+```
+
+Then transpile to the sql which is supported by current connected dialect.
+
+Our `sql.connection.Connection._transpile_query` will automatically detect the dialect and transpile the SQL clause
+
+```python
+query = sql.connection.Connection._transpile_query(general_sql)
+data = conn.execute(sqlalchemy.sql.text(query)).fetchall()
+```
+
+
+```{code-cell} ipython3
+
+```
