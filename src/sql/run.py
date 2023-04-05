@@ -180,7 +180,7 @@ class ResultSet(list, ColumnGuesserMixin):
         frame = pd.DataFrame(self, columns=(self and self.keys) or [])
         payload[
             "connection_info"
-        ] = sql.connection.Connection._get_curr_connection_info()
+        ] = sql.connection.Connection._get_curr_sqlalchemy_connection_info()
         return frame
 
     @telemetry.log_call("polars-data-frame")
@@ -477,7 +477,7 @@ def run(conn, sql, config):
 
 
 def raw_run(conn, sql):
-    return conn.session.execute(sql)
+    return conn.session.execute(sqlalchemy.sql.text(sql))
 
 
 class PrettyTable(prettytable.PrettyTable):
