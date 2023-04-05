@@ -104,7 +104,7 @@ class SQLQuery:
         replace to the ' (backtick) symbol if it's supported
         """
         with_clause_template = Template(
-            """WITH{% for name in with_ %} "{{name}}" AS ({{saved[name]._query}})\
+            """WITH{% for name in with_ %} {{name}} AS ({{saved[name]._query}})\
 {{ "," if not loop.last }}{% endfor %}{{query}}"""
         )
         with_clause_template_backtick = Template(

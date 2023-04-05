@@ -35,7 +35,7 @@ def run_around_tests(tmpdir_factory):
 def test_table_name_dict():
     return {
         "taxi": f"taxi_{str(uuid.uuid4())[:6]}",
-        "numbers": f"taxi_{str(uuid.uuid4())[:6]}",
+        "numbers": f"numbers_{str(uuid.uuid4())[:6]}",
         "plot_something": f"plot_something_{str(uuid.uuid4())[:6]}",
         "new_table_from_df": f"new_table_from_df_{str(uuid.uuid4())[:6]}",
     }
@@ -68,9 +68,9 @@ def load_plot_data(engine, table_name, index=True):
 
 
 def load_numeric_data(engine, table_name, index=True):
-    df = pd.DataFrame({"numbers_elements": [1, 2, 3]})
+    df = pd.DataFrame({"numbers_elements": [1, 2, 3] * 20})
     df.to_sql(
-        name=table_name, con=engine, chunksize=100_000, if_exists="replace", index=index
+        name=table_name, con=engine, chunksize=1000, if_exists="replace", index=index
     )
 
 

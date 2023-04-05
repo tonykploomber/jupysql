@@ -117,7 +117,7 @@ databaseConfig = {
         "username": os.getenv("SF_USERNAME"),
         "password": os.getenv("SF_PASSWORD"),
         # database/schema
-        "database": "JUPYSQL/TESTING",
+        "database": os.getenv("SF_DATABASE"),
         "host": "lpb17716.us-east-1",
         "port": None,
         "alias": "snowflakeTest",
@@ -140,7 +140,7 @@ def _get_database_url(database):
         port=databaseConfig[database]["port"],
         database=databaseConfig[database]["database"],
         query=databaseConfig[database]["query"],
-    ).render_as_string(hide_password=False)
+    ).render_as_string(False)
 
 
 client = docker.from_env()
