@@ -2,6 +2,7 @@
 
 ## 0.7.1dev
 
+* [Feature] Improve boxplot performance [#152]
 ## 0.7.0 (2023-04-05)
 
 * [API Change] Deprecates old SQL parametrization: `$var`, `:var`, and `{var}` in favor of `{{var}}`
