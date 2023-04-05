@@ -239,7 +239,3 @@ query = sql.connection.Connection._transpile_query(general_sql)
 data = conn.execute(sqlalchemy.sql.text(query)).fetchall()
 ```
 
-
-```{code-cell} ipython3
-
-```
