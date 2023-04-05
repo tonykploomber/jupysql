@@ -479,7 +479,7 @@ def run(conn, sql, config):
 
 
 def raw_run(conn, sql):
-    return conn.session.execute(sqlalchemy.text(sql))
+    return conn.session.execute(sqlalchemy.sql.text(sql))
 
 
 class PrettyTable(prettytable.PrettyTable):

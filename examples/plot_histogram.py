@@ -1,6 +1,5 @@
 import urllib.request
 
-# this requires duckdb: pip install duckdb
 from sql.connection import Connection
 
 from sql import plot

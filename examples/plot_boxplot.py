@@ -2,8 +2,6 @@ from pathlib import Path
 import urllib.request
 from sql.connection import Connection
 
-# this requires duckdb: pip install duckdb
-
 from sql import plot
 
 
