@@ -1,6 +1,5 @@
 ---
 jupytext:
-  notebook_metadata_filter: myst
   cell_metadata_filter: -all
   formats: md:myst
   text_representation:
@@ -79,6 +78,10 @@ df
 ```
 
 ## Uploading a dataframe to the database
+
+```{versionadded} 0.7.0
+We are using SQLAlchemy 2.0 to support this feature. If you are using Python 3.7, please upgrade to Python 3.8+
+```
 
 +++
 
