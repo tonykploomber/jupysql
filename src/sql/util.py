@@ -165,3 +165,19 @@ def _is_table_exists(table: str, with_: str) -> bool:
             pass
 
     return False
+
+
+def flatten(src_list, ltypes=(list, tuple)):
+    ltype = type(src_list)
+    src_list = list(src_list)
+    i = 0
+    while i < len(src_list):
+        while isinstance(src_list[i], ltypes):
+            if not src_list[i]:
+                src_list.pop(i)
+                i -= 1
+                break
+            else:
+                src_list[i : i + 1] = src_list[i]
+        i += 1
+    return ltype(src_list)

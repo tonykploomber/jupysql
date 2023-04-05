@@ -5,6 +5,8 @@ from ploomber_core.dependencies import requires
 from ploomber_core.exceptions import modify_exceptions
 from jinja2 import Template
 
+from sql.util import flatten
+
 try:
     import matplotlib.pyplot as plt
     from matplotlib.colors import Normalize
@@ -42,10 +44,9 @@ def _summary_stats(con, table, column, with_=None):
         query = str(store.render(query, with_=with_))
     query = sql.connection.Connection._transpile_query(query)
     values = con.execute(query).fetchone()
-    # Flatten the ([q1, med, q3], mean, N) to (q1, med, q3, mean, N)
-    values = tuple(values[0]) + (values[1],) + (values[2],)
     keys = ["q1", "med", "q3", "mean", "N"]
-    return {k: float(v) for k, v in zip(keys, values)}
+    # Flatten the value from ([q1, med, q3], mean, N) to (q1, med, q3, mean, N)
+    return {k: float(v) for k, v in zip(keys, flatten(values))}
 
 
 def _whishi(con, table, column, hival, with_=None):
