@@ -45,7 +45,6 @@ def _summary_stats(con, table, column, with_=None):
     query = sql.connection.Connection._transpile_query(query)
     values = con.execute(query).fetchone()
     keys = ["q1", "med", "q3", "mean", "N"]
-    # Flatten the value from ([q1, med, q3], mean, N) to (q1, med, q3, mean, N)
     return {k: float(v) for k, v in zip(keys, flatten(values))}
 
 

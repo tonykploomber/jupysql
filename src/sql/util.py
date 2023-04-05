@@ -167,17 +167,37 @@ def _is_table_exists(table: str, with_: str) -> bool:
     return False
 
 
-def flatten(src_list, ltypes=(list, tuple)):
-    ltype = type(src_list)
-    src_list = list(src_list)
+def flatten(src, ltypes=(list, tuple)):
+    """The flatten function creates a new tuple / list
+    with all sub-tuple / sub-list elements concatenated into it recursively
+
+    Parameters
+    ----------
+    src : tuple / list
+        Source tuple / list with all sub-tuple / sub-list elements
+    ltypes : tuple, optional
+        sub element's data type, by default (list, tuple)
+
+    Returns
+    -------
+    tuple / list
+        Flatten tuple / list
+    """
+    ltype = type(src)
+    # Create a process list to handle flatten elements
+    process_list = list(src)
     i = 0
-    while i < len(src_list):
-        while isinstance(src_list[i], ltypes):
-            if not src_list[i]:
-                src_list.pop(i)
+    while i < len(process_list):
+        while isinstance(process_list[i], ltypes):
+            if not process_list[i]:
+                process_list.pop(i)
                 i -= 1
                 break
             else:
-                src_list[i : i + 1] = src_list[i]
+                process_list[i : i + 1] = process_list[i]
         i += 1
-    return ltype(src_list)
+
+    # If input src data type is tuple, return tuple
+    if not isinstance(process_list, ltype):
+        return tuple(process_list)
+    return process_list
