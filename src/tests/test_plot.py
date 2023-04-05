@@ -4,7 +4,7 @@ from collections.abc import Mapping
 import duckdb
 import numpy as np
 from matplotlib import cbook
-from sql import plot
+from sql import plot, connection
 from pathlib import Path
 import pytest
 
@@ -45,6 +45,7 @@ class DictOfFloats(Mapping):
 
 
 def test_boxplot_stats(chinook_db):
+    connection.Connection.current = None
     con = duckdb.connect(database=":memory:")
     con.execute("INSTALL 'sqlite_scanner';")
     con.execute("LOAD 'sqlite_scanner';")
@@ -60,6 +61,7 @@ def test_boxplot_stats(chinook_db):
 
 
 def test_boxplot_stats_exception(chinook_db):
+    connection.Connection.current = None
     con = duckdb.connect(database=":memory:")
     con.execute("INSTALL 'sqlite_scanner';")
     con.execute("LOAD 'sqlite_scanner';")
