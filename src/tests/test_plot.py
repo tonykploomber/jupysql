@@ -9,9 +9,6 @@ from pathlib import Path
 import pytest
 
 
-from sql.connection import Connection
-
-
 class DictOfFloats(Mapping):
     def __init__(self, data) -> None:
         self._data = data
