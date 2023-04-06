@@ -16,10 +16,10 @@ def test_query_count(ip_with_MSSQL, test_table_name_dict):
     assert len(out) == 3
 
 
-def test_cte(ip_with_MSSQL):
+def test_cte(ip_with_MSSQL, test_table_name_dict):
     ip_with_MSSQL.run_cell(
-        "%sql --save taxi_subset --no-execute \
-        SELECT TOP 3 * FROM taxi "
+        f"%sql --save taxi_subset --no-execute \
+        SELECT TOP 3 * FROM {test_table_name_dict['taxi']} "
     )
     out_query_with_save_arg = ip_with_MSSQL.run_cell(
         "%sql --with taxi_subset SELECT * FROM taxi_subset"
