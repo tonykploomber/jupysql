@@ -84,8 +84,8 @@ def tear_down_generic_testing_data(engine, test_table_name_dict):
 
 
 @pytest.fixture(scope="session")
-def setup_postgreSQL():
-    with _testing.postgres(test_table_name_dict):
+def setup_postgreSQL(test_table_name_dict):
+    with _testing.postgres():
         engine = create_engine(
             _testing.DatabaseConfigHelper.get_database_url("postgreSQL")
         )
@@ -114,8 +114,8 @@ def ip_with_postgreSQL(ip_empty, setup_postgreSQL):
 
 
 @pytest.fixture(scope="session")
-def setup_mySQL():
-    with _testing.mysql(test_table_name_dict):
+def setup_mySQL(test_table_name_dict):
+    with _testing.mysql():
         engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("mySQL"))
         # Load pre-defined datasets
         load_generic_testing_data(engine, test_table_name_dict)
@@ -142,8 +142,8 @@ def ip_with_mySQL(ip_empty, setup_mySQL):
 
 
 @pytest.fixture(scope="session")
-def setup_mariaDB():
-    with _testing.mariadb(test_table_name_dict):
+def setup_mariaDB(test_table_name_dict):
+    with _testing.mariadb():
         engine = create_engine(
             _testing.DatabaseConfigHelper.get_database_url("mariaDB")
         )
@@ -226,8 +226,8 @@ def ip_with_duckDB(ip_empty, setup_duckDB):
 
 
 @pytest.fixture(scope="session")
-def setup_MSSQL():
-    with _testing.mssql(test_table_name_dict):
+def setup_MSSQL(test_table_name_dict):
+    with _testing.mssql():
         engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("MSSQL"))
         # Load pre-defined datasets
         load_generic_testing_data(engine, test_table_name_dict)
