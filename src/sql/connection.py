@@ -389,8 +389,7 @@ class Connection:
             connection_info["dialect"], connection_info["dialect"]
         )
 
-    @classmethod
-    def is_use_backtick_template(cls):
+    def is_use_backtick_template(self):
         """Get if the dialect support backtick (`) syntax as identifier
 
         Returns
@@ -398,7 +397,7 @@ class Connection:
         bool
             Indicate if the dialect can use backtick identifier in the SQL clause
         """
-        cur_dialect = cls._get_curr_sqlglot_dialect()
+        cur_dialect = self._get_curr_sqlglot_dialect()
         if not cur_dialect:
             return False
         try:

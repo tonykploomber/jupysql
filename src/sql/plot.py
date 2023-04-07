@@ -268,15 +268,13 @@ def boxplot(payload, table, column, *, orient="v", with_=None, conn=None, ax=Non
     set_label = ax.set_ylabel if vert else ax.set_xlabel
 
     if isinstance(column, str):
-        stats = [_boxplot_stats(conn.session, table, column, with_=with_)]
+        stats = [_boxplot_stats(conn, table, column, with_=with_)]
         ax.bxp(stats, vert=vert)
         ax.set_title(f"{column!r} from {table!r}")
         set_label(column)
         set_ticklabels([column])
     else:
-        stats = [
-            _boxplot_stats(conn.session, table, col, with_=with_) for col in column
-        ]
+        stats = [_boxplot_stats(conn, table, col, with_=with_) for col in column]
         ax.bxp(stats, vert=vert)
         ax.set_title(f"Boxplot from {table!r}")
         set_ticklabels(column)
@@ -501,7 +499,7 @@ def _histogram(table, column, bins, with_=None, conn=None, facet=None):
     """Compute bins and heights"""
     if not conn:
         conn = sql.connection.Connection.current
-        use_backticks = sql.connection.Connection.is_use_backtick_template()
+        use_backticks = conn.is_use_backtick_template()
     else:
         # TODO: fix
         use_backticks = False
