@@ -7,6 +7,7 @@ import sql.connection
 from sql.connection import Connection
 from IPython.core.error import UsageError
 import sqlglot
+import sqlalchemy
 
 
 @pytest.fixture
@@ -127,14 +128,16 @@ def test_get_curr_sqlglot_dialect(
 
 
 @pytest.mark.parametrize(
-    "cur_dialect, expected_support_backtick",
+    "sqlalchemy_url, expected_support_backtick",
     [
-        ("mysql", True),
-        ("sqlite", True),
-        ("postgres", False),
+        ("mysql+pymysql://", True),
+        ("sqlite://", True),
+        ("postgresql+psycopg2://", False),
     ],
 )
-def test_is_use_backtick_template(monkeypatch, cur_dialect, expected_support_backtick):
+def test_is_use_backtick_template(
+    mock_database, sqlalchemy_url, expected_support_backtick
+):
     """To test if we can get the backtick supportive information from different dialects
 
     Args:
@@ -143,50 +146,64 @@ def test_is_use_backtick_template(monkeypatch, cur_dialect, expected_support_bac
         expected_support_backtick (bool): Excepted boolean value to indicate
         if the dialect supports backtick identifier
     """
-    monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: cur_dialect)
-    assert Connection.is_use_backtick_template() == expected_support_backtick
+    conn = Connection(engine=create_engine(sqlalchemy_url))
+    assert conn.is_use_backtick_template() == expected_support_backtick
 
 
-def test_is_use_backtick_template_sqlglot_missing_dialect_ValueError(monkeypatch):
+def test_is_use_backtick_template_sqlglot_missing_dialect_ValueError(
+    mock_database, monkeypatch
+):
     """Since accessing missing dialect will raise ValueError from sqlglot, we assume
     that's not support case
     """
+    conn = Connection(engine=create_engine("sqlite://"))
+
     monkeypatch.setattr(
-        Connection, "_get_curr_sqlglot_dialect", lambda: "something_weird_dialect"
+        conn, "_get_curr_sqlglot_dialect", lambda: "something_weird_dialect"
     )
-    assert Connection.is_use_backtick_template() is False
+    assert conn.is_use_backtick_template() is False
 
 
-def test_is_use_backtick_template_sqlglot_missing_tokenizer_AttributeError(monkeypatch):
+def test_is_use_backtick_template_sqlglot_missing_tokenizer_AttributeError(
+    mock_database, monkeypatch
+):
     """Since accessing the dialect without Tokenizer Class will raise AttributeError
     from sqlglot, we assume that's not support case
     """
-    monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
+    conn = Connection(engine=create_engine("sqlite://"))
+
+    monkeypatch.setattr(conn, "_get_curr_sqlglot_dialect", lambda: "mysql")
     monkeypatch.setattr(sqlglot.Dialect.get_or_raise("mysql"), "Tokenizer", None)
 
-    assert Connection.is_use_backtick_template() is False
+    assert conn.is_use_backtick_template() is False
 
 
-def test_is_use_backtick_template_sqlglot_missing_identifiers_TypeError(monkeypatch):
+def test_is_use_backtick_template_sqlglot_missing_identifiers_TypeError(
+    mock_database, monkeypatch
+):
     """Since accessing the IDENTIFIERS list of the dialect's Tokenizer Class
     will raise TypeError from sqlglot, we assume that's not support case
     """
-    monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
+    conn = Connection(engine=create_engine("sqlite://"))
+
+    monkeypatch.setattr(conn, "_get_curr_sqlglot_dialect", lambda: "mysql")
     monkeypatch.setattr(
         sqlglot.Dialect.get_or_raise("mysql").Tokenizer, "IDENTIFIERS", None
     )
-    assert Connection.is_use_backtick_template() is False
+    assert conn.is_use_backtick_template() is False
 
 
-def test_is_use_backtick_template_sqlglot_empty_identifiers(monkeypatch):
+def test_is_use_backtick_template_sqlglot_empty_identifiers(mock_database, monkeypatch):
     """Since looking up the "`" symbol in IDENTIFIERS list of the dialect's
     Tokenizer Class will raise TypeError from sqlglot, we assume that's not support case
     """
-    monkeypatch.setattr(Connection, "_get_curr_sqlglot_dialect", lambda: "mysql")
+    conn = Connection(engine=create_engine("sqlite://"))
+
+    monkeypatch.setattr(conn, "_get_curr_sqlglot_dialect", lambda: "mysql")
     monkeypatch.setattr(
         sqlglot.Dialect.get_or_raise("mysql").Tokenizer, "IDENTIFIERS", []
     )
-    assert Connection.is_use_backtick_template() is False
+    assert conn.is_use_backtick_template() is False
 
 
 # Mock the missing package
