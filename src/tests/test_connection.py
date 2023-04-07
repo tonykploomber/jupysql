@@ -1,6 +1,7 @@
 import sys
 from unittest.mock import Mock, patch
 import pytest
+from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 import sql.connection
 from sql.connection import Connection
@@ -12,6 +13,12 @@ import sqlglot
 def cleanup():
     yield
     Connection.connections = {}
+
+
+@pytest.fixture
+def mock_database(monkeypatch, cleanup):
+    monkeypatch.setitem(sys.modules, "some_driver", Mock())
+    monkeypatch.setattr(Engine, "connect", Mock())
 
 
 @pytest.fixture
@@ -39,19 +46,20 @@ def test_alias(cleanup):
 
 
 def test_get_curr_sqlalchemy_connection_info(mock_postgres):
-    Connection.from_connect_str("postgresql://user:topsecret@somedomain.com/db")
-    assert Connection._get_curr_sqlalchemy_connection_info() == {
+    engine = create_engine("postgresql://user:topsecret@somedomain.com/db")
+    conn = Connection(engine=engine)
+    assert conn._get_curr_sqlalchemy_connection_info() == {
         "dialect": "postgresql",
         "driver": "psycopg2",
         "server_version_info": None,
     }
 
 
-def test_get_curr_sqlglot_dialect_no_curr_connection(monkeypatch):
-    monkeypatch.setattr(
-        Connection, "_get_curr_sqlalchemy_connection_info", lambda: None
-    )
-    assert Connection._get_curr_sqlglot_dialect() is None
+def test_get_curr_sqlglot_dialect_no_curr_connection(mock_database, monkeypatch):
+    engine = create_engine("some_sqlalchemy_url://")
+    conn = Connection(engine=engine)
+    monkeypatch.setattr(conn, "_get_curr_sqlalchemy_connection_info", lambda: None)
+    assert conn._get_curr_sqlglot_dialect() is None
 
 
 @pytest.mark.parametrize(
@@ -93,7 +101,7 @@ def test_get_curr_sqlglot_dialect_no_curr_connection(monkeypatch):
     ],
 )
 def test_get_curr_sqlglot_dialect(
-    monkeypatch, sqlalchemy_connection_info, expected_sqlglot_dialect
+    monkeypatch, sqlalchemy_connection_info, expected_sqlglot_dialect, mock_database
 ):
     """To test if we can get the dialect name in sqlglot package scope
 
@@ -102,8 +110,11 @@ def test_get_curr_sqlglot_dialect(
         sqlalchemy_connection_info (dict): The metadata about the current dialect
         expected_sqlglot_dialect (str): Expected sqlglot dialect name
     """
+    engine = create_engine("postgresql://")
+    conn = Connection(engine=engine)
+
     monkeypatch.setattr(
-        Connection,
+        conn,
         "_get_curr_sqlalchemy_connection_info",
         lambda: sqlalchemy_connection_info,
     )
@@ -112,7 +123,7 @@ def test_get_curr_sqlglot_dialect(
         "DIALECT_NAME_SQLALCHEMY_TO_SQLGLOT_MAPPING",
         {"sqlalchemy_mock_dialect_name": "sqlglot_mock_dialect"},
     )
-    assert Connection._get_curr_sqlglot_dialect() == expected_sqlglot_dialect
+    assert conn._get_curr_sqlglot_dialect() == expected_sqlglot_dialect
 
 
 @pytest.mark.parametrize(
