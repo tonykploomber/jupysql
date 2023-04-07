@@ -175,13 +175,14 @@ class ResultSet(list, ColumnGuesserMixin):
 
     @telemetry.log_call("data-frame", payload=True)
     def DataFrame(self, payload):
+
         "Returns a Pandas DataFrame instance built from the result set."
         import pandas as pd
 
         frame = pd.DataFrame(self, columns=(self and self.keys) or [])
         payload[
             "connection_info"
-        ] = sql.connection.Connection._get_curr_sqlalchemy_connection_info()
+        ] = sql.connection.Connection.current._get_curr_sqlalchemy_connection_info()
         return frame
 
     @telemetry.log_call("polars-data-frame")

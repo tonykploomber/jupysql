@@ -51,7 +51,7 @@ FROM "{{table}}"
 
 def _whishi(conn, table, column, hival, with_=None):
     if not conn:
-        conn = sql.connection.Connection.current.session
+        conn = sql.connection.Connection.current
     template = Template(
         """
 SELECT COUNT(*), MAX("{{column}}")
@@ -68,7 +68,7 @@ FROM (
     if with_:
         query = str(store.render(query, with_=with_))
     query = conn._transpile_query(query)
-    values = conn.execute(sqlalchemy.sql.text(query)).fetchone()
+    values = conn.session.execute(sqlalchemy.sql.text(query)).fetchone()
     keys = ["N", "wiskhi_max"]
     return {k: float(v) for k, v in zip(keys, values)}
 
