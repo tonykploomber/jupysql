@@ -7,7 +7,6 @@ import sql.connection
 from sql.connection import Connection
 from IPython.core.error import UsageError
 import sqlglot
-import sqlalchemy
 
 
 @pytest.fixture
