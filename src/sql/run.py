@@ -175,7 +175,6 @@ class ResultSet(list, ColumnGuesserMixin):
 
     @telemetry.log_call("data-frame", payload=True)
     def DataFrame(self, payload):
-
         "Returns a Pandas DataFrame instance built from the result set."
         import pandas as pd
 
