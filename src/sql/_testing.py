@@ -140,7 +140,7 @@ def _get_database_url(database):
         port=databaseConfig[database]["port"],
         database=databaseConfig[database]["database"],
         query=databaseConfig[database]["query"],
-    ).render_as_string(False)
+    ).render_as_string(hide_password=False)
 
 
 client = docker.from_env()

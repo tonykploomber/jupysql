@@ -45,7 +45,6 @@ DEV = [
     "black",
     # for %%sql --interact
     "ipywidgets",
-    "snowflake-sqlalchemy",
     "pytest-xdist",
 ]
 
@@ -57,6 +56,7 @@ INTEGRATION = [
     "pymysql",
     "pgspecial==2.0.1",
     "pyodbc",
+    "snowflake-sqlalchemy",
 ]
 
 setup(
