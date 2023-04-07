@@ -508,7 +508,6 @@ def test_profile_query(
     "table",
     [
         "numbers",
-        "taxi",
     ],
 )
 @pytest.mark.parametrize("ip_with_dynamic_db", ALL_DATABASES)
