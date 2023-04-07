@@ -408,8 +408,7 @@ class Connection:
         except (ValueError, AttributeError, TypeError):
             return False
 
-    @classmethod
-    def get_curr_identifiers(cls) -> list:
+    def get_curr_identifiers(self) -> list:
         """
         Returns list of identifiers for current connection
 
@@ -417,7 +416,7 @@ class Connection:
         """
         identifiers = ["", '"']
         try:
-            connection_info = cls._get_curr_sqlalchemy_connection_info()
+            connection_info = self._get_curr_sqlalchemy_connection_info()
             if connection_info:
                 cur_dialect = connection_info["dialect"]
                 identifiers_ = sqlglot.Dialect.get_or_raise(
