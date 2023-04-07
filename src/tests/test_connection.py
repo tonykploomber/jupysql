@@ -56,7 +56,7 @@ def test_get_curr_sqlalchemy_connection_info(mock_postgres):
 
 
 def test_get_curr_sqlglot_dialect_no_curr_connection(mock_database, monkeypatch):
-    engine = create_engine("some_sqlalchemy_url://")
+    engine = create_engine("sqlite://")
     conn = Connection(engine=engine)
     monkeypatch.setattr(conn, "_get_curr_sqlalchemy_connection_info", lambda: None)
     assert conn._get_curr_sqlglot_dialect() is None
@@ -110,7 +110,7 @@ def test_get_curr_sqlglot_dialect(
         sqlalchemy_connection_info (dict): The metadata about the current dialect
         expected_sqlglot_dialect (str): Expected sqlglot dialect name
     """
-    engine = create_engine("postgresql://")
+    engine = create_engine("sqlite://")
     conn = Connection(engine=engine)
 
     monkeypatch.setattr(
@@ -238,6 +238,9 @@ def test_missing_driver(
         assert "try to install package: " + missing_pkg in str(error.value)
 
 
-def test_no_current_connection_and_get_info(monkeypatch):
-    monkeypatch.setattr(Connection, "current", None)
-    assert Connection._get_curr_sqlalchemy_connection_info() is None
+def test_no_current_connection_and_get_info(monkeypatch, mock_database):
+    engine = create_engine("sqlite://")
+    conn = Connection(engine=engine)
+
+    monkeypatch.setattr(conn, "session", None)
+    assert conn._get_curr_sqlalchemy_connection_info() is None
