@@ -81,7 +81,7 @@ df
 ## Uploading a dataframe to the database
 
 ```{versionadded} 0.7.0
-We are using SQLAlchemy 2.0 to support this feature. If you are using Python 3.7, please upgrade to Python 3.8+
+ We are using SQLAlchemy 2.x to support this feature. If you are using Python 3.7, please upgrade to Python 3.8+. Alternatively, you might use Python 3.7 and downgrade to SQlAlchemy 1.x
 ```
 
 +++
