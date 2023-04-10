@@ -382,6 +382,7 @@ def histogram(
     if not conn:
         conn = sql.connection.Connection.current
 
+    print("Current conn: ", conn)
     ax = ax or plt.gca()
     payload["connection_info"] = conn._get_curr_sqlalchemy_connection_info()
     if category:
@@ -619,6 +620,6 @@ def _histogram_stacked(
         query = str(store.render(query, with_=with_))
 
     query = conn._transpile_query(query)
-    data = conn.session.execute(query).fetchall()
+    data = conn.session.execute(sqlalchemy.sql.text(query)).fetchall()
 
     return data
