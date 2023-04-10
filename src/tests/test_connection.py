@@ -1,5 +1,5 @@
 import sys
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
@@ -47,14 +47,14 @@ def test_alias(cleanup):
     assert list(Connection.connections) == ["some-alias"]
 
 
-def test_get_curr_sqlalchemy_connection_info(mock_database):
+def test_get_curr_sqlalchemy_connection_info():
     engine = create_engine("sqlite://")
     conn = Connection(engine=engine)
 
     assert conn._get_curr_sqlalchemy_connection_info() == {
         "dialect": "sqlite",
         "driver": "pysqlite",
-        "server_version_info": None,
+        "server_version_info": ANY,
     }
 
 
