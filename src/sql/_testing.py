@@ -114,10 +114,10 @@ databaseConfig = {
     },
     "Snowflake": {
         "drivername": "snowflake",
-        "username": os.environ["SF_USERNAME"],
-        "password": os.environ["SF_PASSWORD"],
+        "username": os.getenv("SF_USERNAME"),
+        "password": os.getenv("SF_PASSWORD"),
         # database/schema
-        "database": os.environ["SF_DATABASE"],
+        "database": os.getenv("SF_DATABASE"),
         "host": "lpb17716.us-east-1",
         "port": None,
         "alias": "snowflakeTest",
