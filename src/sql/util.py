@@ -67,6 +67,8 @@ def is_table_exists(
             return False
         else:
             raise ValueError("Table cannot be None")
+    if not Connection.current:
+        raise RuntimeError("No active connection")
     if not conn:
         conn = Connection.current
 
