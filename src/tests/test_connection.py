@@ -47,9 +47,10 @@ def test_alias(cleanup):
     assert list(Connection.connections) == ["some-alias"]
 
 
-def test_get_curr_sqlalchemy_connection_info(mock_postgres):
+def test_get_curr_sqlalchemy_connection_info(mock_database):
     engine = create_engine("sqlite://")
     conn = Connection(engine=engine)
+
     assert conn._get_curr_sqlalchemy_connection_info() == {
         "dialect": "sqlite",
         "driver": "pysqlite",

@@ -359,7 +359,6 @@ class Connection:
             The dictionary which contains the SQLAlchemy-based dialect
             information, or None if there is no current connection.
         """
-        print("self.session", self.session)
 
         if not self.session:
             return None
