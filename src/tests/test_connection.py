@@ -7,6 +7,7 @@ import sql.connection
 from sql.connection import Connection
 from IPython.core.error import UsageError
 import sqlglot
+import sqlalchemy
 
 
 @pytest.fixture
@@ -19,6 +20,7 @@ def cleanup():
 def mock_database(monkeypatch, cleanup):
     monkeypatch.setitem(sys.modules, "some_driver", Mock())
     monkeypatch.setattr(Engine, "connect", Mock())
+    monkeypatch.setattr(sqlalchemy, "create_engine", Mock())
 
 
 @pytest.fixture
@@ -46,18 +48,17 @@ def test_alias(cleanup):
 
 
 def test_get_curr_sqlalchemy_connection_info(mock_postgres):
-    engine = create_engine("postgresql://user:topsecret@somedomain.com/db")
+    engine = create_engine("sqlite://")
     conn = Connection(engine=engine)
     assert conn._get_curr_sqlalchemy_connection_info() == {
-        "dialect": "postgresql",
-        "driver": "psycopg2",
+        "dialect": "sqlite",
+        "driver": "pysqlite",
         "server_version_info": None,
     }
 
 
 def test_get_curr_sqlglot_dialect_no_curr_connection(mock_database, monkeypatch):
-    engine = create_engine("sqlite://")
-    conn = Connection(engine=engine)
+    conn = Connection(engine=sqlalchemy.create_engine("someurl://"))
     monkeypatch.setattr(conn, "_get_curr_sqlalchemy_connection_info", lambda: None)
     assert conn._get_curr_sqlglot_dialect() is None
 
@@ -110,8 +111,7 @@ def test_get_curr_sqlglot_dialect(
         sqlalchemy_connection_info (dict): The metadata about the current dialect
         expected_sqlglot_dialect (str): Expected sqlglot dialect name
     """
-    engine = create_engine("sqlite://")
-    conn = Connection(engine=engine)
+    conn = Connection(engine=sqlalchemy.create_engine("someurl://"))
 
     monkeypatch.setattr(
         conn,
@@ -127,15 +127,15 @@ def test_get_curr_sqlglot_dialect(
 
 
 @pytest.mark.parametrize(
-    "sqlalchemy_url, expected_support_backtick",
+    "cur_dialect, expected_support_backtick",
     [
-        ("mysql+pymysql://", True),
-        ("sqlite://", True),
-        ("postgresql+psycopg2://", False),
+        ("mysql", True),
+        ("sqlite", True),
+        ("postgres", False),
     ],
 )
 def test_is_use_backtick_template(
-    mock_database, sqlalchemy_url, expected_support_backtick
+    mock_database, cur_dialect, expected_support_backtick, monkeypatch
 ):
     """To test if we can get the backtick supportive information from different dialects
 
@@ -145,7 +145,9 @@ def test_is_use_backtick_template(
         expected_support_backtick (bool): Excepted boolean value to indicate
         if the dialect supports backtick identifier
     """
-    conn = Connection(engine=create_engine(sqlalchemy_url))
+    # conn = Connection(engine=create_engine(sqlalchemy_url))
+    conn = Connection(engine=sqlalchemy.create_engine("someurl://"))
+    monkeypatch.setattr(conn, "_get_curr_sqlglot_dialect", lambda: cur_dialect)
     assert conn.is_use_backtick_template() == expected_support_backtick
 
 
