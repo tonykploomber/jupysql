@@ -291,7 +291,6 @@ SELECT
     MAX("{{column}}")
 FROM "{{table}}"
 """
-
     if use_backticks:
         template_ = template_.replace('"', "`")
 
@@ -500,10 +499,7 @@ def _histogram(table, column, bins, with_=None, conn=None, facet=None):
     """Compute bins and heights"""
     if not conn:
         conn = sql.connection.Connection.current
-        use_backticks = conn.is_use_backtick_template()
-    else:
-        # TODO: fix
-        use_backticks = False
+    use_backticks = conn.is_use_backtick_template()
 
     # FIXME: we're computing all the with elements twice
     min_, max_ = _min_max(conn, table, column, with_=with_, use_backticks=use_backticks)
