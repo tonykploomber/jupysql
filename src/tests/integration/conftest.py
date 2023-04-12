@@ -184,7 +184,6 @@ def ip_with_mariaDB(ip_empty, setup_mariaDB, pytestconfig):
     ip_empty.run_cell("%sql -x " + alias)
 
 
-@pytest.mark.usefixtures("skip_on_live_database_mode")
 @pytest.fixture(scope="session")
 def setup_SQLite(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("SQLite"))
@@ -257,7 +256,7 @@ def setup_MSSQL(test_table_name_dict):
 
 
 @pytest.fixture
-def ip_with_MSSQL(ip_empty, setup_MSSQL, skip_on_live_database_mode, pytestconfig):
+def ip_with_MSSQL(ip_empty, setup_MSSQL, pytestconfig):
     if pytestconfig.getoption("live"):
         pytest.skip("Skip on live mode")
 

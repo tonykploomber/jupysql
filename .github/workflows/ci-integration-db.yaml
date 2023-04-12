@@ -1,4 +1,4 @@
-name: CI - DB Integration
+name: CI - DB Integration - Local
 
 on:
   push:
