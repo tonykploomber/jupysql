@@ -7,6 +7,10 @@ from sqlalchemy.ext.declarative import declarative_base
 import uuid
 
 
+def pytest_addoption(parser):
+    parser.addoption("--live", action="store_true")
+
+
 @pytest.fixture
 def get_database_config_helper():
     return _testing.DatabaseConfigHelper
@@ -97,7 +101,10 @@ def setup_postgreSQL(test_table_name_dict):
 
 
 @pytest.fixture
-def ip_with_postgreSQL(ip_empty, setup_postgreSQL):
+def ip_with_postgreSQL(ip_empty, setup_postgreSQL, pytestconfig):
+    if pytestconfig.getoption("live"):
+        pytest.skip("Skip on live mode")
+
     configKey = "postgreSQL"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
@@ -125,7 +132,10 @@ def setup_mySQL(test_table_name_dict):
 
 
 @pytest.fixture
-def ip_with_mySQL(ip_empty, setup_mySQL):
+def ip_with_mySQL(ip_empty, setup_mySQL, pytestconfig):
+    if pytestconfig.getoption("live"):
+        pytest.skip("Skip on live mode")
+
     configKey = "mySQL"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
@@ -155,7 +165,10 @@ def setup_mariaDB(test_table_name_dict):
 
 
 @pytest.fixture
-def ip_with_mariaDB(ip_empty, setup_mariaDB):
+def ip_with_mariaDB(ip_empty, setup_mariaDB, pytestconfig):
+    if pytestconfig.getoption("live"):
+        pytest.skip("Skip on live mode")
+
     configKey = "mariaDB"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
@@ -171,6 +184,7 @@ def ip_with_mariaDB(ip_empty, setup_mariaDB):
     ip_empty.run_cell("%sql -x " + alias)
 
 
+@pytest.mark.usefixtures("skip_on_live_database_mode")
 @pytest.fixture(scope="session")
 def setup_SQLite(test_table_name_dict):
     engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("SQLite"))
@@ -182,7 +196,10 @@ def setup_SQLite(test_table_name_dict):
 
 
 @pytest.fixture
-def ip_with_SQLite(ip_empty, setup_SQLite):
+def ip_with_SQLite(ip_empty, setup_SQLite, pytestconfig):
+    if pytestconfig.getoption("live"):
+        pytest.skip("Skip on live mode")
+
     configKey = "SQLite"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
@@ -209,7 +226,10 @@ def setup_duckDB(test_table_name_dict):
 
 
 @pytest.fixture
-def ip_with_duckDB(ip_empty, setup_duckDB):
+def ip_with_duckDB(ip_empty, setup_duckDB, pytestconfig):
+    if pytestconfig.getoption("live"):
+        pytest.skip("Skip on live mode")
+
     configKey = "duckDB"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
@@ -237,7 +257,10 @@ def setup_MSSQL(test_table_name_dict):
 
 
 @pytest.fixture
-def ip_with_MSSQL(ip_empty, setup_MSSQL):
+def ip_with_MSSQL(ip_empty, setup_MSSQL, skip_on_live_database_mode, pytestconfig):
+    if pytestconfig.getoption("live"):
+        pytest.skip("Skip on live mode")
+
     configKey = "MSSQL"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
@@ -265,7 +288,10 @@ def setup_Snowflake(test_table_name_dict):
 
 
 @pytest.fixture
-def ip_with_Snowflake(ip_empty, setup_Snowflake):
+def ip_with_Snowflake(ip_empty, setup_Snowflake, pytestconfig):
+    if not pytestconfig.getoption("live"):
+        pytest.skip("Skip on live mode")
+
     configKey = "Snowflake"
     config = _testing.DatabaseConfigHelper.get_database_config(configKey)
     # Select database engine
