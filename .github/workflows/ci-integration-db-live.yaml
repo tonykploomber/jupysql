@@ -17,7 +17,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-
+      - name: Check source PR
+        if: github.repository != 'ploomber/jupysql'
+        run: exit 1
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -27,7 +29,6 @@ jobs:
         run:
           pip install ".[integration]"
       - name: Integration Test
-        if: github.repository == 'ploomber/jupysql'
         env:
           SF_USERNAME: ${{ secrets.SF_USERNAME }}
           SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
