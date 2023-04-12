@@ -31,7 +31,7 @@ jobs:
           SF_USERNAME: ${{ secrets.SF_USERNAME }}
           SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
-        if: env.SF_USERNAME != '' && SF_PASSWORD != '' && SF_DATABASE != ''
+        if: env.SF_USERNAME != '' && env.SF_PASSWORD != '' && env.SF_DATABASE != ''
         run:
           # Run the integration test by pytest marker
           pytest src/tests/integration --verbose --live
