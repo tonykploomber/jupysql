@@ -24,7 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run:
+        run: |
           # Install MSSQL ODBC 18
           curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
           sudo curl -o /etc/apt/sources.list.d/mssql-release.list https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list 
