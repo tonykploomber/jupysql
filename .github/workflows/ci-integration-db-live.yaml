@@ -19,10 +19,6 @@ jobs:
       - uses: actions/checkout@v2
   
       - name: Set up Environment Vars
-        env:
-          SF_USERNAME: ${{ secrets.SF_USERNAME }}
-          SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
-          SF_DATABASE: ${{ secrets.SF_DATABASE }}
         id: secret-check
         # perform secret check & put boolean result as an output
         shell: bash
@@ -44,6 +40,10 @@ jobs:
           pip install ".[integration]"
       - name: Integration Test
         if: ${{ steps.secret-check.outputs.available == 'true' }}
+        env:
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+          SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
+          SF_DATABASE: ${{ secrets.SF_DATABASE }}
         run:
           # Run the integration test with live option
           pytest src/tests/integration --verbose --live
