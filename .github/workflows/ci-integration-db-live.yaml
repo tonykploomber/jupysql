@@ -20,6 +20,7 @@ jobs:
         run: |
           status="run"
           echo "status=$status" >> $GITHUB_OUTPUT
+      - id: override
         name: Check github repository
         if: ${{ github.repository }}!= 'ploomber/jupysql'
         run: |
