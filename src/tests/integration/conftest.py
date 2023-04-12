@@ -136,7 +136,6 @@ def setup_mySQL(test_table_name_dict, pytestconfig):
 
 @pytest.fixture
 def ip_with_mySQL(ip_empty, setup_mySQL):
-
     configKey = "mySQL"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
@@ -170,7 +169,6 @@ def setup_mariaDB(test_table_name_dict, pytestconfig):
 
 @pytest.fixture
 def ip_with_mariaDB(ip_empty, setup_mariaDB):
-
     configKey = "mariaDB"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
@@ -201,7 +199,6 @@ def setup_SQLite(test_table_name_dict, pytestconfig):
 
 @pytest.fixture
 def ip_with_SQLite(ip_empty, setup_SQLite):
-
     configKey = "SQLite"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
@@ -232,7 +229,6 @@ def setup_duckDB(test_table_name_dict, pytestconfig):
 
 @pytest.fixture
 def ip_with_duckDB(ip_empty, setup_duckDB):
-
     configKey = "duckDB"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
@@ -264,7 +260,6 @@ def setup_MSSQL(test_table_name_dict, pytestconfig):
 
 @pytest.fixture
 def ip_with_MSSQL(ip_empty, setup_MSSQL):
-
     configKey = "MSSQL"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
 
