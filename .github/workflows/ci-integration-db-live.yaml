@@ -26,7 +26,6 @@ jobs:
 
       - name: Install dependencies
         run:
-          sudo apt-get update
           pip install ".[integration]"
       - name: Integration Test
         if: github.repository == 'ploomber/jupysql'
