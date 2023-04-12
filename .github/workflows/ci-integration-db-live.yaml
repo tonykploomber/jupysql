@@ -26,6 +26,12 @@ jobs:
       - name: Install dependencies
         run:
           pip install ".[integration]"
+      - name: Echo github.event.repository.name
+        run:
+          echo ${{ github.event.repository.name }}
+      - name: Echo github.repository
+        run:
+          echo ${{ github.repository }}
       - name: Integration Test
         env:
           SF_USERNAME: ${{ secrets.SF_USERNAME }}
