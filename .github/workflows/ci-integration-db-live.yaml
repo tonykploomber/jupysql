@@ -26,6 +26,8 @@ jobs:
       - name: Install dependencies
         run:
           pip install ".[integration]"
+      - name: Env 
+        run: echo "BRANCH=$(echo $secrets.SF_USERNAME | cut -d'/' -f 3)" >> $SF_USERNAME
       - name: Integration Test
         env:
           SF_USERNAME: ${{ secrets.SF_USERNAME }}
