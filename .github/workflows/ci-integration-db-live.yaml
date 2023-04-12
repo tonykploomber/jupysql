@@ -9,7 +9,35 @@ on:
 
 
 jobs:
+  check:
+    outputs:
+      status: ${{ steps.early.outputs.available }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - id: early
+        name: Branch check
+        run: |
+          if [ "${{ secrets.SF_USERNAME }}" != '' ]; then
+            echo "available=true" >> $GITHUB_OUTPUT;
+          else
+            echo "available=false" >> $GITHUB_OUTPUT;
+          fi
+    
+        # - name: Check for Secret availability
+        # id: secret-check
+        # # perform secret check & put boolean result as an output
+        # shell: bash
+        # run: |
+        #   if [ "${{ secrets.SF_USERNAME }}" != '' ]; then
+        #     echo "available=true" >> $GITHUB_OUTPUT;
+        #   else
+        #     echo "available=false" >> $GITHUB_OUTPUT;
+        #   fi
+
   database-live-integration-test:
+    needs: check
+    if: needs.check.outputs.available == 'true'
     strategy:
       matrix:
         python-version: ['3.11']
@@ -26,16 +54,6 @@ jobs:
       - name: Install dependencies
         run:
           pip install ".[integration]"
-      - name: Check for Secret availability
-        id: secret-check
-        # perform secret check & put boolean result as an output
-        shell: bash
-        run: |
-          if [ "${{ secrets.SF_USERNAME }}" != '' ]; then
-            echo "available=true" >> $GITHUB_OUTPUT;
-          else
-            echo "available=false" >> $GITHUB_OUTPUT;
-          fi
       - name: Integration Test
         env:
           SF_USERNAME: ${{ secrets.SF_USERNAME }}
