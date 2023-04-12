@@ -245,7 +245,10 @@ def ip_with_duckDB(ip_empty, setup_duckDB, pytestconfig):
 
 
 @pytest.fixture(scope="session")
-def setup_MSSQL(test_table_name_dict):
+def setup_MSSQL(test_table_name_dict, pytestconfig):
+    if pytestconfig.getoption("live"):
+        pytest.skip("Skip on live mode")
+
     with _testing.mssql():
         engine = create_engine(_testing.DatabaseConfigHelper.get_database_url("MSSQL"))
         # Load pre-defined datasets
@@ -256,9 +259,7 @@ def setup_MSSQL(test_table_name_dict):
 
 
 @pytest.fixture
-def ip_with_MSSQL(ip_empty, setup_MSSQL, pytestconfig):
-    if pytestconfig.getoption("live"):
-        pytest.skip("Skip on live mode")
+def ip_with_MSSQL(ip_empty, setup_MSSQL):
 
     configKey = "MSSQL"
     alias = _testing.DatabaseConfigHelper.get_database_config(configKey)["alias"]
