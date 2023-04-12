@@ -26,7 +26,9 @@ from sql.telemetry import telemetry
 import warnings
 
 
-def _summary_stats(con, table, column, with_=None):
+def _summary_stats(conn, table, column, with_=None):
+    if not conn:
+        conn = sql.connection.Connection.current
     """Compute percentiles and mean for boxplot"""
     template = Template(
         """
@@ -43,13 +45,15 @@ def _summary_stats(con, table, column, with_=None):
 
     if with_:
         query = str(store.render(query, with_=with_))
-    query = sql.connection.Connection._transpile_query(query)
-    values = con.execute(sqlalchemy.sql.text(query)).fetchone()
+    query = conn._transpile_query(query)
+    values = conn.session.execute(sqlalchemy.sql.text(query)).fetchone()
     keys = ["q1", "med", "q3", "mean", "N"]
     return {k: float(v) for k, v in zip(keys, flatten(values))}
 
 
-def _whishi(con, table, column, hival, with_=None):
+def _whishi(conn, table, column, hival, with_=None):
+    if not conn:
+        conn = sql.connection.Connection.current
     template = Template(
         """
 SELECT COUNT(*), MAX("{{column}}")
@@ -65,13 +69,15 @@ FROM (
 
     if with_:
         query = str(store.render(query, with_=with_))
-    query = sql.connection.Connection._transpile_query(query)
-    values = con.execute(sqlalchemy.sql.text(query)).fetchone()
+    query = conn._transpile_query(query)
+    values = conn.session.execute(sqlalchemy.sql.text(query)).fetchone()
     keys = ["N", "wiskhi_max"]
     return {k: float(v) for k, v in zip(keys, values)}
 
 
-def _whislo(con, table, column, loval, with_=None):
+def _whislo(conn, table, column, loval, with_=None):
+    if not conn:
+        conn = sql.connection.Connection.current
     template = Template(
         """
 SELECT COUNT(*), MIN("{{column}}")
@@ -87,13 +93,15 @@ FROM (
 
     if with_:
         query = str(store.render(query, with_=with_))
-    query = sql.connection.Connection._transpile_query(query)
-    values = con.execute(sqlalchemy.sql.text(query)).fetchone()
+    query = conn._transpile_query(query)
+    values = conn.session.execute(sqlalchemy.sql.text(query)).fetchone()
     keys = ["N", "wisklo_min"]
     return {k: float(v) for k, v in zip(keys, values)}
 
 
-def _percentile(con, table, column, pct, with_=None):
+def _percentile(conn, table, column, pct, with_=None):
+    if not conn:
+        conn = sql.connection.Connection.current.session
     template = Template(
         """
 SELECT
@@ -105,12 +113,12 @@ FROM "{{table}}"
 
     if with_:
         query = str(store.render(query, with_=with_))
-    query = sql.connection.Connection._transpile_query(query)
-    values = con.execute(sqlalchemy.sql.text(query)).fetchone()[0]
+    query = conn._transpile_query(query)
+    values = conn.session.execute(sqlalchemy.sql.text(query)).fetchone()[0]
     return values
 
 
-def _between(con, table, column, whislo, whishi, with_=None):
+def _between(conn, table, column, whislo, whishi, with_=None):
     template = Template(
         """
 SELECT "{{column}}"
@@ -123,14 +131,18 @@ OR  "{{column}}" > {{whishi}}
 
     if with_:
         query = str(store.render(query, with_=with_))
-    query = sql.connection.Connection._transpile_query(query)
-    results = [float(n[0]) for n in con.execute(sqlalchemy.sql.text(query)).fetchall()]
+    query = conn._transpile_query(query)
+    results = [
+        float(n[0]) for n in conn.session.execute(sqlalchemy.sql.text(query)).fetchall()
+    ]
     return results
 
 
 # https://github.com/matplotlib/matplotlib/blob/b5ac96a8980fdb9e59c9fb649e0714d776e26701/lib/matplotlib/cbook/__init__.py
 @modify_exceptions
-def _boxplot_stats(con, table, column, whis=1.5, autorange=False, with_=None):
+def _boxplot_stats(conn, table, column, whis=1.5, autorange=False, with_=None):
+    if not conn:
+        conn = sql.connection.Connection.current
     """Compute statistics required to create a boxplot"""
 
     def _compute_conf_interval(N, med, iqr):
@@ -142,7 +154,7 @@ def _boxplot_stats(con, table, column, whis=1.5, autorange=False, with_=None):
     stats = dict()
 
     # arithmetic mean
-    s_stats = _summary_stats(con, table, column, with_=with_)
+    s_stats = _summary_stats(conn, table, column, with_=with_)
 
     stats["mean"] = s_stats["mean"]
     q1, med, q3 = s_stats["q1"], s_stats["med"], s_stats["q3"]
@@ -159,7 +171,7 @@ def _boxplot_stats(con, table, column, whis=1.5, autorange=False, with_=None):
 
     # lowest/highest non-outliers
     if np.iterable(whis) and not isinstance(whis, str):
-        loval, hival = _percentile(con, table, column, whis, with_=with_)
+        loval, hival = _percentile(conn, table, column, whis, with_=with_)
 
     elif np.isreal(whis):
         loval = q1 - whis * stats["iqr"]
@@ -168,7 +180,7 @@ def _boxplot_stats(con, table, column, whis=1.5, autorange=False, with_=None):
         raise ValueError("whis must be a float or list of percentiles")
 
     # get high extreme
-    wiskhi_d = _whishi(con, table, column, hival, with_=with_)
+    wiskhi_d = _whishi(conn, table, column, hival, with_=with_)
 
     if wiskhi_d["N"] == 0 or wiskhi_d["wiskhi_max"] < q3:
         stats["whishi"] = q3
@@ -176,7 +188,7 @@ def _boxplot_stats(con, table, column, whis=1.5, autorange=False, with_=None):
         stats["whishi"] = wiskhi_d["wiskhi_max"]
 
     # get low extreme
-    wisklo_d = _whislo(con, table, column, loval, with_=with_)
+    wisklo_d = _whislo(conn, table, column, loval, with_=with_)
 
     if wisklo_d["N"] == 0 or wisklo_d["wisklo_min"] > q1:
         stats["whislo"] = q1
@@ -185,7 +197,7 @@ def _boxplot_stats(con, table, column, whis=1.5, autorange=False, with_=None):
 
     # compute a single array of outliers
     stats["fliers"] = np.array(
-        _between(con, table, column, stats["whislo"], stats["whishi"], with_=with_)
+        _between(conn, table, column, stats["whislo"], stats["whishi"], with_=with_)
     )
 
     # add in the remaining stats
@@ -247,11 +259,9 @@ def boxplot(payload, table, column, *, orient="v", with_=None, conn=None, ax=Non
     .. plot:: ../examples/plot_boxplot_many.py
     """
     if not conn:
-        conn = sql.connection.Connection.current.session
+        conn = sql.connection.Connection.current
 
-    payload[
-        "connection_info"
-    ] = sql.connection.Connection._get_curr_sqlalchemy_connection_info()
+    payload["connection_info"] = conn._get_curr_sqlalchemy_connection_info()
 
     ax = plt.gca()
     vert = orient == "v"
@@ -275,13 +285,14 @@ def boxplot(payload, table, column, *, orient="v", with_=None, conn=None, ax=Non
 
 
 def _min_max(con, table, column, with_=None, use_backticks=False):
+    if not con:
+        con = sql.connection.Connection.current
     template_ = """
 SELECT
     MIN("{{column}}"),
     MAX("{{column}}")
 FROM "{{table}}"
 """
-
     if use_backticks:
         template_ = template_.replace('"', "`")
 
@@ -290,8 +301,8 @@ FROM "{{table}}"
 
     if with_:
         query = str(store.render(query, with_=with_))
-    query = sql.connection.Connection._transpile_query(query)
-    min_, max_ = con.execute(sqlalchemy.sql.text(query)).fetchone()
+    query = con._transpile_query(query)
+    min_, max_ = con.session.execute(sqlalchemy.sql.text(query)).fetchone()
     return min_, max_
 
 
@@ -369,10 +380,12 @@ def histogram(
 
     .. plot:: ../examples/plot_histogram_many.py
     """
+    if not conn:
+        conn = sql.connection.Connection.current
+
+    print("Current conn: ", conn)
     ax = ax or plt.gca()
-    payload[
-        "connection_info"
-    ] = sql.connection.Connection._get_curr_sqlalchemy_connection_info()
+    payload["connection_info"] = conn._get_curr_sqlalchemy_connection_info()
     if category:
         if isinstance(column, list):
             if len(column) > 1:
@@ -487,11 +500,8 @@ def histogram(
 def _histogram(table, column, bins, with_=None, conn=None, facet=None):
     """Compute bins and heights"""
     if not conn:
-        conn = sql.connection.Connection.current.session
-        use_backticks = sql.connection.Connection.is_use_backtick_template()
-    else:
-        # TODO: fix
-        use_backticks = False
+        conn = sql.connection.Connection.current
+    use_backticks = conn.is_use_backtick_template()
 
     # FIXME: we're computing all the with elements twice
     min_, max_ = _min_max(conn, table, column, with_=with_, use_backticks=use_backticks)
@@ -547,8 +557,8 @@ def _histogram(table, column, bins, with_=None, conn=None, facet=None):
     if with_:
         query = str(store.render(query, with_=with_))
 
-    query = sql.connection.Connection._transpile_query(query)
-    data = conn.execute(sqlalchemy.sql.text(query)).fetchall()
+    query = conn._transpile_query(query)
+    data = conn.session.execute(sqlalchemy.sql.text(query)).fetchall()
     bin_, height = zip(*data)
 
     if bin_[0] is None:
@@ -570,7 +580,7 @@ def _histogram_stacked(
 ):
     """Compute the corresponding heights of each bin based on the category"""
     if not conn:
-        conn = sql.connection.Connection.current.session
+        conn = sql.connection.Connection.current
 
     cases = []
     for bin in bins:
@@ -607,7 +617,7 @@ def _histogram_stacked(
     if with_:
         query = str(store.render(query, with_=with_))
 
-    query = sql.connection.Connection._transpile_query(query)
-    data = conn.execute(query).fetchall()
+    query = conn._transpile_query(query)
+    data = conn.session.execute(sqlalchemy.sql.text(query)).fetchall()
 
     return data
