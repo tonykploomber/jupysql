@@ -362,7 +362,6 @@ class Connection:
 
         if not self.session:
             return None
-        # return self.session
         engine = self.metadata.bind if IS_SQLALCHEMY_ONE else self.session
 
         return {
