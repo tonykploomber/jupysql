@@ -9,12 +9,30 @@ on:
 
 
 jobs:
+  check:
+    outputs:
+      status: ${{ steps.early.outputs.status }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - id: early
+        name: Set default as run
+        run: |
+          status="run"
+          echo "status=$status" >> $GITHUB_OUTPUT
+        name: Check github repository
+        if: ${{ github.repository }}!= 'ploomber/jupysql'
+        run: |
+          status="skip"
+          echo "status=$status" >> $GITHUB_OUTPUT
   database-live-integration-test:
     strategy:
       matrix:
         python-version: ['3.11']
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
+    needs: check
+    if: needs.check.outputs.status == 'run'
     steps:
       - uses: actions/checkout@v2
       - name: Check source PR
