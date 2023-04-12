@@ -32,6 +32,9 @@ jobs:
       - name: Echo github.repository
         run:
           echo ${{ github.repository }}
+      - name: Echo github.repository_owner
+        run:
+          echo ${{ github.repository_owner }}
       - name: Integration Test
         env:
           SF_USERNAME: ${{ secrets.SF_USERNAME }}
