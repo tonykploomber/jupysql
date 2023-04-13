@@ -7,9 +7,9 @@ jupytext:
     format_version: 0.13
     jupytext_version: 1.14.5
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: jupysql
   language: python
-  name: python3
+  name: jupysql
 myst:
   html_meta:
     description lang=en: JupySQL's developer guide
@@ -220,16 +220,6 @@ In this document, we'll explain how to build generic SQL constructs and provide 
 
 We can use [SQLGlot](https://sqlglot.com/sqlglot.html) to build the general sql expressions
 
-```python
-from sqlglot import select, condition
-
-where = condition("x=1").and_("y=1")
-general_sql = select("*").from_("y").where(where).sql()
-```
-```python
-'SELECT x FROM y, z'
-```
-
 Then transpile to the sql which is supported by current connected dialect.
 
 Our `sql.connection.Connection._transpile_query` will automatically detect the dialect and transpile the SQL clause
@@ -239,3 +229,47 @@ query = sql.connection.Connection._transpile_query(general_sql)
 data = conn.execute(sqlalchemy.sql.text(query)).fetchall()
 ```
 
+```{code-cell} ipython3
+%pip install sqlglot
+from sqlglot import select, condition
+
+where = condition("x=1").and_("y=1")
+general_sql = select("*").from_("y").where(where).sql()
+
+general_sql
+```
+
+Then transpile to the sql which is supported by current connected dialect.
+
+Our `sql.connection.Connection._transpile_query` will automatically detect the dialect and transpile the SQL clause.
+
++++
+
+### When current connection is via duckdb
+
+```{code-cell} ipython3
+from sql import connection
+from sqlalchemy import create_engine
+conn = connection.Connection(engine=create_engine(url="duckdb://"))
+```
+
+### When current connection is via duckdb
+
+```{code-cell} ipython3
+from sql import connection
+from sqlalchemy import create_engine
+from sqlglot import select, condition
+
+# Prepare connection
+conn = connection.Connection(engine=create_engine(url="duckdb://"))
+
+# Prepare general SQL clause
+where = condition("x=1").and_("y=1")
+general_sql = select("*").from_("y").where(where).sql()
+
+conn.transpile_sql(general_sql)
+```
+
+```{code-cell} ipython3
+
+```
