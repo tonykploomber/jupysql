@@ -12,14 +12,14 @@ def pytest_addoption(parser):
 
 
 # Skip the test case when live mode is on (with --live arg)
-@pytest.fixture
+@pytest.fixture(scope="session")
 def skip_on_live_mode(pytestconfig):
     if pytestconfig.getoption("live"):
         pytest.skip("Skip on live mode")
 
 
 # Skip the test case when live mode is off (without --live arg)
-@pytest.fixture
+@pytest.fixture(scope="session")
 def skip_on_local_mode(pytestconfig):
     if not pytestconfig.getoption("live"):
         pytest.skip("Skip on local mode")
