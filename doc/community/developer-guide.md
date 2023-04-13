@@ -212,9 +212,9 @@ Please note that if you submit a pull request from a forked repository, the inte
 
 As our codebase is expanding, we have noticed that we need to write SQL queries for different database dialects such as MySQL, PostgreSQL, SQLite, and more. Writing and maintaining separate queries for each database can be time-consuming and error-prone.
 
-To address this issue, we have created a general SQL clause that can be used across multiple database dialects. This clause will allow us to write a single SQL query that can be translated to different database dialects, then use it for calculating the metadata (e.g. metadata used by boxplot)
+To address this issue, we can use `sqlglot` to create a construct that can be compiled across multiple SQL dialects. This clause will allow us to write a single SQL query that can be translated to different database dialects, then use it for calculating the metadata (e.g. metadata used by boxplot)
 
-In this document, we will provide an overview of the general SQL clause, explain how it works, and provide examples of how it can be used in our codebase. We will also include instructions on how to add support for additional database dialects.
+In this document, we'll explain how to build generic SQL constructs and provide examples of how it can be used in our codebase. We will also include instructions on how to add support for additional database dialects.
 
 ### Example
 
