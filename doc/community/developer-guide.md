@@ -216,28 +216,9 @@ To address this issue, we can use `sqlglot` to create a construct that can be co
 
 In this document, we'll explain how to build generic SQL constructs and provide examples of how it can be used in our codebase. We will also include instructions on how to add support for additional database dialects.
 
-### Example
+### Approach 1 - Provide the general SQL Clause
 
-We can use [SQLGlot](https://sqlglot.com/sqlglot.html) to build the general sql expressions
-
-Then transpile to the sql which is supported by current connected dialect.
-
-Our `sql.connection.Connection._transpile_query` will automatically detect the dialect and transpile the SQL clause
-
-```python
-query = sql.connection.Connection._transpile_query(general_sql)
-data = conn.execute(sqlalchemy.sql.text(query)).fetchall()
-```
-
-```{code-cell} ipython3
-%pip install sqlglot
-from sqlglot import select, condition
-
-where = condition("x=1").and_("y=1")
-general_sql = select("*").from_("y").where(where).sql()
-
-general_sql
-```
+We can use [SQLGlot](https://sqlglot.com/sqlglot.html) to build the general sql expressions.
 
 Then transpile to the sql which is supported by current connected dialect.
 
@@ -245,30 +226,73 @@ Our `sql.connection.Connection._transpile_query` will automatically detect the d
 
 +++
 
-### When current connection is via duckdb
+#### Example
 
 ```{code-cell} ipython3
-from sql import connection
-from sqlalchemy import create_engine
-conn = connection.Connection(engine=create_engine(url="duckdb://"))
-```
-
-### When current connection is via duckdb
-
-```{code-cell} ipython3
-from sql import connection
-from sqlalchemy import create_engine
 from sqlglot import select, condition
+from sql import connection
+from sqlalchemy import create_engine
 
 # Prepare connection
-conn = connection.Connection(engine=create_engine(url="duckdb://"))
+conn = connection.Connection(engine=create_engine(url="sqlite://"))
 
-# Prepare general SQL clause
 where = condition("x=1").and_("y=1")
 general_sql = select("*").from_("y").where(where).sql()
 
-conn.transpile_sql(general_sql)
+print ("General SQL Clause: ")
+print (f"{general_sql}\n")
+
+print ("Transpiled result: ")
+conn._transpile_query(general_sql)
 ```
+
+### Approach 2 - Provide SQL Clause based on specfic database 
+
+Sometimes the SQL Clause might be complex, we can also write the SQL Clause based on one specfic database and transpile it.
+
+For example, the `TO_TIMESTAMP` keyword is only defined in duckdb, but we want to also apply this SQL clause to other database.
+
+We may provide `sqlglot.parse_one({source_sql_clause}, read={source_database_dialect}).sql()` as input sql to `_transpile_query()`
+
++++
+
+#### When current connection is via duckdb
+
+```{code-cell} ipython3
+from sql import connection
+from sqlalchemy import create_engine
+import sqlglot
+# Prepare connection
+conn = connection.Connection(engine=create_engine(url="duckdb://"))
+
+# Prepare SQL clause based on duckdb syntax
+input_sql = sqlglot.parse_one("SELECT TO_TIMESTAMP(1618088028295)", read="duckdb").sql()
+
+print(f"{conn._get_curr_sqlglot_dialect()} transpiled result:")
+conn._transpile_query(input_sql)
+```
+
+#### When current connection is via sqlite
+
+```{code-cell} ipython3
+from sql import connection
+from sqlalchemy import create_engine
+
+# Prepare connection
+conn = connection.Connection(engine=create_engine(url="sqlite://"))
+
+# Prepare SQL clause based on duckdb syntax
+input_sql = sqlglot.parse_one("SELECT TO_TIMESTAMP(1618088028295)", read="duckdb").sql()
+
+print(f"{conn._get_curr_sqlglot_dialect()} transpiled result:")
+conn._transpile_query(input_sql)
+```
+
+As you can see, the output results are different
+
+From duckdb dialect: `'SELECT TO_TIMESTAMP(1618088028295)'`
+
+From sqlite dialect: `'SELECT UNIX_TO_TIME(1618088028295)'`
 
 ```{code-cell} ipython3
 
