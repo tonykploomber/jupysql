@@ -1,4 +1,4 @@
-name: CI - DB Integration - Live 
+name: CI - DB Integration - Cloud 
 
 on:
   push:
