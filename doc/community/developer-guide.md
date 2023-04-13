@@ -239,10 +239,10 @@ conn = connection.Connection(engine=create_engine(url="sqlite://"))
 where = condition("x=1").and_("y=1")
 general_sql = select("*").from_("y").where(where).sql()
 
-print ("General SQL Clause: ")
-print (f"{general_sql}\n")
+print("General SQL Clause: ")
+print(f"{general_sql}\n")
 
-print ("Transpiled result: ")
+print("Transpiled result: ")
 conn._transpile_query(general_sql)
 ```
 
@@ -262,6 +262,7 @@ We may provide `sqlglot.parse_one({source_sql_clause}, read={source_database_dia
 from sql import connection
 from sqlalchemy import create_engine
 import sqlglot
+
 # Prepare connection
 conn = connection.Connection(engine=create_engine(url="duckdb://"))
 
@@ -288,7 +289,7 @@ print(f"{conn._get_curr_sqlglot_dialect()} transpiled result:")
 conn._transpile_query(input_sql)
 ```
 
-As you can see, the output results are different
+As you can see, output results are different
 
 From duckdb dialect: `'SELECT TO_TIMESTAMP(1618088028295)'`
 
