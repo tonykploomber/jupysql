@@ -301,16 +301,15 @@ from sqlalchemy import create_engine
 conn = connection.Connection(engine=create_engine(url="sqlite://"))
 ```
 
-##### Prepare SQL clause based on duckdb syntax
+##### Prepare SQL clause based on sqlite
 
 ```{code-cell} ipython3
 input_sql = sqlglot.parse_one("SELECT TO_TIMESTAMP(1618088028295)", read="duckdb").sql()
 ```
 
-##### Result
+##### Transpiled Result
 
 ```{code-cell} ipython3
-print(f"{conn._get_curr_sqlglot_dialect()} transpiled result:")
 conn._transpile_query(input_sql)
 ```
 
