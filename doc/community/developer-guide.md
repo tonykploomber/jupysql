@@ -7,9 +7,9 @@ jupytext:
     format_version: 0.13
     jupytext_version: 1.14.5
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: jupysql
   language: python
-  name: python3
+  name: jupysql
 myst:
   html_meta:
     description lang=en: JupySQL's developer guide
@@ -214,7 +214,7 @@ As our codebase is expanding, we have noticed that we need to write SQL queries 
 
 To address this issue, we can use `sqlglot` to create a construct that can be compiled across multiple SQL dialects. This clause will allow us to write a single SQL query that can be translated to different database dialects, then use it for calculating the metadata (e.g. metadata used by boxplot)
 
-In this document, we'll explain how to build generic SQL constructs and provide examples of how it can be used in our codebase. We will also include instructions on how to add support for additional database dialects.
+In this section, we'll explain how to build generic SQL constructs and provide examples of how it can be used in our codebase. We will also include instructions on how to add support for additional database dialects.
 
 ### Approach 1 - Provide the general SQL Clause
 
@@ -229,19 +229,25 @@ Our `sql.connection.Connection._transpile_query` will automatically detect the d
 #### Example
 
 ```{code-cell} ipython3
+# Prepare connection
 from sqlglot import select, condition
 from sql import connection
 from sqlalchemy import create_engine
 
-# Prepare connection
 conn = connection.Connection(engine=create_engine(url="sqlite://"))
+```
 
+```{code-cell} ipython3
+# Prepare SQL Clause
 where = condition("x=1").and_("y=1")
 general_sql = select("*").from_("y").where(where).sql()
 
 print("General SQL Clause: ")
 print(f"{general_sql}\n")
+```
 
+```{code-cell} ipython3
+# Result
 print("Transpiled result: ")
 conn._transpile_query(general_sql)
 ```
@@ -258,33 +264,52 @@ We may provide `sqlglot.parse_one({source_sql_clause}, read={source_database_dia
 
 #### When current connection is via duckdb
 
++++
+
+##### Prepare connection
+
 ```{code-cell} ipython3
 from sql import connection
 from sqlalchemy import create_engine
 import sqlglot
 
-# Prepare connection
 conn = connection.Connection(engine=create_engine(url="duckdb://"))
+```
 
-# Prepare SQL clause based on duckdb syntax
+##### Prepare SQL clause based on duckdb syntax
+
+```{code-cell} ipython3
 input_sql = sqlglot.parse_one("SELECT TO_TIMESTAMP(1618088028295)", read="duckdb").sql()
+```
 
-print(f"{conn._get_curr_sqlglot_dialect()} transpiled result:")
+##### Transpiled Result
+
+```{code-cell} ipython3
 conn._transpile_query(input_sql)
 ```
 
 #### When current connection is via sqlite
 
++++
+
+##### Prepare connection
+
 ```{code-cell} ipython3
 from sql import connection
 from sqlalchemy import create_engine
 
-# Prepare connection
 conn = connection.Connection(engine=create_engine(url="sqlite://"))
+```
 
-# Prepare SQL clause based on duckdb syntax
+##### Prepare SQL clause based on duckdb syntax
+
+```{code-cell} ipython3
 input_sql = sqlglot.parse_one("SELECT TO_TIMESTAMP(1618088028295)", read="duckdb").sql()
+```
 
+##### Result
+
+```{code-cell} ipython3
 print(f"{conn._get_curr_sqlglot_dialect()} transpiled result:")
 conn._transpile_query(input_sql)
 ```
@@ -294,7 +319,3 @@ As you can see, output results are different
 From duckdb dialect: `'SELECT TO_TIMESTAMP(1618088028295)'`
 
 From sqlite dialect: `'SELECT UNIX_TO_TIME(1618088028295)'`
-
-```{code-cell} ipython3
-
-```
