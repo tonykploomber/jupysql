@@ -252,24 +252,28 @@ def test_get_list_of_existing_tables(ip):
     for table in expected:
         assert table in list_of_tables
 
-@pytest.mark.parametrize("src, ltypes, expected", [
-    # 1-D flatten
-    ([1, 2, 3], list, [1, 2, 3]),
-    # 2-D flatten
-    ([(1, 2), 3], None, [1, 2, 3]),
-    ([(1, 2), 3], tuple, [1, 2, 3]),
-    ([[[1,2],3]], list, [1, 2, 3]),
-    (([[1,2],3]), None, [1, 2, 3]),
-    (((1, 2), 3), tuple, (1, 2, 3)),
-    (((1, 2), 3), None, (1, 2, 3)),
-    (([1, 2], 3), None, (1, 2, 3)),
-    (([1, 2], 3), list, (1, 2, 3)),
-    # 3-D flatten
-    (([[1, 2]], 3), list, (1, 2, 3)),
-    (([[1, 2]], 3), None, (1, 2, 3)),
-])
+
+@pytest.mark.parametrize(
+    "src, ltypes, expected",
+    [
+        # 1-D flatten
+        ([1, 2, 3], list, [1, 2, 3]),
+        # 2-D flatten
+        ([(1, 2), 3], None, [1, 2, 3]),
+        ([(1, 2), 3], tuple, [1, 2, 3]),
+        ([[[1, 2], 3]], list, [1, 2, 3]),
+        (([[1, 2], 3]), None, [1, 2, 3]),
+        (((1, 2), 3), tuple, (1, 2, 3)),
+        (((1, 2), 3), None, (1, 2, 3)),
+        (([1, 2], 3), None, (1, 2, 3)),
+        (([1, 2], 3), list, (1, 2, 3)),
+        # 3-D flatten
+        (([[1, 2]], 3), list, (1, 2, 3)),
+        (([[1, 2]], 3), None, (1, 2, 3)),
+    ],
+)
 def test_flatten(src, ltypes, expected):
     if ltypes:
-        assert util.flatten(src,ltypes) == expected
+        assert util.flatten(src, ltypes) == expected
     else:
         assert util.flatten(src) == expected
