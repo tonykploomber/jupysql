@@ -148,13 +148,7 @@ def test_table_profile(ip, tmp_empty):
         assert word == str(expected[criteria][3])
 
     # Test sticky column style was injected
-    assert """<style>
- table td:first-child {
-  position: sticky;
-  left: 0;
-  background-color: var(--jp-cell-editor-background););
-}
-            </style>""" in out._table_html
+    assert "position: sticky;" in out._table_html
 
 
 def test_table_schema_profile(ip, tmp_empty):

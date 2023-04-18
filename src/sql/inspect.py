@@ -268,7 +268,10 @@ class TableDescription(DatabaseInspection):
  table td:first-child {
   position: sticky;
   left: 0;
-  background-color: var(--jp-cell-editor-background););
+  background-color: var(--jp-cell-editor-background);
+}
+ table tbody tr:hover > td:first-child{
+  background-color: var(--jp-rendermime-table-row-hover-background);
 }
             </style>"""
         self._table_html = HTML(
