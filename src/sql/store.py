@@ -84,11 +84,11 @@ class SQLStore(MutableMapping):
 class SQLQuery:
     """Holds queries and renders them"""
 
-    def __init__(self, store: SQLStore, query: str, with_: Iterable = None,is_interactive=False):
+    def __init__(self, store: SQLStore, query: str, with_: Iterable = None, is_interactive=False):
         self._store = store
         self._query = query
         self._with_ = with_ or []
-        print ("Store _is_interactive", _is_interactive)
+        print ("Store _is_interactive", is_interactive)
         self._is_interactive = is_interactive
         if any("-" in x for x in self._with_):
             warnings.warn(

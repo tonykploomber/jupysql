@@ -364,7 +364,7 @@ class SqlMagic(Magics, Configurable):
                     + " instead for the save argument.",
                     FutureWarning,
                 )
-            self._store.store(args.save, command.sql_original, with_=args.with_, is_interactive=args.interact)
+            self._store.store(args.save, command.sql_original, with_=args.with_, is_interactive=(args.interact))
 
         if args.no_execute:
             print("Skipping execution...")
