@@ -4,7 +4,7 @@
 * [Doc] Algolia search added (#64)
 * [Fix] Fix `%sqlcmd columns` in MySQL and MariaDB
 * [Doc] Updating connecting guide (by @DaveOkpare) (#56)
-
+* [Feature] Add sticky first column styling to sqlcmd profile command
 * [Feature] Upgrades SQLAlchemy version to 2
 
 * [Fix] `%sqlcmd --test` improved, changes in logic and addition of user guide (#275)

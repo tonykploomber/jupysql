@@ -263,7 +263,6 @@ class TableDescription(DatabaseInspection):
 
             self._table.add_row(values)
 
-        self._table_html = self._table.get_html_string()
         # Inject css to html to make first column sticky
         sticky_column_css = """<style>
  table td:first-child {
