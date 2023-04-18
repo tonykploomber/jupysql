@@ -32,6 +32,7 @@ class ggplot:
     def __init__(self, table, mapping: aes = None, conn=None, with_=None) -> None:
         self.table = table
         self.with_ = [with_] if with_ else None
+        # print ("With: ", self.with_)
         self.mapping = mapping if mapping is not None else aes()
         self.conn = conn
 
@@ -55,6 +56,7 @@ class ggplot:
         """
         Draws plot
         """
+        print ("draw")
         if isinstance(other, geom):
             self.geom = other
             other.draw(self)

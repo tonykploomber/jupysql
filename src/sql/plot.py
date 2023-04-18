@@ -381,7 +381,7 @@ def histogram(
     if not conn:
         conn = sql.connection.Connection.current
 
-    print("Current conn: ", conn)
+    print("Current with: ", with_)
     ax = ax or plt.gca()
     payload["connection_info"] = conn._get_curr_sqlalchemy_connection_info()
     if category:
@@ -555,6 +555,7 @@ def _histogram(table, column, bins, with_=None, conn=None, facet=None):
     if with_:
         query = str(store.render(query, with_=with_))
 
+    print ("Query: ", store.render(query, with_=with_))
     query = conn._transpile_query(query)
     data = conn.session.execute(sqlalchemy.sql.text(query)).fetchall()
     bin_, height = zip(*data)

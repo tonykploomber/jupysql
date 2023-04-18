@@ -69,7 +69,7 @@ class SQLStore(MutableMapping):
         return SQLQuery(self, query, with_)
 
     @modify_exceptions
-    def store(self, key, query, with_=None):
+    def store(self, key, query, with_=None, is_interactive=False):
         if "-" in key:
             raise UsageError(
                 "Using hyphens in save argument isn't allowed."
@@ -78,17 +78,18 @@ class SQLStore(MutableMapping):
         if with_ and key in with_:
             raise ValueError(f"Script name ({key!r}) cannot appear in with_ argument")
 
-        self._data[key] = SQLQuery(self, query, with_)
+        self._data[key] = SQLQuery(self, query, with_, is_interactive=is_interactive)
 
 
 class SQLQuery:
     """Holds queries and renders them"""
 
-    def __init__(self, store: SQLStore, query: str, with_: Iterable = None):
+    def __init__(self, store: SQLStore, query: str, with_: Iterable = None,is_interactive=False):
         self._store = store
         self._query = query
         self._with_ = with_ or []
-
+        print ("Store _is_interactive", _is_interactive)
+        self._is_interactive = is_interactive
         if any("-" in x for x in self._with_):
             warnings.warn(
                 "Using hyphens will be deprecated soon, "
@@ -116,10 +117,11 @@ class SQLQuery:
         template = (
             with_clause_template_backtick if is_use_backtick else with_clause_template
         )
+        print ("is_interactive:", self._is_interactive)
+
         return template.render(
             query=self._query, saved=self._store._data, with_=with_all
         )
-
 
 def _get_dependencies(store, keys):
     """Get a list of all dependencies to reconstruct the CTEs in keys"""
