@@ -6,6 +6,7 @@ from sql.telemetry import telemetry
 import sql.run
 import math
 from sql import util
+from IPython.core.display import HTML
 
 
 def _get_inspector(conn):
@@ -263,6 +264,17 @@ class TableDescription(DatabaseInspection):
             self._table.add_row(values)
 
         self._table_html = self._table.get_html_string()
+        # Inject css to html to make first column sticky
+        sticky_column_css = """<style>
+ table td:first-child {
+  position: sticky;
+  left: 0;
+  background-color: var(--jp-cell-editor-background););
+}
+            </style>"""
+        self._table_html = HTML(sticky_column_css
+                                + self._table.get_html_string()).__html__()
+
         self._table_txt = self._table.get_string()
 
 
