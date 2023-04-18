@@ -272,8 +272,9 @@ class TableDescription(DatabaseInspection):
   background-color: var(--jp-cell-editor-background););
 }
             </style>"""
-        self._table_html = HTML(sticky_column_css
-                                + self._table.get_html_string()).__html__()
+        self._table_html = HTML(
+            sticky_column_css + self._table.get_html_string()
+        ).__html__()
 
         self._table_txt = self._table.get_string()
 
