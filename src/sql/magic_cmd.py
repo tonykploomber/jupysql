@@ -2,6 +2,7 @@ import sys
 import argparse
 
 from IPython.utils.process import arg_split
+from IPython.core.display import display, HTML
 from IPython.core.magic import Magics, line_magic, magics_class
 from IPython.core.magic_arguments import argument, magic_arguments
 from IPython.core.error import UsageError
@@ -202,7 +203,16 @@ class SqlCmdMagic(Magics, Configurable):
                 with open(args.output, "w") as f:
                     f.write(report._repr_html_())
 
-            return report
+            # Inject css to make first column sticky
+            sticky_column_css = """<style>
+ table td:first-child {
+  position: sticky;
+  left: 0;
+  background-color: var(--jp-cell-editor-background););
+}
+            </style>"""
+            html = HTML(sticky_column_css + report._table_html)
+            return display(html)
 
 
 def return_test_results(args, conn, query):
