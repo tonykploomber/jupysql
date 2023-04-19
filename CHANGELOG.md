@@ -1,12 +1,13 @@
 # CHANGELOG
 
 ## 0.7.1dev
+* [Doc] Algolia search added (#64)
 * [Fix] Fix `%sqlcmd columns` in MySQL and MariaDB
 * [Doc] Updating connecting guide (by @DaveOkpare) (#56)
-
 * [Feature] Upgrades SQLAlchemy version to 2
-
 * [Feature] Improve boxplot performance [#152]
+* [Fix] `%sqlcmd --test` improved, changes in logic and addition of user guide (#275)
+
 ## 0.7.0 (2023-04-05)
 
 JupySQL is now available via `conda install jupysql -c conda-forge`. Thanks, [@sterlinm](https://github.com/sterlinm)!
