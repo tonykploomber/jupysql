@@ -268,15 +268,12 @@ class TableDescription(DatabaseInspection):
  #profile-table td:first-child {
   position: sticky;
   left: 0;
-  background-color: var(--jp-rendermime-table-row-hover-background);
+  background-color: var(--jp-cell-editor-background);
 }
  #profile-table thead tr th:first-child {
   position: sticky;
   left: 0;
-  background-color: var(--jp-rendermime-table-row-hover-background);
-}
- #profile-table tbody tr:hover > td:first-child{
-  background-color: var(--jp-rendermime-table-row-hover-background);
+  background-color: var(--jp-cell-editor-background);
 }
             </style>"""
         self._table_html = HTML(
