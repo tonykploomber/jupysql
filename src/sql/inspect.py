@@ -277,7 +277,8 @@ class TableDescription(DatabaseInspection):
 }
             </style>"""
         self._table_html = HTML(
-            sticky_column_css + self._table.get_html_string(attributes={"id":"profile-table"})
+            sticky_column_css
+            + self._table.get_html_string(attributes={"id": "profile-table"})
         ).__html__()
 
         self._table_txt = self._table.get_string()
