@@ -265,17 +265,22 @@ class TableDescription(DatabaseInspection):
 
         # Inject css to html to make first column sticky
         sticky_column_css = """<style>
- table td:first-child {
+ #profile-table td:first-child {
   position: sticky;
   left: 0;
-  background-color: var(--jp-cell-editor-background);
+  background-color: var(--jp-rendermime-table-row-hover-background);
 }
- table tbody tr:hover > td:first-child{
+ #profile-table thead tr th:first-child {
+  position: sticky;
+  left: 0;
+  background-color: var(--jp-rendermime-table-row-hover-background);
+}
+ #profile-table tbody tr:hover > td:first-child{
   background-color: var(--jp-rendermime-table-row-hover-background);
 }
             </style>"""
         self._table_html = HTML(
-            sticky_column_css + self._table.get_html_string()
+            sticky_column_css + self._table.get_html_string(attributes={"id":"profile-table"})
         ).__html__()
 
         self._table_txt = self._table.get_string()
