@@ -7,9 +7,9 @@ jupytext:
     format_version: 0.13
     jupytext_version: 1.14.5
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: jupysql
   language: python
-  name: python3
+  name: jupysql
 myst:
   html_meta:
     description lang=en: JupySQL's developer guide
@@ -317,8 +317,6 @@ conn._transpile_query(input_sql)
 ```
 
 #### When current connection is via sqlite
-
-+++
 
 ##### Prepare connection
 
