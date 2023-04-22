@@ -318,7 +318,6 @@ conn._transpile_query(input_sql)
 
 #### When current connection is via sqlite
 
-+++
 
 ##### Prepare connection
 
