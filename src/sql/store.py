@@ -66,10 +66,13 @@ class SQLStore(MutableMapping):
 
     def render(self, query, with_=None):
         # TODO: if with is false, WITH should not appear
+
+        print ("Returning new SQLQuery instance: ", query, with_)
+        # print ("Current self._data: ", self._data[with_])
         return SQLQuery(self, query, with_)
 
     @modify_exceptions
-    def store(self, key, query, with_=None, is_interactive=False):
+    def store(self, key, query, with_=None, is_interactive=None):
         if "-" in key:
             raise UsageError(
                 "Using hyphens in save argument isn't allowed."
@@ -77,19 +80,20 @@ class SQLStore(MutableMapping):
             )
         if with_ and key in with_:
             raise ValueError(f"Script name ({key!r}) cannot appear in with_ argument")
-
+        
         self._data[key] = SQLQuery(self, query, with_, is_interactive=is_interactive)
 
 
 class SQLQuery:
     """Holds queries and renders them"""
 
-    def __init__(self, store: SQLStore, query: str, with_: Iterable = None, is_interactive=False):
+    def __init__(self, store: SQLStore, query: str, with_: Iterable = None, is_interactive=None):
         self._store = store
         self._query = query
         self._with_ = with_ or []
-        print ("Store _is_interactive", is_interactive)
         self._is_interactive = is_interactive
+        # print ("Saving query SQLQuery: ", self._is_interactive)
+
         if any("-" in x for x in self._with_):
             warnings.warn(
                 "Using hyphens will be deprecated soon, "
@@ -117,7 +121,7 @@ class SQLQuery:
         template = (
             with_clause_template_backtick if is_use_backtick else with_clause_template
         )
-        print ("is_interactive:", self._is_interactive)
+        # print ("is_interactive:", self._is_interactive)
 
         return template.render(
             query=self._query, saved=self._store._data, with_=with_all

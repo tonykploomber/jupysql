@@ -299,6 +299,9 @@ FROM "{{table}}"
 
     if with_:
         query = str(store.render(query, with_=with_))
+
+    print ("Current store: ", type(store._data[table]))
+    print ("with from _min_max: ", with_)
     query = con._transpile_query(query)
     min_, max_ = con.session.execute(sqlalchemy.sql.text(query)).fetchone()
     return min_, max_
@@ -381,7 +384,7 @@ def histogram(
     if not conn:
         conn = sql.connection.Connection.current
 
-    print("Current with: ", with_)
+    # print("Current with: ", with_)
     ax = ax or plt.gca()
     payload["connection_info"] = conn._get_curr_sqlalchemy_connection_info()
     if category:
@@ -555,7 +558,7 @@ def _histogram(table, column, bins, with_=None, conn=None, facet=None):
     if with_:
         query = str(store.render(query, with_=with_))
 
-    print ("Query: ", store.render(query, with_=with_))
+    # print ("Query: ", store.render(query, with_=with_))
     query = conn._transpile_query(query)
     data = conn.session.execute(sqlalchemy.sql.text(query)).fetchall()
     bin_, height = zip(*data)
