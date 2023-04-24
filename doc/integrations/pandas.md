@@ -84,9 +84,9 @@ df
  We are using SQLAlchemy 2.x to support this feature. If you are using Python 3.7, please upgrade to Python 3.8+. Alternatively, you might use Python 3.7 and downgrade to SQlAlchemy 1.x
 ```
 
-+++
+### `--persist`
 
-The `--persist` argument, with the name of a  DataFrame object in memory, 
+The `--persist` argument, with the name of a DataFrame object in memory, 
 will create a table name in the database from the named DataFrame.   Or use `--append` to add rows to an existing  table by that name.
 
 ```{code-cell} ipython3
@@ -94,6 +94,17 @@ will create a table name in the database from the named DataFrame.   Or use `--a
 ```
 
 ```{code-cell} ipython3
+%sql SELECT * FROM df;
+```
+
+### `--persist-replace`
+
+The `--persist-replace` performs the similiar functionaility with `--persist`,
+but it will drop the existing table before inserting the new table
+
+```{code-cell} ipython3
+df = %sql SELECT * FROM writer LIMIT 1
+%sql --persist-replace df
 %sql SELECT * FROM df;
 ```
 
