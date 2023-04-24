@@ -181,6 +181,54 @@ def test_persist_frame_at_its_creation(ip):
     assert "Shakespeare" in str(persisted)
 
 
+def test_persist_replace_abbr_no_override(ip):
+    # New saved dataframe length -> 1
+    ip.run_cell("results = %sql SELECT * FROM test LIMIT 1;")
+    ip.run_cell("df = results.DataFrame()")
+    ip.run_cell("%sql -P sqlite:// df")
+    out = ip.run_cell("%sql SELECT * FROM df")
+    assert len(out.result) == 1
+    assert out.error_in_exec is None
+
+
+def test_persist_replace_no_override(ip):
+    # New saved dataframe length -> 1
+    ip.run_cell("results = %sql SELECT * FROM test LIMIT 1;")
+    ip.run_cell("df = results.DataFrame()")
+    ip.run_cell("%sql --persist-replace sqlite:// df")
+    out = ip.run_cell("%sql SELECT * FROM df")
+    assert len(out.result) == 1
+    assert out.error_in_exec is None
+
+
+def test_persist_replace_override(ip):
+    # Previous saved dataframe length -> 2
+    ip.run_cell("results = %sql SELECT * FROM test LIMIT 2;")
+    ip.run_cell("df = results.DataFrame()")
+    ip.run_cell("%sql --persist sqlite:// df")
+    ip.run_cell("new_results = %sql SELECT * FROM test LIMIT 1;")
+    # New saved dataframe length -> 1
+    ip.run_cell("df = new_results.DataFrame()")
+    ip.run_cell("%sql --persist-replace sqlite:// df")
+
+    out = ip.run_cell("%sql SELECT * FROM df")
+    # print ("out: ", out)
+    # To test it's referring to new saved dataframe
+    assert len(out.result) == 1
+    assert out.error_in_exec is None
+
+
+def test_persist_and_persist_replace_use_together(ip):
+    # pass
+    # Test error message when use --persist and --persist-replace together
+    ip.run_cell("results = %sql SELECT * FROM test;")
+    ip.run_cell("results_dframe = results.DataFrame()")
+    ip.run_cell("%sql --persist --persist-replace sqlite:// results_dframe")
+    out = ip.run_cell("%sql --persist sqlite:// results_dframe")
+
+    assert isinstance(out.error_in_exec, ValueError)
+
+
 def test_connection_args_enforce_json(ip):
     result = ip.run_cell('%sql --connection_arguments {"badlyformed":true')
     assert result.error_in_exec

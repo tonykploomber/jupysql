@@ -181,6 +181,12 @@ class SqlMagic(Magics, Configurable):
         help="create a table name in the database from the named DataFrame",
     )
     @argument(
+        "-P",
+        "--persist-replace",
+        action="store_true",
+        help="replace the DataFrame if it exists, otherwise perform --persist",
+    )
+    @argument(
         "-n",
         "--no-index",
         action="store_true",
@@ -344,11 +350,24 @@ class SqlMagic(Magics, Configurable):
             alias=args.alias,
         )
         payload["connection_info"] = conn._get_curr_sqlalchemy_connection_info()
+        if args.persist_replace and args.append:
+            raise ValueError(
+                "You cannot both replace and append to a dataframe\
+                             at same time, please only use either of them"
+            )
         if args.persist:
             return self._persist_dataframe(
                 command.sql, conn, user_ns, append=False, index=not args.no_index
             )
-
+        if args.persist_replace:
+            return self._persist_dataframe(
+                command.sql,
+                conn,
+                user_ns,
+                append=False,
+                index=not args.no_index,
+                replace=True,
+            )
         if args.append:
             return self._persist_dataframe(
                 command.sql, conn, user_ns, append=True, index=not args.no_index
@@ -417,7 +436,9 @@ class SqlMagic(Magics, Configurable):
     legal_sql_identifier = re.compile(r"^[A-Za-z0-9#_$]+")
 
     @modify_exceptions
-    def _persist_dataframe(self, raw, conn, user_ns, append=False, index=True):
+    def _persist_dataframe(
+        self, raw, conn, user_ns, append=False, index=True, replace=False
+    ):
         """Implements PERSIST, which writes a DataFrame to the RDBMS"""
         if not DataFrame:
             raise ImportError("Must `pip install pandas` to use DataFrames")
@@ -438,7 +459,12 @@ class SqlMagic(Magics, Configurable):
         table_name = frame_name.lower()
         table_name = self.legal_sql_identifier.search(table_name).group(0)
 
-        if_exists = "append" if append else "fail"
+        if replace:
+            if_exists = "replace"
+        elif append:
+            if_exists = "append"
+        else:
+            if_exists = "fail"
 
         frame.to_sql(table_name, conn.session.engine, if_exists=if_exists, index=index)
         return "Persisted %s" % table_name
