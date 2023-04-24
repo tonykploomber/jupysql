@@ -94,7 +94,7 @@ class SqlMagic(Magics, Configurable):
         help="Don't display the full traceback on SQL Programming Error",
     )
     displaylimit = Int(
-        None,
+        "UNSET",
         config=True,
         allow_none=True,
         help=(

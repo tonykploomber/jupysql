@@ -25,6 +25,7 @@ import logging
 import warnings
 from collections.abc import Iterable
 
+DEFAULT_DISPLAY_LIMIT = 60
 
 def unduplicate_field_names(field_names):
     """Append a number to duplicate field names to make them unique."""
@@ -512,20 +513,23 @@ def raw_run(conn, sql):
 class PrettyTable(prettytable.PrettyTable):
     def __init__(self, *args, **kwargs):
         self.row_count = 0
-        self.displaylimit = None
+        self.displaylimit = DEFAULT_DISPLAY_LIMIT
         return super(PrettyTable, self).__init__(*args, **kwargs)
 
     def add_rows(self, data):
         if self.row_count and (data.config.displaylimit == self.displaylimit):
             return  # correct number of rows already present
         self.clear_rows()
-        self.displaylimit = data.config.displaylimit
-        if self.displaylimit == 0:
-            self.displaylimit = None  # TODO: remove this to make 0 really 0
-        if self.displaylimit in (None, 0):
-            self.row_count = len(data)
-        else:
-            self.row_count = min(len(data), self.displaylimit)
+        print ("Pre config: ", data.config.displaylimit)
+        if data.config.displaylimit == "UNSET":
+            
+        elif data.config.displaylimit:
+            self.displaylimit = data.config.displaylimit
+        # elif data.config.displaylimit 
+        self.row_count = min(len(data), self.displaylimit)
+
+        print ("Final row_count:", self.row_count)
+        print ("Final displaylimit:", self.displaylimit)
         for row in data[: self.displaylimit]:
             formatted_row = []
             for cell in row:
