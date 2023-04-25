@@ -466,7 +466,13 @@ class SqlMagic(Magics, Configurable):
         else:
             if_exists = "fail"
 
-        frame.to_sql(table_name, conn.session.engine, if_exists=if_exists, index=index)
+        try:
+            frame.to_sql(
+                table_name, conn.session.engine, if_exists=if_exists, index=index
+            )
+        except ValueError:
+            raise ValueError("Table already exist, maybe use --persist-replace")
+
         return "Persisted %s" % table_name
 
 

@@ -181,52 +181,159 @@ def test_persist_frame_at_its_creation(ip):
     assert "Shakespeare" in str(persisted)
 
 
-def test_persist_replace_abbr_no_override(ip):
+def query_and_save_as_dataframe(ip, table_name, limit):
+    save_df_name = f"df_{table_name}"
+    ip.run_cell(f"results = %sql SELECT * FROM {table_name} LIMIT {limit};")
+    ip.run_cell(f"{save_df_name} = results.DataFrame()")
+    return save_df_name
+
+
+@pytest.mark.parametrize(
+    "test_table, expected_result",
+    [
+        ("test", [(0, 1, "foo")]),
+        ("author", [(0, "William", "Shakespeare", 1616)]),
+        (
+            "website",
+            [
+                (
+                    0,
+                    "Bertold Brecht",
+                    "https://en.wikipedia.org/wiki/Bertolt_Brecht",
+                    1954,
+                )
+            ],
+        ),
+        ("number_table", [(0, 4, -2)]),
+    ],
+)
+def test_persist_replace_abbr_no_override(ip, test_table, expected_result):
     # New saved dataframe length -> 1
-    ip.run_cell("results = %sql SELECT * FROM test LIMIT 1;")
-    ip.run_cell("df = results.DataFrame()")
-    ip.run_cell("%sql -P sqlite:// df")
-    out = ip.run_cell("%sql SELECT * FROM df")
-    assert len(out.result) == 1
+    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    ip.run_cell(f"%sql -P sqlite:// {saved_df_name}")
+    out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
+    assert out.result == expected_result
     assert out.error_in_exec is None
 
 
-def test_persist_replace_no_override(ip):
+@pytest.mark.parametrize(
+    "test_table, expected_result",
+    [
+        ("test", [(0, 1, "foo")]),
+        ("author", [(0, "William", "Shakespeare", 1616)]),
+        (
+            "website",
+            [
+                (
+                    0,
+                    "Bertold Brecht",
+                    "https://en.wikipedia.org/wiki/Bertolt_Brecht",
+                    1954,
+                )
+            ],
+        ),
+        ("number_table", [(0, 4, -2)]),
+    ],
+)
+def test_persist_replace_no_override(ip, test_table, expected_result):
     # New saved dataframe length -> 1
-    ip.run_cell("results = %sql SELECT * FROM test LIMIT 1;")
-    ip.run_cell("df = results.DataFrame()")
-    ip.run_cell("%sql --persist-replace sqlite:// df")
-    out = ip.run_cell("%sql SELECT * FROM df")
-    assert len(out.result) == 1
+    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
+    out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
+    assert out.result == expected_result
     assert out.error_in_exec is None
 
 
-def test_persist_replace_override(ip):
+@pytest.mark.parametrize(
+    "test_table, expected_result",
+    [
+        ("test", [(0, 1, "foo")]),
+        ("author", [(0, "William", "Shakespeare", 1616)]),
+        (
+            "website",
+            [
+                (
+                    0,
+                    "Bertold Brecht",
+                    "https://en.wikipedia.org/wiki/Bertolt_Brecht",
+                    1954,
+                )
+            ],
+        ),
+        ("number_table", [(0, 4, -2)]),
+    ],
+)
+def test_persist_replace_override(ip, test_table, expected_result):
     # Previous saved dataframe length -> 2
-    ip.run_cell("results = %sql SELECT * FROM test LIMIT 2;")
-    ip.run_cell("df = results.DataFrame()")
-    ip.run_cell("%sql --persist sqlite:// df")
-    ip.run_cell("new_results = %sql SELECT * FROM test LIMIT 1;")
+    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=2)
+    ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
     # New saved dataframe length -> 1
-    ip.run_cell("df = new_results.DataFrame()")
-    ip.run_cell("%sql --persist-replace sqlite:// df")
+    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
 
-    out = ip.run_cell("%sql SELECT * FROM df")
-    # print ("out: ", out)
+    out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
     # To test it's referring to new saved dataframe
-    assert len(out.result) == 1
+    assert out.result == expected_result
     assert out.error_in_exec is None
 
 
-def test_persist_and_persist_replace_use_together(ip):
-    # pass
+@pytest.mark.parametrize(
+    "test_table", [("test"), ("author"), ("website"), ("number_table")]
+)
+def test_persist_replace_override_reverted_order(ip, test_table):
+    # Previous saved dataframe length -> 2
+    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=2)
+    ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
+
+    # New saved dataframe length -> 1
+    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    out = ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
+
+    assert "Table already exist, maybe use --persist-replace" in str(out.error_in_exec)
+
+
+@pytest.mark.parametrize(
+    "test_table", [("test"), ("author"), ("website"), ("number_table")]
+)
+def test_persist_and_persist_replace_use_together(ip, test_table):
     # Test error message when use --persist and --persist-replace together
-    ip.run_cell("results = %sql SELECT * FROM test;")
-    ip.run_cell("results_dframe = results.DataFrame()")
-    ip.run_cell("%sql --persist --persist-replace sqlite:// results_dframe")
-    out = ip.run_cell("%sql --persist sqlite:// results_dframe")
+    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    ip.run_cell(f"%sql --persist --persist-replace sqlite:// {saved_df_name}")
+    out = ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
 
     assert isinstance(out.error_in_exec, ValueError)
+
+
+@pytest.mark.parametrize(
+    "test_table, expected_result",
+    [
+        ("test", [(0, 1, "foo")]),
+        ("author", [(0, "William", "Shakespeare", 1616)]),
+        (
+            "website",
+            [
+                (
+                    0,
+                    "Bertold Brecht",
+                    "https://en.wikipedia.org/wiki/Bertolt_Brecht",
+                    1954,
+                )
+            ],
+        ),
+        ("number_table", [(0, 4, -2)]),
+    ],
+)
+def test_persist_replace_twice(ip, test_table, expected_result):
+    # Test error message when use --persist and --persist-replace together
+    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=2)
+    ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
+
+    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
+
+    out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
+    assert out.result == expected_result
+    assert out.error_in_exec is None
 
 
 def test_connection_args_enforce_json(ip):

@@ -102,9 +102,22 @@ will create a table name in the database from the named DataFrame.   Or use `--a
 The `--persist-replace` performs the similiar functionaility with `--persist`,
 but it will drop the existing table before inserting the new table
 
+#### Declare the dataframe again
+
 ```{code-cell} ipython3
 df = %sql SELECT * FROM writer LIMIT 1
+df
+```
+
+#### Us
+
+```{code-cell} ipython3
 %sql --persist-replace df
+```
+
+#### df table is overrided
+
+```{code-cell} ipython3
 %sql SELECT * FROM df;
 ```
 
