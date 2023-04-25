@@ -490,7 +490,9 @@ class SqlMagic(Magics, Configurable):
                 table_name, conn.session.engine, if_exists=if_exists, index=index
             )
         except ValueError:
-            raise exceptions.ValueError("Table already exist, maybe use --persist-replace")
+            raise exceptions.ValueError(
+                "Table already exist, maybe use --persist-replace"
+            )
 
         return "Persisted %s" % table_name
 
