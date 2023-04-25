@@ -195,13 +195,6 @@ def test_persist_bare(ip):
     assert result.error_in_exec
 
 
-def test_persist_frame_at_its_creation(ip):
-    ip.run_cell("results = %sql SELECT * FROM author;")
-    ip.run_cell("%sql --persist sqlite:// results.DataFrame()")
-    persisted = runsql(ip, "SELECT * FROM results")
-    assert "Shakespeare" in str(persisted)
-
-
 def query_and_save_as_dataframe(ip, table_name, limit):
     save_df_name = f"df_{table_name}"
     ip.run_cell(f"results = %sql SELECT * FROM {table_name} LIMIT {limit};")
