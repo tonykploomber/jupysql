@@ -109,7 +109,7 @@ df = %sql SELECT * FROM writer LIMIT 1
 df
 ```
 
-#### Us
+#### Use `--persist-replace`
 
 ```{code-cell} ipython3
 %sql --persist-replace df
