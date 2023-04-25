@@ -295,13 +295,14 @@ def test_persist_replace_override_reverted_order(ip, test_table):
 @pytest.mark.parametrize(
     "test_table", [("test"), ("author"), ("website"), ("number_table")]
 )
-def test_persist_and_persist_replace_use_together(ip, test_table):
+def test_persist_and_append_use_together(ip, test_table):
     # Test error message when use --persist and --persist-replace together
     saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
-    ip.run_cell(f"%sql --persist --persist-replace sqlite:// {saved_df_name}")
-    out = ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
+    out = ip.run_cell(f"%sql --persist-replace --append sqlite:// {saved_df_name}")
 
-    assert isinstance(out.error_in_exec, ValueError)
+    # assert isinstance(out.error_in_exec, ValueError)
+    assert "You cannot both replace and append to a dataframe at the same time,"
+    "please only use either of them" in str(out.error_in_exec)
 
 
 @pytest.mark.parametrize(

@@ -352,8 +352,8 @@ class SqlMagic(Magics, Configurable):
         payload["connection_info"] = conn._get_curr_sqlalchemy_connection_info()
         if args.persist_replace and args.append:
             raise ValueError(
-                "You cannot both replace and append to a dataframe\
-                             at same time, please only use either of them"
+                "You cannot both replace and append to a dataframe "
+                "at the same time, please only use either of them"
             )
         if args.persist:
             return self._persist_dataframe(
