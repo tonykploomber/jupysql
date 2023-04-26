@@ -19,11 +19,29 @@ myst:
     property=og:locale: en_US
 ---
 
+```{note}
+Please view this page in preview
+```
+
++++
+
 # Interactive ggplot
 
 +++
 
 The ggplot API allows us to build different types of of graphics
+
+To make our ggplot interactive, we can use [interact](https://ipywidgets.readthedocs.io/en/stable/examples/Using%20Interact.html#using-interact) API from [Jupyter Widgets](https://ipywidgets.readthedocs.io/en/stable/index.html#jupyter-widgets)
+
+Interact autogenerates UI controls for function arguments, and then calls the function with those arguments when you manipulate the controls interactively.
+
+To use interact, you need to define:
+
+1. Widgeets to be controlled
+2. The plot function includes ggplot with dynamic argument as
+3. Invoke `interact()` API
+
+Let's see examples below!
 
 +++
 
@@ -58,9 +76,9 @@ if not Path("yellow_tripdata_2021-01.parquet").is_file():
 
 ```{code-cell} ipython3
 dropdown = widgets.Dropdown(
-    options=['red', 'blue', 'green', 'magenta'],
-    value='red',
-    description='Color:',
+    options=["red", "blue", "green", "magenta"],
+    value="red",
+    description="Color:",
     disabled=False,
 )
 b = widgets.IntSlider(
@@ -68,17 +86,23 @@ b = widgets.IntSlider(
     min=1,
     max=10,
     step=1,
-    description='Bin:',
-    orientation='horizontal',
+    description="Bin:",
+    orientation="horizontal",
 )
 ```
 
 ```{code-cell} ipython3
 def plot_fct(color, b):
-    (ggplot(table="yellow_tripdata_2021-01.parquet", mapping=aes(x="trip_distance", fill=color))
-    + geom_histogram(bins=b))
-    
-interact(plot_fct, color=dropdown, b = b)
+    (
+        ggplot(
+            table="yellow_tripdata_2021-01.parquet",
+            mapping=aes(x="trip_distance", fill=color),
+        )
+        + geom_histogram(bins=b)
+    )
+
+
+interact(plot_fct, color=dropdown, b=b)
 ```
 
 ### Categorical histogram (with Select widget)
@@ -109,10 +133,7 @@ CREATE TABLE diamonds AS SELECT * FROM diamonds.csv
 
 ```{code-cell} ipython3
 columns = widgets.SelectMultiple(
-    options=["cut", "color"],
-    value=['cut'],
-    description='Columns',
-    disabled=False
+    options=["cut", "color"], value=["cut"], description="Columns", disabled=False
 )
 ```
 
@@ -120,14 +141,15 @@ columns = widgets.SelectMultiple(
 def plot(columns):
     (ggplot("diamonds", aes(x=columns)) + geom_histogram())
 
+
 interact(plot, columns=columns)
 ```
 
 ```{code-cell} ipython3
 cmap = widgets.Dropdown(
-    options=['viridis', 'plasma', 'inferno', 'magma', 'cividis'],
-    value='plasma',
-    description='Colormaps:',
+    options=["viridis", "plasma", "inferno", "magma", "cividis"],
+    value="plasma",
+    description="Colormaps:",
     disabled=False,
 )
 ```
@@ -138,7 +160,8 @@ def plot(cmap):
         ggplot("diamonds", aes(x="price"))
         + geom_histogram(bins=10, fill="cut", cmap=cmap)
     )
-    
+
+
 interact(plot, cmap=cmap)
 ```
 
@@ -150,37 +173,20 @@ b = widgets.IntSlider(
     min=1,
     max=10,
     step=1,
-    description='Bin:',
-    orientation='horizontal',
+    description="Bin:",
+    orientation="horizontal",
 )
 cmap = widgets.Dropdown(
-    options=['viridis', 'plasma', 'inferno', 'magma', 'cividis'],
-    value='plasma',
-    description='Colormaps:',
+    options=["viridis", "plasma", "inferno", "magma", "cividis"],
+    value="plasma",
+    description="Colormaps:",
     disabled=False,
 )
 show_legend = widgets.ToggleButton(
     value=False,
-    description='Show legend',
+    description="Show legend",
     disabled=False,
-    button_style='', # 'success', 'info', 'warning', 'danger' or ''
-    tooltip='Is show legend',
+    button_style="",  # 'success', 'info', 'warning', 'danger' or ''
+    tooltip="Is show legend",
 )
-```
-
-```{code-cell} ipython3
-def plot(b, cmap, show_legend):
-    (ggplot("diamonds", aes(x="price"))
-    + geom_histogram(bins=b, fill="cut", cmap=cmap)
-    + facet_wrap("color", legend=show_legend))
-    
-interact(plot, b=b, cmap=cmap, show_legend= show_legend)
-```
-
-```{code-cell} ipython3
-
-```
-
-```{code-cell} ipython3
-
 ```
