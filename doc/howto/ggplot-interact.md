@@ -57,7 +57,7 @@ Let's see examples below!
 ```
 
 ```{code-cell} ipython3
-from sql.ggplot import ggplot, aes, geom_boxplot, geom_histogram, facet_wrap
+from sql.ggplot import ggplot, aes, geom_histogram, facet_wrap
 import ipywidgets as widgets
 from ipywidgets import interact
 ```
@@ -189,4 +189,17 @@ show_legend = widgets.ToggleButton(
     button_style="",  # 'success', 'info', 'warning', 'danger' or ''
     tooltip="Is show legend",
 )
+```
+
+```{code-cell} ipython3
+def plot(b, cmap, show_legend):
+    (ggplot("diamonds", aes(x="price")) + geom_histogram(bins=b, fill="cut", cmap=cmap) + facet_wrap("color", legend=show_legend))
+```
+
+```{code-cell} ipython3
+interact(plot, b=b, cmap=cmap, show_legend=show_legend)
+```
+
+```{code-cell} ipython3
+
 ```

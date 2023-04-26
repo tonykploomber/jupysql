@@ -49,6 +49,7 @@ parts:
     - file: howto/syntax-highlighting
     - file: howto/csv
     - file: howto/autocompletion
+    - file: howto/ggplot-interact
 
   - caption: Tutorials
     chapters:
