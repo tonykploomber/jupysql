@@ -151,12 +151,13 @@ class ResultSet(list, ColumnGuesserMixin):
             # to create clickable links
             result = html.unescape(result)
             result = _cell_with_spaces_pattern.sub(_nonbreaking_spaces, result)
-            if self.config.displaylimit and len(self) > self.config.displaylimit:
+            actual_display_limit = self.config.displaylimit if self.config.displaylimit != -1 else DEFAULT_DISPLAY_LIMIT
+            if actual_display_limit and len(self) > actual_display_limit:
                 HTML = (
                     '%s\n<span style="font-style:italic;text-align:center;">'
                     "%d rows, truncated to displaylimit of %d</span>"
                 )
-                result = HTML % (result, len(self), self.config.displaylimit)
+                result = HTML % (result, len(self), actual_display_limit)
             return result
         else:
             return None
@@ -520,16 +521,17 @@ class PrettyTable(prettytable.PrettyTable):
         if self.row_count and (data.config.displaylimit == self.displaylimit):
             return  # correct number of rows already present
         self.clear_rows()
-        print ("Pre config: ", data.config.displaylimit)
-        if data.config.displaylimit == "UNSET":
-            
-        elif data.config.displaylimit:
+        # print ("Pre config: ", data.config.displaylimit)
+        if data.config.displaylimit == -1:
+            self.displaylimit = DEFAULT_DISPLAY_LIMIT
+            self.row_count = min(len(data), self.displaylimit)
+        elif data.config.displaylimit == None:
+            self.displaylimit = len(data)
+            self.row_count = len(data)
+        else:
             self.displaylimit = data.config.displaylimit
-        # elif data.config.displaylimit 
-        self.row_count = min(len(data), self.displaylimit)
+            self.row_count = min(len(data), self.displaylimit)
 
-        print ("Final row_count:", self.row_count)
-        print ("Final displaylimit:", self.displaylimit)
         for row in data[: self.displaylimit]:
             formatted_row = []
             for cell in row:

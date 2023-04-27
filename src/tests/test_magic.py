@@ -231,11 +231,16 @@ def test_connection_args_double_quotes(ip):
 #     assert 'Shakespeare' in str(persisted)
 
 
-@pytest.mark.parametrize("value", ["None", "0"])
-def test_displaylimit_disabled(ip, value):
+def test_displaylimit_unlimited(ip):
+    ip.run_line_magic("config", "SqlMagic.autolimit = None")
+    ip.run_line_magic("config", "SqlMagic.displaylimit = None")
+
+    out = ip.run_cell("%sql SELECT * FROM author;")
+    assert out.result == [('William', 'Shakespeare', 1616), ('Bertold', 'Brecht', 1956)]
+
+def test_displaylimit_disabled(ip):
     ip.run_line_magic("config", "SqlMagic.autolimit = None")
 
-    ip.run_line_magic("config", f"SqlMagic.displaylimit = {value}")
     result = runsql(ip, "SELECT * FROM author;")
 
     assert "Brecht" in result._repr_html_()
