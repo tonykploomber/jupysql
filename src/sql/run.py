@@ -11,12 +11,11 @@ import prettytable
 import sqlalchemy
 import sqlparse
 from sql.connection import Connection
-from sql import exceptions
 from .column_guesser import ColumnGuesserMixin
 
 try:
     from pgspecial.main import PGSpecial
-except ModuleNotFoundError:
+except ImportError:
     PGSpecial = None
 from sqlalchemy.orm import Session
 
@@ -24,8 +23,6 @@ from sql.telemetry import telemetry
 import logging
 import warnings
 from collections.abc import Iterable
-
-DEFAULT_DISPLAY_LIMIT = 60
 
 def unduplicate_field_names(field_names):
     """Append a number to duplicate field names to make them unique."""
@@ -151,13 +148,12 @@ class ResultSet(list, ColumnGuesserMixin):
             # to create clickable links
             result = html.unescape(result)
             result = _cell_with_spaces_pattern.sub(_nonbreaking_spaces, result)
-            actual_display_limit = self.config.displaylimit if self.config.displaylimit != -1 else DEFAULT_DISPLAY_LIMIT
-            if actual_display_limit and len(self) > actual_display_limit:
+            if self.config.displaylimit and len(self) > self.config.displaylimit:
                 HTML = (
                     '%s\n<span style="font-style:italic;text-align:center;">'
                     "%d rows, truncated to displaylimit of %d</span>"
                 )
-                result = HTML % (result, len(self), actual_display_limit)
+                result = HTML % (result, len(self), self.config.displaylimit)
             return result
         else:
             return None
@@ -429,8 +425,7 @@ def is_pytds(dialect):
 def handle_postgres_special(conn, statement):
     """Execute a PostgreSQL special statement using PGSpecial module."""
     if not PGSpecial:
-        raise exceptions.MissingPackageError("pgspecial not installed")
-
+        raise ImportError("pgspecial not installed")
     pgspecial = PGSpecial()
     _, cur, headers, _ = pgspecial.execute(conn.session.connection.cursor(), statement)[
         0
@@ -483,7 +478,7 @@ def run(conn, sql, config):
         first_word = sql.strip().split()[0].lower()
         manual_commit = False
         if first_word == "begin":
-            raise exceptions.RuntimeError("JupySQL does not support transactions")
+            raise ValueError("ipython_sql does not support transactions")
         if first_word.startswith("\\") and is_postgres_or_redshift(conn.dialect):
             result = handle_postgres_special(conn, statement)
         else:
@@ -514,18 +509,14 @@ def raw_run(conn, sql):
 class PrettyTable(prettytable.PrettyTable):
     def __init__(self, *args, **kwargs):
         self.row_count = 0
-        self.displaylimit = DEFAULT_DISPLAY_LIMIT
+        self.displaylimit = 60
         return super(PrettyTable, self).__init__(*args, **kwargs)
 
     def add_rows(self, data):
         if self.row_count and (data.config.displaylimit == self.displaylimit):
             return  # correct number of rows already present
         self.clear_rows()
-        # print ("Pre config: ", data.config.displaylimit)
-        if data.config.displaylimit == -1:
-            self.displaylimit = DEFAULT_DISPLAY_LIMIT
-            self.row_count = min(len(data), self.displaylimit)
-        elif data.config.displaylimit == None:
+        if data.config.displaylimit == None:
             self.displaylimit = len(data)
             self.row_count = len(data)
         else:

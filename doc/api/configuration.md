@@ -105,9 +105,11 @@ Automatically limit the size of the returned result sets (e.g., add a `LIMIT` at
 
 ## `displaylimit`
 
-Default: `None` (no limit)
+Default: `60`
 
 Automatically limit the number of rows displayed (full result set is still stored).
+
+(To display all rows: set to `None`)
 
 ```{code-cell} ipython3
 %config SqlMagic.displaylimit = None
