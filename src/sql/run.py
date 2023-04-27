@@ -24,6 +24,7 @@ import logging
 import warnings
 from collections.abc import Iterable
 
+
 def unduplicate_field_names(field_names):
     """Append a number to duplicate field names to make them unique."""
     res = []
