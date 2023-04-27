@@ -222,7 +222,6 @@ def query_and_save_as_dataframe(ip, table_name, limit):
     ],
 )
 def test_persist_replace_abbr_no_override(ip, test_table, expected_result):
-    # New saved dataframe length -> 1
     saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
     ip.run_cell(f"%sql -P sqlite:// {saved_df_name}")
     out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
@@ -250,7 +249,6 @@ def test_persist_replace_abbr_no_override(ip, test_table, expected_result):
     ],
 )
 def test_persist_replace_no_override(ip, test_table, expected_result):
-    # New saved dataframe length -> 1
     saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
     out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
@@ -314,9 +312,9 @@ def test_persist_and_append_use_together(ip, test_table):
     saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
     out = ip.run_cell(f"%sql --persist-replace --append sqlite:// {saved_df_name}")
 
-    # assert isinstance(out.error_in_exec, ValueError)
     assert "You cannot both replace and append to a dataframe at the same time,"
     "please only use either of them" in str(out.error_in_exec)
+    assert (out.error_in_exec.error_type) == "ValueError"
 
 
 @pytest.mark.parametrize(
