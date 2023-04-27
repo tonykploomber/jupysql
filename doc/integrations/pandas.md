@@ -1,8 +1,8 @@
 ---
 jupytext:
-  notebook_metadata_filter: myst
   cell_metadata_filter: -all
   formats: md:myst
+  notebook_metadata_filter: myst
   text_representation:
     extension: .md
     format_name: myst
@@ -14,7 +14,8 @@ kernelspec:
   name: python3
 myst:
   html_meta:
-    description lang=en: Convert outputs from SQL queries to pandas data frames using JupySQL
+    description lang=en: Convert outputs from SQL queries to pandas data frames using
+      JupySQL
     keywords: jupyter, sql, jupysql, pandas
     property=og:locale: en_US
 ---
@@ -123,6 +124,3 @@ df
 %sql SELECT * FROM df;
 ```
 
-```{code-cell} ipython3
-
-```
