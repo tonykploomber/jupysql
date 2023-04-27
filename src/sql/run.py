@@ -428,6 +428,7 @@ def handle_postgres_special(conn, statement):
     """Execute a PostgreSQL special statement using PGSpecial module."""
     if not PGSpecial:
         raise exceptions.MissingPackageError("pgspecial not installed")
+    
     pgspecial = PGSpecial()
     _, cur, headers, _ = pgspecial.execute(conn.session.connection.cursor(), statement)[
         0
@@ -480,7 +481,6 @@ def run(conn, sql, config):
         first_word = sql.strip().split()[0].lower()
         manual_commit = False
         if first_word == "begin":
-            # raise ValueError("ipython_sql does not support transactions")
             raise exceptions.RuntimeError("JupySQL does not support transactions")
         if first_word.startswith("\\") and is_postgres_or_redshift(conn.dialect):
             result = handle_postgres_special(conn, statement)
