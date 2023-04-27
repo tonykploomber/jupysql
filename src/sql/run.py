@@ -517,7 +517,7 @@ class PrettyTable(prettytable.PrettyTable):
         if self.row_count and (data.config.displaylimit == self.displaylimit):
             return  # correct number of rows already present
         self.clear_rows()
-        if data.config.displaylimit == None:
+        if data.config.displaylimit is None:
             self.displaylimit = len(data)
             self.row_count = len(data)
         else:
