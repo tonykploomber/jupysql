@@ -337,7 +337,6 @@ def test_persist_and_append_use_together(ip, test_table):
     ],
 )
 def test_persist_replace_twice(ip, test_table, expected_result):
-    # Test error message when use --persist and --persist-replace together
     saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=2)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
 
