@@ -356,11 +356,21 @@ class SqlMagic(Magics, Configurable):
                 "You cannot both replace and append to a dataframe "
                 "at the same time, please only use either of them"
             )
-        if args.persist:
+        if args.persist_replace and args.persist_replace:
+            print("Please use either --persist or --persist-replace")
+            return self._persist_dataframe(
+                command.sql,
+                conn,
+                user_ns,
+                append=False,
+                index=not args.no_index,
+                replace=True,
+            )
+        elif args.persist:
             return self._persist_dataframe(
                 command.sql, conn, user_ns, append=False, index=not args.no_index
             )
-        if args.persist_replace:
+        elif args.persist_replace:
             return self._persist_dataframe(
                 command.sql,
                 conn,

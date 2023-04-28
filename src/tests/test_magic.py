@@ -331,6 +331,41 @@ def test_persist_and_append_use_together(ip, test_table):
         ("number_table", [(0, 4, -2)]),
     ],
 )
+def test_persist_and_persist_replace_use_together(
+    ip, capsys, test_table, expected_result
+):
+    # Test error message when use --persist and --persist-replace together
+    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
+    ip.run_cell(f"%sql --persist --persist-replace sqlite:// {saved_df_name}")
+    out, _ = capsys.readouterr()
+    execute_out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
+
+    # Test warning message
+    assert "Please use either --persist or --persist-replace" in out
+    # Test persist-replace is used
+    assert execute_out.result == expected_result
+    assert execute_out.error_in_exec is None
+
+
+@pytest.mark.parametrize(
+    "test_table, expected_result",
+    [
+        ("test", [(0, 1, "foo")]),
+        ("author", [(0, "William", "Shakespeare", 1616)]),
+        (
+            "website",
+            [
+                (
+                    0,
+                    "Bertold Brecht",
+                    "https://en.wikipedia.org/wiki/Bertolt_Brecht",
+                    1954,
+                )
+            ],
+        ),
+        ("number_table", [(0, 4, -2)]),
+    ],
+)
 def test_persist_replace_twice(ip, test_table, expected_result):
     saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
