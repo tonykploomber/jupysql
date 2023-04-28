@@ -428,7 +428,7 @@ def handle_postgres_special(conn, statement):
     """Execute a PostgreSQL special statement using PGSpecial module."""
     if not PGSpecial:
         raise exceptions.MissingPackageError("pgspecial not installed")
-    
+
     pgspecial = PGSpecial()
     _, cur, headers, _ = pgspecial.execute(conn.session.connection.cursor(), statement)[
         0
