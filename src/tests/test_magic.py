@@ -195,9 +195,9 @@ def test_persist_bare(ip):
     assert result.error_in_exec
 
 
-def query_and_save_as_dataframe(ip, table_name, limit):
+def get_table_rows_as_dataframe(ip, table_name):
     save_df_name = f"df_{table_name}"
-    ip.run_cell(f"results = %sql SELECT * FROM {table_name} LIMIT {limit};")
+    ip.run_cell(f"results = %sql SELECT * FROM {table_name} LIMIT 1;")
     ip.run_cell(f"{save_df_name} = results.DataFrame()")
     return save_df_name
 
@@ -222,7 +222,7 @@ def query_and_save_as_dataframe(ip, table_name, limit):
     ],
 )
 def test_persist_replace_abbr_no_override(ip, test_table, expected_result):
-    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql -P sqlite:// {saved_df_name}")
     out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
     assert out.result == expected_result
@@ -249,7 +249,7 @@ def test_persist_replace_abbr_no_override(ip, test_table, expected_result):
     ],
 )
 def test_persist_replace_no_override(ip, test_table, expected_result):
-    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
     out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
     assert out.result == expected_result
@@ -277,10 +277,10 @@ def test_persist_replace_no_override(ip, test_table, expected_result):
 )
 def test_persist_replace_override(ip, test_table, expected_result):
     # Previous saved dataframe length -> 2
-    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=2)
+    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
     # New saved dataframe length -> 1
-    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
 
     out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
@@ -294,11 +294,11 @@ def test_persist_replace_override(ip, test_table, expected_result):
 )
 def test_persist_replace_override_reverted_order(ip, test_table):
     # Previous saved dataframe length -> 2
-    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=2)
+    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
 
     # New saved dataframe length -> 1
-    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     out = ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
 
     assert "Table already exist, maybe use --persist-replace" in str(out.error_in_exec)
@@ -309,7 +309,7 @@ def test_persist_replace_override_reverted_order(ip, test_table):
 )
 def test_persist_and_append_use_together(ip, test_table):
     # Test error message when use --persist and --persist-replace together
-    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     out = ip.run_cell(f"%sql --persist-replace --append sqlite:// {saved_df_name}")
 
     assert "You cannot both replace and append to a dataframe at the same time,"
@@ -337,10 +337,10 @@ def test_persist_and_append_use_together(ip, test_table):
     ],
 )
 def test_persist_replace_twice(ip, test_table, expected_result):
-    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=2)
+    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
 
-    saved_df_name = query_and_save_as_dataframe(ip, table_name=test_table, limit=1)
+    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
 
     out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
