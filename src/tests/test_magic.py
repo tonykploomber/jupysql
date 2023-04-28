@@ -276,10 +276,8 @@ def test_persist_replace_no_override(ip, test_table, expected_result):
     ],
 )
 def test_persist_replace_override(ip, test_table, expected_result):
-    # Previous saved dataframe length -> 2
     saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
-    # New saved dataframe length -> 1
     saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
 
@@ -293,11 +291,8 @@ def test_persist_replace_override(ip, test_table, expected_result):
     "test_table", [("test"), ("author"), ("website"), ("number_table")]
 )
 def test_persist_replace_override_reverted_order(ip, test_table):
-    # Previous saved dataframe length -> 2
     saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
-
-    # New saved dataframe length -> 1
     saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     out = ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
 
@@ -308,7 +303,7 @@ def test_persist_replace_override_reverted_order(ip, test_table):
     "test_table", [("test"), ("author"), ("website"), ("number_table")]
 )
 def test_persist_and_append_use_together(ip, test_table):
-    # Test error message when use --persist and --persist-replace together
+    # Test error message when use --persist and --append together
     saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     out = ip.run_cell(f"%sql --persist-replace --append sqlite:// {saved_df_name}")
 
