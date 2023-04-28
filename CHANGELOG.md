@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## 0.7.3dev
+## 0.7.4dev
+
+## 0.7.3 (2023-04-28)
+
+* [Fix] Fixing ipython version to 8.12.0 on python 3.8
+* [Fix] Fix `--alias` when passing an existing engine
+* [Doc] Tutorial on querying excel files with pandas and jupysql ([#423](https://github.com/ploomber/jupysql/pull/423))
 
 * [Feature] Adds `--persist-replace` argument (#440)
 
