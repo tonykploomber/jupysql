@@ -150,12 +150,15 @@ class ResultSet(list, ColumnGuesserMixin):
             # to create clickable links
             result = html.unescape(result)
             result = _cell_with_spaces_pattern.sub(_nonbreaking_spaces, result)
-            if self.config.displaylimit and len(self) > self.config.displaylimit:
+            truncated_number = self.config.displaylimit
+            if truncated_number is None:
+                truncated_number = 10
+            if len(self) > truncated_number:
                 HTML = (
                     '%s\n<span style="font-style:italic;text-align:center;">'
                     "%d rows, truncated to displaylimit of %d</span>"
                 )
-                result = HTML % (result, len(self), self.config.displaylimit)
+                result = HTML % (result, len(self), truncated_number)
             return result
         else:
             return None
@@ -519,9 +522,11 @@ class PrettyTable(prettytable.PrettyTable):
         if self.row_count and (data.config.displaylimit == self.displaylimit):
             return  # correct number of rows already present
         self.clear_rows()
-        if data.config.displaylimit is None:
+        if data.config.displaylimit == 0:
             self.displaylimit = len(data)
             self.row_count = len(data)
+        elif data.config.displaylimit is None:
+            self.row_count = min(len(data), self.displaylimit)
         else:
             self.displaylimit = data.config.displaylimit
             self.row_count = min(len(data), self.displaylimit)

@@ -134,18 +134,6 @@ class SqlMagic(Magics, Configurable):
     )
     autocommit = Bool(True, config=True, help="Set autocommit mode")
 
-    @validate("displaylimit")
-    def _valid_displaylimit(self, proposal):
-        try:
-            value = int(proposal["value"])
-            if value <= 0:
-                raise TraitError(
-                    "{}: displaylimit cannot be a negative integer".format(value)
-                )
-        except ValueError:
-            raise TraitError("{}: displaylimit is not an integer".format(value))
-        return value
-
     @telemetry.log_call("init")
     def __init__(self, shell):
         self._store = store
@@ -155,6 +143,20 @@ class SqlMagic(Magics, Configurable):
 
         # Add ourself to the list of module configurable via %config
         self.shell.configurables.append(self)
+
+    @validate("displaylimit")
+    def _valid_displaylimit(self, proposal):
+        value = int(proposal["value"])
+        if value is None:
+            return value
+        try:
+            if value <= 0:
+                raise TraitError(
+                    "{}: displaylimit cannot be a negative integer".format(value)
+                )
+        except ValueError:
+            raise TraitError("{}: displaylimit is not an integer".format(value))
+        return value
 
     @observe("autopandas", "autopolars")
     def _mutex_autopandas_autopolars(self, change):

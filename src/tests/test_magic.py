@@ -232,8 +232,7 @@ def test_connection_args_double_quotes(ip):
 #     assert 'Shakespeare' in str(persisted)
 
 
-def test_displaylimit_unlimited(ip):
-    ip.run_line_magic("config", "SqlMagic.autolimit = None")
+def test_displaylimit_default(ip):
     ip.run_line_magic("config", "SqlMagic.displaylimit = None")
 
     out = ip.run_cell("%sql SELECT * FROM author;")
@@ -250,8 +249,12 @@ def test_displaylimit(ip):
     assert "Shakespeare" not in result._repr_html_()
 
 
-@pytest.mark.parametrize("config_value, expected_length", [(3, 3), (6, 6), (-1, -1)])
+@pytest.mark.parametrize("config_value, expected_length", [(3, 3), (6, 6), (None, 10)])
 def test_displaylimit_enabled_truncated_length(ip, config_value, expected_length):
+    # Insert extra data to make number_table bigger (over 10 to see truncated string)
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+
     ip.run_cell(f"%config SqlMagic.displaylimit = {config_value}")
     out = runsql(ip, "SELECT * FROM number_table;")
     assert f"truncated to displaylimit of {expected_length}" in out._repr_html_()
