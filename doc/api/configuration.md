@@ -28,6 +28,8 @@ set (usually with a `LIMIT` clause in the SQL).  `displaylimit` is similar,
 but the entire result set is still pulled into memory (for later analysis);
 only the screen display is truncated.
 
+If you are concerned about query performance, please use the `autolimit` config.
+
 +++
 
 ## Setup
@@ -105,7 +107,7 @@ Automatically limit the size of the returned result sets (e.g., add a `LIMIT` at
 
 ## `displaylimit`
 
-Default: `60`
+Default: `10`
 
 Automatically limit the number of rows displayed (full result set is still stored).
 
