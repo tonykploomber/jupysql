@@ -232,6 +232,24 @@ def test_connection_args_double_quotes(ip):
 #     assert 'Shakespeare' in str(persisted)
 
 
+def test_displaylimit_no_limit(ip):
+    ip.run_line_magic("config", "SqlMagic.displaylimit = 0")
+
+    out = ip.run_cell("%sql SELECT * FROM number_table;")
+    assert out.result == [
+        (4, -2),
+        (-5, 0),
+        (2, 4),
+        (0, 2),
+        (-5, -1),
+        (-2, -3),
+        (-2, -3),
+        (-4, 2),
+        (2, -5),
+        (4, 3),
+    ]
+
+
 def test_displaylimit_default(ip):
     ip.run_line_magic("config", "SqlMagic.displaylimit = None")
 
