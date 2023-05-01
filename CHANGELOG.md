@@ -3,7 +3,7 @@
 ## 0.7.5dev
 
 * [Doc] documenting `%sqlcmd tables`/`%sqlcmd columns`
-* [Fix] Fix displaylimit default value to 10 (#462)
+* [Fix] Fix the default value of %config SqlMagic.displaylimit to 10 (#462)
 
 ## 0.7.4 (2023-04-28)
 No changes
