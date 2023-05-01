@@ -1,3 +1,4 @@
+import argparse
 import json
 import re
 
@@ -30,7 +31,7 @@ from sql._patch import patch_ipython_usage_error
 from ploomber_core.dependencies import check_installed
 
 from traitlets.config.configurable import Configurable
-from traitlets import Bool, Int, Unicode, Dict, observe
+from traitlets import Bool, Int, TraitError, Unicode, Dict, observe, validate
 
 try:
     from pandas.core.frame import DataFrame, Series
@@ -94,7 +95,7 @@ class SqlMagic(Magics, Configurable):
         help="Don't display the full traceback on SQL Programming Error",
     )
     displaylimit = Int(
-        60,
+        10,
         config=True,
         allow_none=True,
         help=(
@@ -134,6 +135,16 @@ class SqlMagic(Magics, Configurable):
     )
     autocommit = Bool(True, config=True, help="Set autocommit mode")
 
+    @validate('displaylimit')
+    def _valid_displaylimit(self, proposal):
+        try:
+            value = int(proposal['value'])
+            if value <= 0:
+                raise TraitError("{}: displaylimit cannot be a negative integer".format(value))
+        except ValueError:
+            raise TraitError("{}: displaylimit is not an integer".format(value))
+        return value
+    
     @telemetry.log_call("init")
     def __init__(self, shell):
         self._store = store
@@ -143,6 +154,7 @@ class SqlMagic(Magics, Configurable):
 
         # Add ourself to the list of module configurable via %config
         self.shell.configurables.append(self)
+
 
     @observe("autopandas", "autopolars")
     def _mutex_autopandas_autopolars(self, change):

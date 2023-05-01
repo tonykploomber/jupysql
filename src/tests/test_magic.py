@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 import platform
 from pathlib import Path
@@ -16,6 +17,7 @@ from sql.connection import Connection
 from sql.magic import SqlMagic
 from sql.run import ResultSet
 from sql import magic
+from traitlets import TraitError
 
 from conftest import runsql
 
@@ -239,14 +241,6 @@ def test_displaylimit_unlimited(ip):
     assert out.result == [("William", "Shakespeare", 1616), ("Bertold", "Brecht", 1956)]
 
 
-def test_displaylimit_disabled(ip):
-    ip.run_line_magic("config", "SqlMagic.autolimit = None")
-
-    result = runsql(ip, "SELECT * FROM author;")
-
-    assert "Brecht" in result._repr_html_()
-    assert "Shakespeare" in result._repr_html_()
-
 
 def test_displaylimit(ip):
     ip.run_line_magic("config", "SqlMagic.autolimit = None")
@@ -258,12 +252,19 @@ def test_displaylimit(ip):
     assert "Shakespeare" not in result._repr_html_()
 
 
-@pytest.mark.parametrize("config_value, expected_length", [(3, 3), (6, 6)])
-def test_displaylimit_enabled(ip, config_value, expected_length):
-    ip.run_cell(f"%config SqlMagic.displaylimit = {expected_length}")
+@pytest.mark.parametrize("config_value, expected_length", [(3, 3), (6, 6), (-1, -1)])
+def test_displaylimit_enabled_truncated_length(ip, config_value, expected_length):
+    ip.run_cell(f"%config SqlMagic.displaylimit = {config_value}")
     out = runsql(ip, "SELECT * FROM number_table;")
     assert f"truncated to displaylimit of {expected_length}" in out._repr_html_()
 
+
+@pytest.mark.parametrize("config_value", [(-1), (-1.05), ("'some_string'"), ("tuple(123)")])
+def test_displaylimit_enabled_with_invalid_values(ip, config_value, caplog):
+    with caplog.at_level(logging.ERROR):
+        ip.run_cell(f"%config SqlMagic.displaylimit = {config_value}")
+    out = ip.run_cell("%sql SELECT * FROM author;")
+    assert out.result == [("William", "Shakespeare", 1616), ("Bertold", "Brecht", 1956)]
 
 def test_column_local_vars(ip):
     ip.run_line_magic("config", "SqlMagic.column_local_vars = True")

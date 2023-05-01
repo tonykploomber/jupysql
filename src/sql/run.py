@@ -512,7 +512,7 @@ def raw_run(conn, sql):
 class PrettyTable(prettytable.PrettyTable):
     def __init__(self, *args, **kwargs):
         self.row_count = 0
-        self.displaylimit = 60
+        self.displaylimit = 10
         return super(PrettyTable, self).__init__(*args, **kwargs)
 
     def add_rows(self, data):
