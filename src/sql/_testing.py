@@ -127,6 +127,18 @@ databaseConfig = {
             "role": "SYSADMIN",
         },
     },
+    "oracle": {
+        "drivername": "oracle+oracledb",
+        "username": "ploomber_app",
+        "password": "ploomber_app_password",
+        # database/schema
+        "host": "localhost",
+        "port": "1521",
+        "alias": "oracle",
+        "query": {
+            "service_name": "XEPDB1",
+        },
+    },
 }
 
 
@@ -321,6 +333,46 @@ def mssql(is_bypass_init=False):
                 "test": "/opt/mssql-tools/bin/sqlcmd "
                 "-U $DB_USER -P $SA_PASSWORD "
                 "-Q 'select 1' -b -o /dev/null",
+                "timeout": 5000000000,
+            },
+        ) as container:
+            yield container
+
+
+@contextmanager
+def oracle(is_bypass_init=False):
+    if is_bypass_init:
+        yield None
+        return
+    db_config = DatabaseConfigHelper.get_database_config("ora")
+    try:
+        client = docker.from_env(version="auto")
+        curr = client.containers.get(db_config["docker_ct"]["name"])
+        yield curr
+    except errors.NotFound:
+        print("Creating new container: mariaDB")
+        with new_container(
+            new_container_name=db_config["docker_ct"]["name"],
+            image_name=db_config["docker_ct"]["image"],
+            ports=db_config["docker_ct"]["ports"],
+            environment={
+                "MYSQL_DATABASE": db_config["database"],
+                "MYSQL_USER": db_config["username"],
+                "MYSQL_PASSWORD": db_config["password"],
+                "MYSQL_ROOT_PASSWORD": db_config["root_password"],
+            },
+            command="mysqld --default-authentication-plugin=mysql_native_password",
+            ready_test=lambda: database_ready(database="mariaDB"),
+            healthcheck={
+                "test": [
+                    "CMD",
+                    "mysqladmin",
+                    "ping",
+                    "-h",
+                    "localhost",
+                    "--user=root",
+                    "--password=ploomber_app_root_password",
+                ],
                 "timeout": 5000000000,
             },
         ) as container:
