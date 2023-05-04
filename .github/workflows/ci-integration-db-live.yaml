@@ -38,7 +38,6 @@ jobs:
         if: ${{ steps.secret-check.outputs.available == 'true' }}
         run:
           pip install ".[integration]"
-          pip install sqlalchemy -U
       - name: Integration Test
         if: ${{ steps.secret-check.outputs.available == 'true' }}
         env:
@@ -46,7 +45,5 @@ jobs:
           SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
         run:
-          # ensure we're running sqlalchemy 2
-          python -c "import sqlalchemy; print('Sqlalchemy version ', sqlalchemy.__version__);assert int(sqlalchemy.__version__.split('.')[0]) == 2"
           # Run the integration test with live option
           pytest src/tests/integration --verbose --live
