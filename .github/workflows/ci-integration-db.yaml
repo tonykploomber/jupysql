@@ -38,4 +38,5 @@ jobs:
       - name: Integration Test
         run:
           # Run the integration test by pytest marker
+          python -c "import sqlalchemy; print('Sqlalchemy version ', sqlalchemy.__version__);assert int(sqlalchemy.__version__.split('.')[0]) == 2"
           pytest src/tests/integration --verbose
