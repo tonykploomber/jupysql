@@ -35,6 +35,7 @@ jobs:
           source ~/.bashrc
 
           pip install ".[integration]"
+          pip install sqlalchemy -U
       - name: Integration Test
         run:
           # Run the integration test by pytest marker
