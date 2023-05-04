@@ -58,7 +58,6 @@ INTEGRATION = [
     "pgspecial==2.0.1",
     "pyodbc",
     "snowflake-sqlalchemy",
-    "sqlalchemy>1",
 ]
 
 setup(
