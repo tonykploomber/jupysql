@@ -295,13 +295,24 @@ def test_displaylimit_enabled_no_limit(
 
 
 @pytest.mark.parametrize(
-    "config_value", [(-1), (-1.05), ("'some_string'"), ("tuple(123)")]
+    "config_value, expected_error_msg",
+    [
+        (-1, "displaylimit cannot be a negative integer"),
+        (-2, "displaylimit cannot be a negative integer"),
+        (-2.5, "The 'displaylimit' trait of a SqlMagic instance expected an int"),
+        (
+            "'some_string'",
+            "The 'displaylimit' trait of a SqlMagic instance expected an int",
+        ),
+    ],
 )
-def test_displaylimit_enabled_with_invalid_values(ip, config_value, caplog):
+def test_displaylimit_enabled_with_invalid_values(
+    ip, config_value, expected_error_msg, caplog
+):
     with caplog.at_level(logging.ERROR):
         ip.run_cell(f"%config SqlMagic.displaylimit = {config_value}")
-    out = ip.run_cell("%sql SELECT * FROM author;")
-    assert out.result == [("William", "Shakespeare", 1616), ("Bertold", "Brecht", 1956)]
+
+    assert expected_error_msg in caplog.text
 
 
 def test_column_local_vars(ip):
