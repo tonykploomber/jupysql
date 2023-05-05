@@ -159,7 +159,12 @@ class ResultSet(ColumnGuesserMixin):
             if len(self) > self.pretty.row_count:
                 HTML = (
                     '%s\n<span style="font-style:italic;text-align:center;">'
-                    "%d rows, truncated to displaylimit of %d</span>"
+                    '%d rows, truncated to displaylimit of %d</span>'
+                    '<br>'
+                    '<span style="font-style:italic;text-align:center;">'
+                    'If you want to see more, please visit '
+                    '<a href="https://jupysql.ploomber.io/en/latest/api/configuration.html#displaylimit">displaylimit</a>'
+                    ' configuration</span>'
                 )
                 result = HTML % (result, len(self), self.pretty.row_count)
             return result

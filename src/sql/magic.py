@@ -144,6 +144,11 @@ class SqlMagic(Magics, Configurable):
         # Add ourself to the list of module configurable via %config
         self.shell.configurables.append(self)
 
+    # To verify displaylimit is valid positive integer
+    # If:
+    #   None -> We treat it as 0 (no limit)
+    #   Positive Integer -> Pass
+    #   Negative Integer -> raise Error
     @validate("displaylimit")
     def _valid_displaylimit(self, proposal):
         if proposal["value"] is None:

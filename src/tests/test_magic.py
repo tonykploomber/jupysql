@@ -314,6 +314,23 @@ def test_displaylimit_enabled_with_invalid_values(
 
     assert expected_error_msg in caplog.text
 
+@pytest.mark.parametrize("query_clause, expected_truncated_length",
+                          [
+    ("SELECT * FROM number_table LIMIT 5", None),
+    ("SELECT * FROM number_table LIMIT 11", 11),
+    ("SELECT * FROM number_table", 12),
+                           ]
+                          )
+def test_displaylimit_with_limit_clause(ip, query_clause, expected_truncated_length):
+    # Insert extra data to make number_table bigger (over 10 to see truncated string)
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+
+    out = runsql(ip, query_clause)
+    print ("out: ", out._repr_html_())
+    if expected_truncated_length:
+        assert f"{expected_truncated_length} rows, truncated to displaylimit of 10" in out._repr_html_()
+
 
 def test_column_local_vars(ip):
     ip.run_line_magic("config", "SqlMagic.column_local_vars = True")
