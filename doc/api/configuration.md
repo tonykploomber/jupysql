@@ -111,7 +111,7 @@ Default: `10`
 
 Automatically limit the number of rows displayed (full result set is still stored).
 
-(To display all rows: set to `None`)
+(To display all rows: set to `0` or `None`)
 
 ```{code-cell} ipython3
 %config SqlMagic.displaylimit = None
