@@ -94,7 +94,7 @@ class SqlMagic(Magics, Configurable):
         help="Don't display the full traceback on SQL Programming Error",
     )
     displaylimit = Int(
-        10,
+        sql.run.DEFAULT_DISPLAYLIMIT_VALUE,
         config=True,
         allow_none=True,
         help=(
@@ -146,17 +146,18 @@ class SqlMagic(Magics, Configurable):
 
     @validate("displaylimit")
     def _valid_displaylimit(self, proposal):
-        value = int(proposal["value"])
-        if value is None:
-            return value
+        if proposal["value"] is None:
+            print("displaylimit: Value None will be treated as 0 (no limit)")
+            return 0
         try:
-            if value <= 0:
+            value = int(proposal["value"])
+            if value < 0:
                 raise TraitError(
                     "{}: displaylimit cannot be a negative integer".format(value)
                 )
+            return value
         except ValueError:
             raise TraitError("{}: displaylimit is not an integer".format(value))
-        return value
 
     @observe("autopandas", "autopolars")
     def _mutex_autopandas_autopolars(self, change):

@@ -251,10 +251,12 @@ def test_displaylimit_no_limit(ip):
 
 
 def test_displaylimit_default(ip):
-    ip.run_line_magic("config", "SqlMagic.displaylimit = None")
+    # Insert extra data to make number_table bigger (over 10 to see truncated string)
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
 
-    out = ip.run_cell("%sql SELECT * FROM author;")
-    assert out.result == [("William", "Shakespeare", 1616), ("Bertold", "Brecht", 1956)]
+    out = runsql(ip, "SELECT * FROM number_table;")
+    assert "truncated to displaylimit of 10" in out._repr_html_()
 
 
 def test_displaylimit(ip):
@@ -267,7 +269,7 @@ def test_displaylimit(ip):
     assert "Shakespeare" not in result._repr_html_()
 
 
-@pytest.mark.parametrize("config_value, expected_length", [(3, 3), (6, 6), (None, 10)])
+@pytest.mark.parametrize("config_value, expected_length", [(3, 3), (6, 6)])
 def test_displaylimit_enabled_truncated_length(ip, config_value, expected_length):
     # Insert extra data to make number_table bigger (over 10 to see truncated string)
     ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
@@ -276,6 +278,20 @@ def test_displaylimit_enabled_truncated_length(ip, config_value, expected_length
     ip.run_cell(f"%config SqlMagic.displaylimit = {config_value}")
     out = runsql(ip, "SELECT * FROM number_table;")
     assert f"truncated to displaylimit of {expected_length}" in out._repr_html_()
+
+
+@pytest.mark.parametrize("config_value", [(None), (0)])
+def test_displaylimit_enabled_no_limit(
+    ip,
+    config_value,
+):
+    # Insert extra data to make number_table bigger (over 10 to see truncated string)
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+
+    ip.run_cell(f"%config SqlMagic.displaylimit = {config_value}")
+    out = runsql(ip, "SELECT * FROM number_table;")
+    assert "truncated to displaylimit of " not in out._repr_html_()
 
 
 @pytest.mark.parametrize(
