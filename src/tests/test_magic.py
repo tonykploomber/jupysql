@@ -314,22 +314,41 @@ def test_displaylimit_enabled_with_invalid_values(
 
     assert expected_error_msg in caplog.text
 
-@pytest.mark.parametrize("query_clause, expected_truncated_length",
-                          [
-    ("SELECT * FROM number_table LIMIT 5", None),
-    ("SELECT * FROM number_table LIMIT 11", 11),
-    ("SELECT * FROM number_table", 12),
-                           ]
-                          )
-def test_displaylimit_with_limit_clause(ip, query_clause, expected_truncated_length):
+
+@pytest.mark.parametrize(
+    "query_clause, expected_truncated_length",
+    [
+        # With limit
+        ("SELECT * FROM number_table", 12),
+        ("SELECT * FROM number_table LIMIT 5", None),
+        ("SELECT * FROM number_table LIMIT 10", None),
+        ("SELECT * FROM number_table LIMIT 11", 11),
+        # With conditions
+        ("SELECT * FROM number_table WHERE x > 0", None),
+        ("SELECT * FROM number_table WHERE x < 0", None),
+        ("SELECT * FROM number_table WHERE y < 0", None),
+        ("SELECT * FROM number_table WHERE y > 0", None),
+    ],
+)
+@pytest.mark.parametrize("is_saved_by_cte", [(True, False)])
+def test_displaylimit_with_conditional_clause(
+    ip, query_clause, expected_truncated_length, is_saved_by_cte
+):
     # Insert extra data to make number_table bigger (over 10 to see truncated string)
     ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
     ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
 
-    out = runsql(ip, query_clause)
-    print ("out: ", out._repr_html_())
+    if is_saved_by_cte:
+        ip.run_cell(f"%sql --save saved_cte --no-execute {query_clause}")
+        out = ip.run_line_magic("sql", "--with saved_cte SELECT * from saved_cte")
+    else:
+        out = runsql(ip, query_clause)
+
     if expected_truncated_length:
-        assert f"{expected_truncated_length} rows, truncated to displaylimit of 10" in out._repr_html_()
+        assert (
+            f"{expected_truncated_length} rows, truncated to displaylimit of 10"
+            in out._repr_html_()
+        )
 
 
 def test_column_local_vars(ip):
