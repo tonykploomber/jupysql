@@ -164,7 +164,7 @@ class ResultSet(ColumnGuesserMixin):
                     '<span style="font-style:italic;text-align:center;">'
                     "If you want to see more, please visit "
                     '<a href="https://jupysql.ploomber.io/en/latest/api/configuration.html#displaylimit">displaylimit</a>'  # noqa: E501
-                    ' configuration</span>'
+                    " configuration</span>"
                 )
                 result = HTML % (result, len(self), self.pretty.row_count)
             return result
