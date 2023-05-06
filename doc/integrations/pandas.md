@@ -118,7 +118,7 @@ df
 %sql --persist-replace df
 ```
 
-#### df table is overrided
+#### df table is overridden
 
 ```{code-cell} ipython3
 %sql SELECT * FROM df;
