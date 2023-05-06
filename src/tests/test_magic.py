@@ -297,7 +297,8 @@ def test_persist_replace_override_reverted_order(ip, test_table):
     saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
     out = ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
 
-    assert "Table already exist, maybe use --persist-replace" in str(out.error_in_exec)
+    assert "Table already exists; consider using --persist-replace." \
+        in str(out.error_in_exec)
 
 
 @pytest.mark.parametrize(

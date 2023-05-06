@@ -501,7 +501,7 @@ class SqlMagic(Magics, Configurable):
             )
         except ValueError:
             raise exceptions.ValueError(
-                "Table already exist, maybe use --persist-replace"
+                "Table already exists; consider using --persist-replace."
             )
 
         return "Persisted %s" % table_name
