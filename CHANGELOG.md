@@ -1,8 +1,10 @@
 # CHANGELOG
 
 ## 0.7.5dev
-
+* [Feature] Using native DuckDB `.df()` method when using `autopandas` 
+* [Feature] Adds `--persist-replace` argument (#440)
 * [Doc] documenting `%sqlcmd tables`/`%sqlcmd columns`
+* [Feature] Better error messages when function used in plotting API unsupported by DB driver (#159)
 
 ## 0.7.4 (2023-04-28)
 No changes
@@ -14,7 +16,6 @@ Never deployed due to a CI error
 * [Fix] Fix `--alias` when passing an existing engine
 * [Doc] Tutorial on querying excel files with pandas and jupysql ([#423](https://github.com/ploomber/jupysql/pull/423))
 
-* [Feature] Adds `--persist-replace` argument (#440)
 
 ## 0.7.2 (2023-04-25)
 
