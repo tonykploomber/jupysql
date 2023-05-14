@@ -9,9 +9,9 @@ jupytext:
     format_version: 0.13
     jupytext_version: 1.14.5
 kernelspec:
-  display_name: jupysql
+  display_name: Python 3 (ipykernel)
   language: python
-  name: jupysql
+  name: python3
 myst:
   html_meta:
     description lang=en: Configure the %sql/%%sql magics in Jupyter
