@@ -1,13 +1,13 @@
 ---
 jupytext:
+  notebook_metadata_filter: myst
   cell_metadata_filter: -all
   formats: md:myst
-  notebook_metadata_filter: myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.5
+    jupytext_version: 1.14.4
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -51,7 +51,7 @@ INSERT INTO languages VALUES ('Java', 11.59, 0.40);
 INSERT INTO languages VALUES ('C++', 10.00, 1.98);
 ```
 
-## Optionsss
+## Options
 
 ```{code-cell} ipython3
 %config SqlMagic
