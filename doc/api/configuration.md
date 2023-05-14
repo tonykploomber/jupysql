@@ -51,7 +51,7 @@ INSERT INTO languages VALUES ('Java', 11.59, 0.40);
 INSERT INTO languages VALUES ('C++', 10.00, 1.98);
 ```
 
-## Optionss
+## Optionsss
 
 ```{code-cell} ipython3
 %config SqlMagic
