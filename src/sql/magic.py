@@ -356,7 +356,7 @@ class SqlMagic(Magics, Configurable):
                 """You cannot simultaneously replace and append data to a dataframe;
                   please choose to utilize either one or the other."""
             )
-        if args.persist_replace and args.persist_replace:
+        if args.persist and args.persist_replace:
             print("Please use either --persist or --persist-replace")
             return self._persist_dataframe(
                 command.sql,
