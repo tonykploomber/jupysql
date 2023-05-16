@@ -369,8 +369,7 @@ def cockroach(is_bypass_init=False):
 
 def main():
     print("Starting test containers...")
-    with cockroach():
-        # with postgres(), mysql(), mariadb(), mssql(), cockroach():
+    with postgres(), mysql(), mariadb(), mssql(), cockroach():
         print("Press CTRL+C to exit")
         try:
             while True:
