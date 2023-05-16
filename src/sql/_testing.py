@@ -333,7 +333,7 @@ def mssql(is_bypass_init=False):
                 "MSSQL_SA_PASSWORD": db_config["password"],
                 "ACCEPT_EULA": "Y",
             },
-            ready_test=lambda: database_ready(database="MSSQL"),
+            ready_test=lambda: database_ready(database="MSSQL", timeout=60),
             healthcheck={
                 "test": "/opt/mssql-tools/bin/sqlcmd "
                 "-U $DB_USER -P $SA_PASSWORD "
@@ -362,13 +362,6 @@ def cockroach(is_bypass_init=False):
             image_name=db_config["docker_ct"]["image"],
             ports=db_config["docker_ct"]["ports"],
             ready_test=lambda: database_ready(database="cockroach"),
-            # ready_test=lambda: time.sleep(10000000) or True,
-            # healthcheck={
-            #     "test": "/opt/mssql-tools/bin/sqlcmd "
-            #     "-U $DB_USER -P $SA_PASSWORD "
-            #     "-Q 'select 1' -b -o /dev/null",
-            #     "timeout": 5000000000,
-            # },
             command=db_config["docker_ct"]["command"],
         ) as container:
             yield container
@@ -376,7 +369,8 @@ def cockroach(is_bypass_init=False):
 
 def main():
     print("Starting test containers...")
-    with postgres(), mysql(), mariadb(), mssql(), cockroach():
+    with cockroach():
+        # with postgres(), mysql(), mariadb(), mssql(), cockroach():
         print("Press CTRL+C to exit")
         try:
             while True:

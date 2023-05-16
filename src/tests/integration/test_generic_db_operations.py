@@ -291,23 +291,23 @@ BOX_PLOT_FAIL_REASON = (
 @pytest.mark.parametrize(
     "ip_with_dynamic_db",
     [
-        # pytest.param("ip_with_postgreSQL"),
-        # pytest.param("ip_with_duckDB"),
-        # pytest.param(
-        #     "ip_with_mySQL", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
-        # ),
-        # pytest.param(
-        #     "ip_with_mariaDB", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
-        # ),
-        # pytest.param(
-        #     "ip_with_SQLite", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
-        # ),
-        # pytest.param(
-        #     "ip_with_Snowflake",
-        #     marks=pytest.mark.xfail(
-        #         reason="Something wrong with sqlplot boxplot in snowflake"
-        #     ),
-        # ),
+        pytest.param("ip_with_postgreSQL"),
+        pytest.param("ip_with_duckDB"),
+        pytest.param(
+            "ip_with_mySQL", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        ),
+        pytest.param(
+            "ip_with_mariaDB", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        ),
+        pytest.param(
+            "ip_with_SQLite", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        ),
+        pytest.param(
+            "ip_with_Snowflake",
+            marks=pytest.mark.xfail(
+                reason="Something wrong with sqlplot boxplot in snowflake"
+            ),
+        ),
         pytest.param("ip_with_cockroach"),
     ],
 )
@@ -506,24 +506,24 @@ def test_sql_cmd_magic_dos(ip_with_dynamic_db, request, capsys):
                 reason="Something wrong with test_profile_query in snowflake"
             ),
         ),
-        # (
-        #     "ip_with_cockroach",
-        #     "taxi",
-        #     ["taxi_driver_name"],
-        #     {
-        #         "count": [45, 45],
-        #         "mean": [22.0, math.nan],
-        #         "min": [0, "Eric Ken"],
-        #         "max": [44, "Kevin Kelly"],
-        #         "unique": [45, 3],
-        #         "freq": [1, 15],
-        #         "top": [0, "Eric Ken"],
-        #         "std": ["1.299e+01", math.nan],
-        #         "25%": [11.0, math.nan],
-        #         "50%": [22.0, math.nan],
-        #         "75%": [33.0, math.nan],
-        #     },
-        # ),
+        (
+            "ip_with_cockroach",
+            "taxi",
+            ["index", "taxi_driver_name"],
+            {
+                "count": [45, 45],
+                "mean": [22.0, math.nan],
+                "min": [0, "Eric Ken"],
+                "max": [44, "Kevin Kelly"],
+                "unique": [45, 3],
+                "freq": [1, 15],
+                "top": [0, "Eric Ken"],
+                "std": ["1.299e+01", math.nan],
+                "25%": [11.0, math.nan],
+                "50%": [22.0, math.nan],
+                "75%": [33.0, math.nan],
+            },
+        ),
     ],
 )
 def test_profile_query(
