@@ -183,7 +183,6 @@ def database_ready(
     t0 = time.time()
     while time.time() - t0 < timeout:
         try:
-            print("genereated URL: ", _get_database_url(database))
             eng = sqlalchemy.create_engine(_get_database_url(database)).connect()
             eng.close()
             return True
@@ -354,9 +353,7 @@ def cockroach(is_bypass_init=False):
     try:
         client = docker.from_env(version="auto")
         client.containers.prune()
-        print("Curr: ", client.containers.list(all=True))
         curr = client.containers.get(db_config["docker_ct"]["name"])
-        print("use existing container", curr)
         yield curr
     except errors.NotFound:
         print("Creating new container: Cockroach")
@@ -379,9 +376,7 @@ def cockroach(is_bypass_init=False):
 
 def main():
     print("Starting test containers...")
-
-    with cockroach():
-        # with postgres(), mysql(), mariadb(), mssql():
+    with postgres(), mysql(), mariadb(), mssql(), cockroach():
         print("Press CTRL+C to exit")
         try:
             while True:

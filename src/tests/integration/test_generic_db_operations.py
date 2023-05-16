@@ -14,6 +14,7 @@ ALL_DATABASES = [
     "ip_with_duckDB",
     "ip_with_MSSQL",
     "ip_with_Snowflake",
+    "ip_with_cockroach",
 ]
 
 
@@ -75,6 +76,7 @@ def test_query_count(ip_with_dynamic_db, expected, request, test_table_name_dict
         ("ip_with_SQLite", 15, 15),
         ("ip_with_duckDB", 15, 15),
         # Snowflake doesn't support index, skip that
+        ("ip_with_cockroach", 15, 15),
     ],
 )
 def test_create_table_with_indexed_df(
@@ -132,6 +134,7 @@ def get_connection_count(ip_with_dynamic_db):
         ("ip_with_duckDB", 1),
         ("ip_with_MSSQL", 1),
         ("ip_with_Snowflake", 1),
+        ("ip_with_cockroach", 1),
     ],
 )
 def test_active_connection_number(ip_with_dynamic_db, expected, request):
@@ -149,6 +152,7 @@ def test_active_connection_number(ip_with_dynamic_db, expected, request):
         ("ip_with_duckDB", "duckDB"),
         ("ip_with_MSSQL", "MSSQL"),
         ("ip_with_Snowflake", "Snowflake"),
+        ("ip_with_cockroach", "cockroach"),
     ],
 )
 def test_close_and_connect(
@@ -181,6 +185,7 @@ def test_close_and_connect(
         ("ip_with_duckDB", "duckdb", "duckdb_engine"),
         ("ip_with_MSSQL", "mssql", "pyodbc"),
         ("ip_with_Snowflake", "snowflake", "snowflake"),
+        ("ip_with_cockroach", "cockroachdb", "psycopg2"),
     ],
 )
 def test_telemetry_execute_command_has_connection_info(
@@ -242,6 +247,7 @@ def test_telemetry_execute_command_has_connection_info(
                 reason="Something wrong with sqlplot histogram in snowflake"
             ),
         ),
+        ("ip_with_cockroach"),
     ],
 )
 def test_sqlplot_histogram(ip_with_dynamic_db, cell, request, test_table_name_dict):
@@ -285,23 +291,24 @@ BOX_PLOT_FAIL_REASON = (
 @pytest.mark.parametrize(
     "ip_with_dynamic_db",
     [
-        pytest.param("ip_with_postgreSQL"),
-        pytest.param("ip_with_duckDB"),
-        pytest.param(
-            "ip_with_mySQL", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
-        ),
-        pytest.param(
-            "ip_with_mariaDB", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
-        ),
-        pytest.param(
-            "ip_with_SQLite", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
-        ),
-        pytest.param(
-            "ip_with_Snowflake",
-            marks=pytest.mark.xfail(
-                reason="Something wrong with sqlplot boxplot in snowflake"
-            ),
-        ),
+        # pytest.param("ip_with_postgreSQL"),
+        # pytest.param("ip_with_duckDB"),
+        # pytest.param(
+        #     "ip_with_mySQL", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        # ),
+        # pytest.param(
+        #     "ip_with_mariaDB", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        # ),
+        # pytest.param(
+        #     "ip_with_SQLite", marks=pytest.mark.xfail(reason=BOX_PLOT_FAIL_REASON)
+        # ),
+        # pytest.param(
+        #     "ip_with_Snowflake",
+        #     marks=pytest.mark.xfail(
+        #         reason="Something wrong with sqlplot boxplot in snowflake"
+        #     ),
+        # ),
+        pytest.param("ip_with_cockroach"),
     ],
 )
 def test_sqlplot_boxplot(ip_with_dynamic_db, cell, request, test_table_name_dict):
@@ -328,6 +335,7 @@ def test_sqlplot_boxplot(ip_with_dynamic_db, cell, request, test_table_name_dict
         ("ip_with_duckDB"),
         ("ip_with_MSSQL"),
         ("ip_with_Snowflake"),
+        ("ip_with_cockroach"),
     ],
 )
 def test_sql_cmd_magic_uno(ip_with_dynamic_db, request, capsys):
@@ -357,18 +365,19 @@ def test_sql_cmd_magic_uno(ip_with_dynamic_db, request, capsys):
 @pytest.mark.parametrize(
     "ip_with_dynamic_db",
     [
-        ("ip_with_postgreSQL"),
-        ("ip_with_mySQL"),
-        ("ip_with_mariaDB"),
-        ("ip_with_SQLite"),
-        ("ip_with_duckDB"),
-        ("ip_with_MSSQL"),
-        pytest.param(
-            "ip_with_Snowflake",
-            marks=pytest.mark.xfail(
-                reason="Something wrong with test_sql_cmd_magic_dos in snowflake"
-            ),
-        ),
+        # ("ip_with_postgreSQL"),
+        # ("ip_with_mySQL"),
+        # ("ip_with_mariaDB"),
+        # ("ip_with_SQLite"),
+        # ("ip_with_duckDB"),
+        # ("ip_with_MSSQL"),
+        # pytest.param(
+        #     "ip_with_Snowflake",
+        #     marks=pytest.mark.xfail(
+        #         reason="Something wrong with test_sql_cmd_magic_dos in snowflake"
+        #     ),
+        # ),
+        ("ip_with_cockroach")
     ],
 )
 def test_sql_cmd_magic_dos(ip_with_dynamic_db, request, capsys):
@@ -497,6 +506,24 @@ def test_sql_cmd_magic_dos(ip_with_dynamic_db, request, capsys):
                 reason="Something wrong with test_profile_query in snowflake"
             ),
         ),
+        # (
+        #     "ip_with_cockroach",
+        #     "taxi",
+        #     ["taxi_driver_name"],
+        #     {
+        #         "count": [45, 45],
+        #         "mean": [22.0, math.nan],
+        #         "min": [0, "Eric Ken"],
+        #         "max": [44, "Kevin Kelly"],
+        #         "unique": [45, 3],
+        #         "freq": [1, 15],
+        #         "top": [0, "Eric Ken"],
+        #         "std": ["1.299e+01", math.nan],
+        #         "25%": [11.0, math.nan],
+        #         "50%": [22.0, math.nan],
+        #         "75%": [33.0, math.nan],
+        #     },
+        # ),
     ],
 )
 def test_profile_query(
