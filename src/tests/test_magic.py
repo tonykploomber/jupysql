@@ -228,7 +228,7 @@ def get_table_rows_as_dataframe(ip, table, name=None):
     ],
 )
 def test_persist_replace_abbr_no_override(ip, test_table, expected_result):
-    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
+    saved_df_name = get_table_rows_as_dataframe(ip, table=test_table)
     ip.run_cell(f"%sql -P sqlite:// {saved_df_name}")
     out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
     assert out.result == expected_result
@@ -255,7 +255,7 @@ def test_persist_replace_abbr_no_override(ip, test_table, expected_result):
     ],
 )
 def test_persist_replace_no_override(ip, test_table, expected_result):
-    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
+    saved_df_name = get_table_rows_as_dataframe(ip, table=test_table)
     ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
     out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
     assert out.result == expected_result
@@ -276,11 +276,11 @@ def test_persist_replace_override(
 ):
     saved_df_name = "dummy_df_name"
     table_df = get_table_rows_as_dataframe(
-        ip, table_name=first_test_table, desire_saved_df_name=saved_df_name
+        ip, table=first_test_table, name=saved_df_name
     )
     ip.run_cell(f"%sql --persist sqlite:// {table_df}")
     table_df = get_table_rows_as_dataframe(
-        ip, table_name=second_test_table, desire_saved_df_name=saved_df_name
+        ip, table=second_test_table, name=saved_df_name
     )
     # To test the second --persist-replace executes successfully
     persist_replace_out = ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
@@ -306,11 +306,11 @@ def test_persist_replace_override_reverted_order(
 ):
     saved_df_name = "dummy_df_name"
     table_df = get_table_rows_as_dataframe(
-        ip, table_name=first_test_table, desire_saved_df_name=saved_df_name
+        ip, table=first_test_table, name=saved_df_name
     )
     ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
     table_df = get_table_rows_as_dataframe(
-        ip, table_name=second_test_table, desire_saved_df_name=saved_df_name
+        ip, table=second_test_table, name=saved_df_name
     )
     persist_out = ip.run_cell(f"%sql --persist sqlite:// {table_df}")
 
@@ -330,7 +330,7 @@ def test_persist_replace_override_reverted_order(
 )
 def test_persist_and_append_use_together(ip, test_table):
     # Test error message when use --persist and --append together
-    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
+    saved_df_name = get_table_rows_as_dataframe(ip, table=test_table)
     out = ip.run_cell(f"%sql --persist-replace --append sqlite:// {saved_df_name}")
 
     assert """You cannot simultaneously replace and append data to a dataframe;
@@ -363,7 +363,7 @@ def test_persist_and_persist_replace_use_together(
     ip, capsys, test_table, expected_result
 ):
     # Test error message when use --persist and --persist-replace together
-    saved_df_name = get_table_rows_as_dataframe(ip, table_name=test_table)
+    saved_df_name = get_table_rows_as_dataframe(ip, table=test_table)
     ip.run_cell(f"%sql --persist --persist-replace sqlite:// {saved_df_name}")
     persist_replace_out, _ = capsys.readouterr()
     execute_out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
@@ -390,12 +390,12 @@ def test_persist_replace_twice(
     saved_df_name = "dummy_df_name"
 
     table_df = get_table_rows_as_dataframe(
-        ip, table_name=first_test_table, desire_saved_df_name=saved_df_name
+        ip, table=first_test_table, name=saved_df_name
     )
     ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
 
     table_df = get_table_rows_as_dataframe(
-        ip, table_name=second_test_table, desire_saved_df_name=saved_df_name
+        ip, table=second_test_table, name=saved_df_name
     )
     ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
 
