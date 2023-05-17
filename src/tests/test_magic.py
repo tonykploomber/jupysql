@@ -196,12 +196,14 @@ def test_persist_bare(ip):
     assert result.error_in_exec
 
 
-def get_table_rows_as_dataframe(ip, table_name, desire_saved_df_name=None):
-    if desire_saved_df_name:
-        saved_df_name = desire_saved_df_name
+def get_table_rows_as_dataframe(ip, table, name=None):
+    """The function will generate the pandas dataframe in the namespace
+    by querying the data by given table name"""
+    if name:
+        saved_df_name = name
     else:
-        saved_df_name = f"df_{table_name}"
-    ip.run_cell(f"results = %sql SELECT * FROM {table_name} LIMIT 1;")
+        saved_df_name = f"df_{table}"
+    ip.run_cell(f"results = %sql SELECT * FROM {table} LIMIT 1;")
     ip.run_cell(f"{saved_df_name} = results.DataFrame()")
     return saved_df_name
 
@@ -273,21 +275,19 @@ def test_persist_replace_override(
     ip, first_test_table, second_test_table, expected_result
 ):
     saved_df_name = "dummy_df_name"
-    get_table_rows_as_dataframe(
+    table_df = get_table_rows_as_dataframe(
         ip, table_name=first_test_table, desire_saved_df_name=saved_df_name
     )
-    ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
-    get_table_rows_as_dataframe(
+    ip.run_cell(f"%sql --persist sqlite:// {table_df}")
+    table_df = get_table_rows_as_dataframe(
         ip, table_name=second_test_table, desire_saved_df_name=saved_df_name
     )
     # To test the second --persist-replace executes successfully
-    persist_replace_out = ip.run_cell(
-        f"%sql --persist-replace sqlite:// {saved_df_name}"
-    )
+    persist_replace_out = ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
     assert persist_replace_out.error_in_exec is None
 
     # To test the persisted data is from --persist
-    out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
+    out = ip.run_cell(f"%sql SELECT * FROM {table_df}")
     assert out.result == expected_result
     assert out.error_in_exec is None
 
@@ -305,21 +305,21 @@ def test_persist_replace_override_reverted_order(
     ip, first_test_table, second_test_table, expected_result
 ):
     saved_df_name = "dummy_df_name"
-    get_table_rows_as_dataframe(
+    table_df = get_table_rows_as_dataframe(
         ip, table_name=first_test_table, desire_saved_df_name=saved_df_name
     )
-    ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
-    get_table_rows_as_dataframe(
+    ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
+    table_df = get_table_rows_as_dataframe(
         ip, table_name=second_test_table, desire_saved_df_name=saved_df_name
     )
-    persist_out = ip.run_cell(f"%sql --persist sqlite:// {saved_df_name}")
+    persist_out = ip.run_cell(f"%sql --persist sqlite:// {table_df}")
 
     # To test the second --persist executes not successfully
     assert "Table already exists; consider using --persist-replace." in str(
         persist_out.error_in_exec
     )
 
-    out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
+    out = ip.run_cell(f"%sql SELECT * FROM {table_df}")
     # To test the persisted data is from --persist-replace
     assert out.result == expected_result
     assert out.error_in_exec is None
@@ -388,18 +388,18 @@ def test_persist_replace_twice(
     ip, first_test_table, second_test_table, expected_result
 ):
     saved_df_name = "dummy_df_name"
-    get_table_rows_as_dataframe(
+
+    table_df = get_table_rows_as_dataframe(
         ip, table_name=first_test_table, desire_saved_df_name=saved_df_name
     )
-    ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
+    ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
 
-    get_table_rows_as_dataframe(
+    table_df = get_table_rows_as_dataframe(
         ip, table_name=second_test_table, desire_saved_df_name=saved_df_name
     )
-    ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
+    ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
 
-    out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
-    print("out: ", out.result)
+    out = ip.run_cell(f"%sql SELECT * FROM {table_df}")
     # To test the persisted data is from --persist-replace
     assert out.result == expected_result
     assert out.error_in_exec is None
