@@ -340,7 +340,7 @@ def test_persist_and_append_use_together(ip, test_table):
     saved_df_name = get_table_rows_as_dataframe(ip, table=test_table)
     out = ip.run_cell(f"%sql --persist-replace --append sqlite:// {saved_df_name}")
 
-    assert """You cannot simultaneously replace and append data to a dataframe;
+    assert """You cannot simultaneously persist and append data to a dataframe;
                   please choose to utilize either one or the other.""" in str(
         out.error_in_exec
     )
