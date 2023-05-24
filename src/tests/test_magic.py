@@ -321,7 +321,7 @@ def test_persist_replace_override_reverted_order(
 
     # To test the second --persist executes not successfully
     assert (
-        "Table 'dummy_df_name' already exists. Consider using \
+        f"Table \'{saved_df_name}\' already exists. Consider using \
 --persist-replace to drop the table before persisting the data frame"
         == str(persist_out.error_in_exec)
     )
@@ -344,7 +344,7 @@ def test_persist_and_append_use_together(ip, test_table):
                   please choose to utilize either one or the other.""" in str(
         out.error_in_exec
     )
-    assert (out.error_in_exec.error_type) == "ValueError"
+    assert (out.error_in_exec.error_type) == "UsageError"
 
 
 @pytest.mark.parametrize(
