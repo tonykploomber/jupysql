@@ -320,8 +320,10 @@ def test_persist_replace_override_reverted_order(
     persist_out = ip.run_cell(f"%sql --persist sqlite:// {table_df}")
 
     # To test the second --persist executes not successfully
-    assert "Table already exists; consider using --persist-replace." in str(
-        persist_out.error_in_exec
+    assert (
+        "Table 'dummy_df_name' already exists. Consider using \
+--persist-replace to drop the table before persisting the data frame"
+        == str(persist_out.error_in_exec)
     )
 
     out = ip.run_cell(f"%sql SELECT * FROM {table_df}")

@@ -530,7 +530,8 @@ class SqlMagic(Magics, Configurable):
             )
         except ValueError:
             raise exceptions.ValueError(
-                "Table already exists; consider using --persist-replace."
+                f"""Table {table_name!r} already exists. Consider using \
+--persist-replace to drop the table before persisting the data frame"""
             )
 
         return "Persisted %s" % table_name
