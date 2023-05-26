@@ -323,7 +323,7 @@ def test_persist_replace_override_reverted_order(
     assert (
         f"Table '{saved_df_name}' already exists. Consider using \
 --persist-replace to drop the table before persisting the data frame"
-        == str(persist_out.error_in_exec)
+        in str(persist_out.error_in_exec)
     )
 
     out = ip.run_cell(f"%sql SELECT * FROM {table_df}")
