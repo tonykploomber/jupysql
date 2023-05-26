@@ -321,7 +321,7 @@ def test_persist_replace_override_reverted_order(
 
     # To test the second --persist executes not successfully
     assert (
-        f"Table \'{saved_df_name}\' already exists. Consider using \
+        f"Table '{saved_df_name}' already exists. Consider using \
 --persist-replace to drop the table before persisting the data frame"
         == str(persist_out.error_in_exec)
     )
@@ -371,13 +371,15 @@ def test_persist_and_persist_replace_use_together(
 ):
     # Test error message when use --persist and --persist-replace together
     saved_df_name = get_table_rows_as_dataframe(ip, table=test_table)
-    ip.run_cell(f"%sql --persist --persist-replace sqlite:// {saved_df_name}")
-    persist_replace_out, _ = capsys.readouterr()
-    execute_out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
+    # check UserWarning is raised
+    with pytest.warns(UserWarning) as w:
+        ip.run_cell(f"%sql --persist --persist-replace sqlite:// {saved_df_name}")
 
-    # Test warning message
-    assert "Please use either --persist or --persist-replace" in persist_replace_out
+    # check that the message matches
+    assert w[0].message.args[0] == "Please use either --persist or --persist-replace"
+
     # Test persist-replace is used
+    execute_out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
     assert execute_out.result == expected_result
     assert execute_out.error_in_exec is None
 

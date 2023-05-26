@@ -379,7 +379,7 @@ class SqlMagic(Magics, Configurable):
                   please choose to utilize either one or the other."""
             )
         if args.persist and args.persist_replace:
-            print("Please use either --persist or --persist-replace")
+            warnings.warn("Please use either --persist or --persist-replace")
             return self._persist_dataframe(
                 command.sql,
                 conn,
