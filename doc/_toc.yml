@@ -32,6 +32,9 @@ parts:
       - file: integrations/postgres-connect
       - file: integrations/compatibility
       - file: integrations/questdb
+      - file: integrations/oracle
+      - file: integrations/trinodb
+
 
   - caption: API Reference
     chapters:

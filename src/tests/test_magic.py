@@ -111,6 +111,36 @@ def test_result_var_multiline_shovel(ip):
     assert "Shakespeare" in str(result) and "Brecht" in str(result)
 
 
+def test_return_result_var(ip, capsys):
+    # Assert that no result is returned when using regular result var syntax <<
+    result = ip.run_cell_magic(
+        "sql",
+        "",
+        """
+        sqlite://
+        x <<
+        SELECT last_name FROM author;
+        """,
+    )
+    var = ip.user_global_ns["x"]
+    assert "Shakespeare" in str(var) and "Brecht" in str(var)
+    assert result is None
+
+    # Assert that correct result is returned when using return result var syntax = <<
+    result = ip.run_cell_magic(
+        "sql",
+        "",
+        """
+        sqlite://
+        x= <<
+        SELECT last_name FROM author;
+        """,
+    )
+    var = ip.user_global_ns["x"]
+    assert "Shakespeare" in str(var) and "Brecht" in str(var)
+    assert result.dict() == {"last_name": ("Shakespeare", "Brecht")}
+
+
 def test_access_results_by_keys(ip):
     assert runsql(ip, "SELECT * FROM author;")["William"] == (
         "William",
@@ -1014,6 +1044,9 @@ An error happened while creating the connection: connect(): incompatible functio
     1. (database: str = ':memory:', read_only: bool = False, config: dict = None) -> duckdb.DuckDBPyConnection
 
 Invoked with: kwargs: host='invalid_db'.
+
+Perhaps you meant to use the 'duckdb' db 
+To find more information regarding connection: https://jupysql.ploomber.io/en/latest/integrations/duckdb.html
 
 To fix it:
 
