@@ -111,7 +111,7 @@ interact(plot_fct, color=dropdown, b=b)
 
 #### Prepare dataset
 
-We also use `ggplot2` diamonds to demostrate
+We also use `ggplot2` diamonds to demonstrate
 
 ```{code-cell} ipython3
 from pathlib import Path
