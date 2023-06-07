@@ -3,10 +3,10 @@ from collections.abc import MutableMapping
 from jinja2 import Template
 from ploomber_core.exceptions import modify_exceptions
 import sql.connection
-import warnings
 import difflib
 
 from sql import exceptions
+from sql import query_util
 
 
 class SQLStore(MutableMapping):
@@ -69,6 +69,18 @@ class SQLStore(MutableMapping):
         # TODO: if with is false, WITH should not appear
         return SQLQuery(self, query, with_)
 
+    def infer_dependencies(self, query, key):
+        dependencies = []
+        saved_keys = [
+            saved_key for saved_key in list(self._data.keys()) if saved_key != key
+        ]
+        if saved_keys and query:
+            tables = query_util.extract_tables_from_query(query)
+            for table in tables:
+                if table in saved_keys:
+                    dependencies.append(table)
+        return dependencies
+
     @modify_exceptions
     def store(self, key, query, with_=None):
         if "-" in key:
@@ -93,12 +105,11 @@ class SQLQuery:
         self._with_ = with_ or []
 
         if any("-" in x for x in self._with_):
-            warnings.warn(
-                "Using hyphens will be deprecated soon, "
-                "please use "
+            raise exceptions.UsageError(
+                "Using hyphens is not allowed. "
+                "Please use "
                 + ", ".join(self._with_).replace("-", "_")
                 + " instead for the with argument.",
-                FutureWarning,
             )
 
     def __str__(self) -> str:
@@ -107,11 +118,11 @@ class SQLQuery:
         ` (backtick)
         """
         with_clause_template = Template(
-            """WITH{% for name in with_ %} {{name}} AS ({{saved[name]._query}})\
+            """WITH{% for name in with_ %} {{name}} AS ({{rts(saved[name]._query)}})\
 {{ "," if not loop.last }}{% endfor %}{{query}}"""
         )
         with_clause_template_backtick = Template(
-            """WITH{% for name in with_ %} `{{name}}` AS ({{saved[name]._query}})\
+            """WITH{% for name in with_ %} `{{name}}` AS ({{rts(saved[name]._query)}})\
 {{ "," if not loop.last }}{% endfor %}{{query}}"""
         )
         is_use_backtick = sql.connection.Connection.current.is_use_backtick_template()
@@ -120,8 +131,16 @@ class SQLQuery:
             with_clause_template_backtick if is_use_backtick else with_clause_template
         )
         return template.render(
-            query=self._query, saved=self._store._data, with_=with_all
+            query=self._query,
+            saved=self._store._data,
+            with_=with_all,
+            rts=_remove_trailing_semicolon,
         )
+
+
+def _remove_trailing_semicolon(query):
+    query_ = query.rstrip()
+    return query_[:-1] if query_[-1] == ";" else query
 
 
 def _get_dependencies(store, keys):
@@ -130,6 +149,15 @@ def _get_dependencies(store, keys):
     deps = _flatten([_get_dependencies_for_key(store, key) for key in keys])
     # remove duplicates but preserve order
     return list(dict.fromkeys(deps + keys))
+
+
+def _get_dependents_for_key(store, key):
+    key_dependents = []
+    for k in list(store):
+        deps = _get_dependencies_for_key(store, k)
+        if key in deps:
+            key_dependents.append(k)
+    return key_dependents
 
 
 def _get_dependencies_for_key(store, key):

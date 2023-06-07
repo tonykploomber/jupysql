@@ -20,9 +20,12 @@ class SQLCommand:
     """
 
     def __init__(self, magic, user_ns, line, cell) -> None:
+        self._line = line
+        self._cell = cell
+
         self.args = parse.magic_args(magic.execute, line)
         # self.args.line (everything that appears after %sql/%%sql in the first line)
-        # is splited in tokens (delimited by spaces), this checks if we have one arg
+        # is split in tokens (delimited by spaces), this checks if we have one arg
         one_arg = len(self.args.line) == 1
 
         is_custom_connection_ = (
@@ -49,6 +52,7 @@ class SQLCommand:
             add_alias = True
         else:
             add_alias = False
+
         self.command_text = " ".join(line_for_command) + "\n" + cell
 
         if self.args.file:
@@ -66,10 +70,6 @@ class SQLCommand:
 
         if add_alias:
             self.parsed["connection"] = self.args.line[0]
-
-        if self.args.with_:
-            final = store.render(self.parsed["sql"], with_=self.args.with_)
-            self.parsed["sql"] = str(final)
 
     @property
     def sql(self):
@@ -95,5 +95,28 @@ class SQLCommand:
         """Returns the result_var"""
         return self.parsed["result_var"]
 
+    @property
+    def return_result_var(self):
+        """Returns the return_result_var"""
+        return self.parsed["return_result_var"]
+
     def _var_expand(self, sql, user_ns, magic):
         return Template(sql).render(user_ns)
+
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__}(line={self._line!r}, cell={self._cell!r}) -> "
+            f"({self.sql!r}, {self.sql_original!r})"
+        )
+
+    def set_sql_with(self, with_):
+        """
+        Sets the final rendered SQL query using the WITH clause
+
+        Parameters
+        ----------
+        with_ : list
+        list of all subqueries needed to render the query
+        """
+        final = store.render(self.parsed["sql"], with_)
+        self.parsed["sql"] = str(final)

@@ -1,4 +1,6 @@
+import logging
 import platform
+import sqlite3
 from pathlib import Path
 import os.path
 import re
@@ -17,6 +19,10 @@ from sql.run import ResultSet
 from sql import magic
 
 from conftest import runsql
+from sql.connection import PLOOMBER_DOCS_LINK_STR
+from ploomber_core.exceptions import COMMUNITY
+
+COMMUNITY = COMMUNITY.strip()
 
 
 def test_memory_db(ip):
@@ -103,6 +109,36 @@ def test_result_var_multiline_shovel(ip):
     )
     result = ip.user_global_ns["x"]
     assert "Shakespeare" in str(result) and "Brecht" in str(result)
+
+
+def test_return_result_var(ip, capsys):
+    # Assert that no result is returned when using regular result var syntax <<
+    result = ip.run_cell_magic(
+        "sql",
+        "",
+        """
+        sqlite://
+        x <<
+        SELECT last_name FROM author;
+        """,
+    )
+    var = ip.user_global_ns["x"]
+    assert "Shakespeare" in str(var) and "Brecht" in str(var)
+    assert result is None
+
+    # Assert that correct result is returned when using return result var syntax = <<
+    result = ip.run_cell_magic(
+        "sql",
+        "",
+        """
+        sqlite://
+        x= <<
+        SELECT last_name FROM author;
+        """,
+    )
+    var = ip.user_global_ns["x"]
+    assert "Shakespeare" in str(var) and "Brecht" in str(var)
+    assert result.dict() == {"last_name": ("Shakespeare", "Brecht")}
 
 
 def test_access_results_by_keys(ip):
@@ -195,6 +231,219 @@ def test_persist_bare(ip):
     assert result.error_in_exec
 
 
+def get_table_rows_as_dataframe(ip, table, name=None):
+    """The function will generate the pandas dataframe in the namespace
+    by querying the data by given table name"""
+    if name:
+        saved_df_name = name
+    else:
+        saved_df_name = f"df_{table}"
+    ip.run_cell(f"results = %sql SELECT * FROM {table} LIMIT 1;")
+    ip.run_cell(f"{saved_df_name} = results.DataFrame()")
+    return saved_df_name
+
+
+@pytest.mark.parametrize(
+    "test_table, expected_result",
+    [
+        ("test", [(0, 1, "foo")]),
+        ("author", [(0, "William", "Shakespeare", 1616)]),
+        (
+            "website",
+            [
+                (
+                    0,
+                    "Bertold Brecht",
+                    "https://en.wikipedia.org/wiki/Bertolt_Brecht",
+                    1954,
+                )
+            ],
+        ),
+        ("number_table", [(0, 4, -2)]),
+    ],
+)
+def test_persist_replace_abbr_no_override(ip, test_table, expected_result):
+    saved_df_name = get_table_rows_as_dataframe(ip, table=test_table)
+    ip.run_cell(f"%sql -P sqlite:// {saved_df_name}")
+    out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
+    assert out.result == expected_result
+    assert out.error_in_exec is None
+
+
+@pytest.mark.parametrize(
+    "test_table, expected_result",
+    [
+        ("test", [(0, 1, "foo")]),
+        ("author", [(0, "William", "Shakespeare", 1616)]),
+        (
+            "website",
+            [
+                (
+                    0,
+                    "Bertold Brecht",
+                    "https://en.wikipedia.org/wiki/Bertolt_Brecht",
+                    1954,
+                )
+            ],
+        ),
+        ("number_table", [(0, 4, -2)]),
+    ],
+)
+def test_persist_replace_no_override(ip, test_table, expected_result):
+    saved_df_name = get_table_rows_as_dataframe(ip, table=test_table)
+    ip.run_cell(f"%sql --persist-replace sqlite:// {saved_df_name}")
+    out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
+    assert out.result == expected_result
+    assert out.error_in_exec is None
+
+
+@pytest.mark.parametrize(
+    "first_test_table, second_test_table, expected_result",
+    [
+        ("test", "author", [(0, "William", "Shakespeare", 1616)]),
+        ("author", "test", [(0, 1, "foo")]),
+        ("test", "number_table", [(0, 4, -2)]),
+        ("number_table", "test", [(0, 1, "foo")]),
+    ],
+)
+def test_persist_replace_override(
+    ip, first_test_table, second_test_table, expected_result
+):
+    saved_df_name = "dummy_df_name"
+    table_df = get_table_rows_as_dataframe(
+        ip, table=first_test_table, name=saved_df_name
+    )
+    ip.run_cell(f"%sql --persist sqlite:// {table_df}")
+    table_df = get_table_rows_as_dataframe(
+        ip, table=second_test_table, name=saved_df_name
+    )
+    # To test the second --persist-replace executes successfully
+    persist_replace_out = ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
+    assert persist_replace_out.error_in_exec is None
+
+    # To test the persisted data is from --persist
+    out = ip.run_cell(f"%sql SELECT * FROM {table_df}")
+    assert out.result == expected_result
+    assert out.error_in_exec is None
+
+
+@pytest.mark.parametrize(
+    "first_test_table, second_test_table, expected_result",
+    [
+        ("test", "author", [(0, 1, "foo")]),
+        ("author", "test", [(0, "William", "Shakespeare", 1616)]),
+        ("test", "number_table", [(0, 1, "foo")]),
+        ("number_table", "test", [(0, 4, -2)]),
+    ],
+)
+def test_persist_replace_override_reverted_order(
+    ip, first_test_table, second_test_table, expected_result
+):
+    saved_df_name = "dummy_df_name"
+    table_df = get_table_rows_as_dataframe(
+        ip, table=first_test_table, name=saved_df_name
+    )
+    ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
+    table_df = get_table_rows_as_dataframe(
+        ip, table=second_test_table, name=saved_df_name
+    )
+    persist_out = ip.run_cell(f"%sql --persist sqlite:// {table_df}")
+
+    # To test the second --persist executes not successfully
+    assert (
+        f"Table '{saved_df_name}' already exists. Consider using \
+--persist-replace to drop the table before persisting the data frame"
+        in str(persist_out.error_in_exec)
+    )
+
+    out = ip.run_cell(f"%sql SELECT * FROM {table_df}")
+    # To test the persisted data is from --persist-replace
+    assert out.result == expected_result
+    assert out.error_in_exec is None
+
+
+@pytest.mark.parametrize(
+    "test_table", [("test"), ("author"), ("website"), ("number_table")]
+)
+def test_persist_and_append_use_together(ip, test_table):
+    # Test error message when use --persist and --append together
+    saved_df_name = get_table_rows_as_dataframe(ip, table=test_table)
+    out = ip.run_cell(f"%sql --persist-replace --append sqlite:// {saved_df_name}")
+
+    assert """You cannot simultaneously persist and append data to a dataframe;
+                  please choose to utilize either one or the other.""" in str(
+        out.error_in_exec
+    )
+    assert (out.error_in_exec.error_type) == "UsageError"
+
+
+@pytest.mark.parametrize(
+    "test_table, expected_result",
+    [
+        ("test", [(0, 1, "foo")]),
+        ("author", [(0, "William", "Shakespeare", 1616)]),
+        (
+            "website",
+            [
+                (
+                    0,
+                    "Bertold Brecht",
+                    "https://en.wikipedia.org/wiki/Bertolt_Brecht",
+                    1954,
+                )
+            ],
+        ),
+        ("number_table", [(0, 4, -2)]),
+    ],
+)
+def test_persist_and_persist_replace_use_together(
+    ip, capsys, test_table, expected_result
+):
+    # Test error message when use --persist and --persist-replace together
+    saved_df_name = get_table_rows_as_dataframe(ip, table=test_table)
+    # check UserWarning is raised
+    with pytest.warns(UserWarning) as w:
+        ip.run_cell(f"%sql --persist --persist-replace sqlite:// {saved_df_name}")
+
+    # check that the message matches
+    assert w[0].message.args[0] == "Please use either --persist or --persist-replace"
+
+    # Test persist-replace is used
+    execute_out = ip.run_cell(f"%sql SELECT * FROM {saved_df_name}")
+    assert execute_out.result == expected_result
+    assert execute_out.error_in_exec is None
+
+
+@pytest.mark.parametrize(
+    "first_test_table, second_test_table, expected_result",
+    [
+        ("test", "author", [(0, "William", "Shakespeare", 1616)]),
+        ("author", "test", [(0, 1, "foo")]),
+        ("test", "number_table", [(0, 4, -2)]),
+        ("number_table", "test", [(0, 1, "foo")]),
+    ],
+)
+def test_persist_replace_twice(
+    ip, first_test_table, second_test_table, expected_result
+):
+    saved_df_name = "dummy_df_name"
+
+    table_df = get_table_rows_as_dataframe(
+        ip, table=first_test_table, name=saved_df_name
+    )
+    ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
+
+    table_df = get_table_rows_as_dataframe(
+        ip, table=second_test_table, name=saved_df_name
+    )
+    ip.run_cell(f"%sql --persist-replace sqlite:// {table_df}")
+
+    out = ip.run_cell(f"%sql SELECT * FROM {table_df}")
+    # To test the persisted data is from --persist-replace
+    assert out.result == expected_result
+    assert out.error_in_exec is None
+
+
 def test_connection_args_enforce_json(ip):
     result = ip.run_cell('%sql --connection_arguments {"badlyformed":true')
     assert result.error_in_exec
@@ -214,13 +463,6 @@ def test_connection_args_single_quotes(ip):
     assert "timeout" in result.result["sqlite:///:memory:"].connect_args
 
 
-@pytest.mark.skipif(platform.system() == "Windows", reason="failing on windows")
-def test_connection_args_double_quotes(ip):
-    ip.run_cell('%sql --connection_arguments "{\\"timeout\\": 10}" sqlite:///:memory:')
-    result = ip.run_cell("%sql --connections")
-    assert "timeout" in result.result["sqlite:///:memory:"].connect_args
-
-
 # TODO: support
 # @with_setup(_setup_author, _teardown_author)
 # def test_persist_with_connection_info():
@@ -230,15 +472,31 @@ def test_connection_args_double_quotes(ip):
 #     assert 'Shakespeare' in str(persisted)
 
 
-@pytest.mark.parametrize("value", ["None", "0"])
-def test_displaylimit_disabled(ip, value):
-    ip.run_line_magic("config", "SqlMagic.autolimit = None")
+def test_displaylimit_no_limit(ip):
+    ip.run_line_magic("config", "SqlMagic.displaylimit = 0")
 
-    ip.run_line_magic("config", f"SqlMagic.displaylimit = {value}")
-    result = runsql(ip, "SELECT * FROM author;")
+    out = ip.run_cell("%sql SELECT * FROM number_table;")
+    assert out.result == [
+        (4, -2),
+        (-5, 0),
+        (2, 4),
+        (0, 2),
+        (-5, -1),
+        (-2, -3),
+        (-2, -3),
+        (-4, 2),
+        (2, -5),
+        (4, 3),
+    ]
 
-    assert "Brecht" in result._repr_html_()
-    assert "Shakespeare" in result._repr_html_()
+
+def test_displaylimit_default(ip):
+    # Insert extra data to make number_table bigger (over 10 to see truncated string)
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+
+    out = runsql(ip, "SELECT * FROM number_table;")
+    assert "truncated to displaylimit of 10" in out._repr_html_()
 
 
 def test_displaylimit(ip):
@@ -249,6 +507,88 @@ def test_displaylimit(ip):
 
     assert "Brecht" in result._repr_html_()
     assert "Shakespeare" not in result._repr_html_()
+
+
+@pytest.mark.parametrize("config_value, expected_length", [(3, 3), (6, 6)])
+def test_displaylimit_enabled_truncated_length(ip, config_value, expected_length):
+    # Insert extra data to make number_table bigger (over 10 to see truncated string)
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+
+    ip.run_cell(f"%config SqlMagic.displaylimit = {config_value}")
+    out = runsql(ip, "SELECT * FROM number_table;")
+    assert f"truncated to displaylimit of {expected_length}" in out._repr_html_()
+
+
+@pytest.mark.parametrize("config_value", [(None), (0)])
+def test_displaylimit_enabled_no_limit(
+    ip,
+    config_value,
+):
+    # Insert extra data to make number_table bigger (over 10 to see truncated string)
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+
+    ip.run_cell(f"%config SqlMagic.displaylimit = {config_value}")
+    out = runsql(ip, "SELECT * FROM number_table;")
+    assert "truncated to displaylimit of " not in out._repr_html_()
+
+
+@pytest.mark.parametrize(
+    "config_value, expected_error_msg",
+    [
+        (-1, "displaylimit cannot be a negative integer"),
+        (-2, "displaylimit cannot be a negative integer"),
+        (-2.5, "The 'displaylimit' trait of a SqlMagic instance expected an int"),
+        (
+            "'some_string'",
+            "The 'displaylimit' trait of a SqlMagic instance expected an int",
+        ),
+    ],
+)
+def test_displaylimit_enabled_with_invalid_values(
+    ip, config_value, expected_error_msg, caplog
+):
+    with caplog.at_level(logging.ERROR):
+        ip.run_cell(f"%config SqlMagic.displaylimit = {config_value}")
+
+    assert expected_error_msg in caplog.text
+
+
+@pytest.mark.parametrize(
+    "query_clause, expected_truncated_length",
+    [
+        # With limit
+        ("SELECT * FROM number_table", 12),
+        ("SELECT * FROM number_table LIMIT 5", None),
+        ("SELECT * FROM number_table LIMIT 10", None),
+        ("SELECT * FROM number_table LIMIT 11", 11),
+        # With conditions
+        ("SELECT * FROM number_table WHERE x > 0", None),
+        ("SELECT * FROM number_table WHERE x < 0", None),
+        ("SELECT * FROM number_table WHERE y < 0", None),
+        ("SELECT * FROM number_table WHERE y > 0", None),
+    ],
+)
+@pytest.mark.parametrize("is_saved_by_cte", [(True, False)])
+def test_displaylimit_with_conditional_clause(
+    ip, query_clause, expected_truncated_length, is_saved_by_cte
+):
+    # Insert extra data to make number_table bigger (over 10 to see truncated string)
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+    ip.run_cell("%sql INSERT INTO number_table VALUES (4, 3)")
+
+    if is_saved_by_cte:
+        ip.run_cell(f"%sql --save saved_cte --no-execute {query_clause}")
+        out = ip.run_line_magic("sql", "--with saved_cte SELECT * from saved_cte")
+    else:
+        out = runsql(ip, query_clause)
+
+    if expected_truncated_length:
+        assert (
+            f"{expected_truncated_length} rows, truncated to displaylimit of 10"
+            in out._repr_html_()
+        )
 
 
 def test_column_local_vars(ip):
@@ -504,6 +844,23 @@ def test_close_connection(ip, tmp_empty):
     assert "sqlite:///two.db" not in Connection.connections
 
 
+def test_alias(clean_conns, ip_empty, tmp_empty):
+    ip_empty.run_cell("%sql sqlite:///one.db --alias one")
+    assert {"one"} == set(Connection.connections)
+
+
+def test_alias_existing_engine(clean_conns, ip_empty, tmp_empty):
+    ip_empty.user_global_ns["first"] = create_engine("sqlite:///first.db")
+    ip_empty.run_cell("%sql first --alias one")
+    assert {"one"} == set(Connection.connections)
+
+
+def test_alias_custom_connection(clean_conns, ip_empty, tmp_empty):
+    ip_empty.user_global_ns["first"] = create_engine("sqlite://")
+    ip_empty.run_cell("%sql first --alias one")
+    assert {"one"} == set(Connection.connections)
+
+
 def test_close_connection_with_alias(ip, tmp_empty):
     # open two connections
     ip.run_cell("%sql sqlite:///one.db --alias one")
@@ -517,6 +874,65 @@ def test_close_connection_with_alias(ip, tmp_empty):
     assert "sqlite:///two.db" not in Connection.connections
     assert "one" not in Connection.connections
     assert "two" not in Connection.connections
+
+
+def test_close_connection_with_existing_engine_and_alias(ip, tmp_empty):
+    ip.user_global_ns["first"] = create_engine("sqlite:///first.db")
+    ip.user_global_ns["second"] = create_engine("sqlite:///second.db")
+
+    # open two connections
+    ip.run_cell("%sql first --alias one")
+    ip.run_cell("%sql second --alias two")
+
+    # close them
+    ip.run_cell("%sql -x one")
+    ip.run_cell("%sql --close two")
+
+    assert "sqlite:///first.db" not in Connection.connections
+    assert "sqlite:///second.db" not in Connection.connections
+    assert "first" not in Connection.connections
+    assert "second" not in Connection.connections
+
+
+def test_close_connection_with_custom_connection_and_alias(ip, tmp_empty):
+    ip.user_global_ns["first"] = create_engine("sqlite:///first.db")
+    ip.user_global_ns["second"] = create_engine("sqlite:///second.db")
+
+    # open two connections
+    ip.run_cell("%sql first --alias one")
+    ip.run_cell("%sql second --alias two")
+
+    # close them
+    ip.run_cell("%sql -x one")
+    ip.run_cell("%sql --close two")
+
+    assert "sqlite:///first.db" not in Connection.connections
+    assert "sqlite:///second.db" not in Connection.connections
+    assert "first" not in Connection.connections
+    assert "second" not in Connection.connections
+
+
+def test_creator_no_argument_raises(ip_empty):
+    with pytest.raises(
+        UsageError, match="argument -c/--creator: expected one argument"
+    ):
+        ip_empty.run_line_magic("sql", "--creator")
+
+
+def test_creator(monkeypatch, ip_empty):
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///")
+
+    def creator():
+        return sqlite3.connect("")
+
+    ip_empty.user_global_ns["func"] = creator
+    ip_empty.run_line_magic("sql", "--creator func")
+
+    result = ip_empty.run_line_magic(
+        "sql", "SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name;"
+    )
+
+    assert isinstance(result, ResultSet)
 
 
 def test_column_names_visible(ip, tmp_empty):
@@ -551,7 +967,7 @@ def test_pass_existing_engine(ip, tmp_empty):
     assert result == [(10, "foo"), (20, "bar")]
 
 
-# theres some weird shared state with this one, moving it to the end
+# there's some weird shared state with this one, moving it to the end
 def test_autolimit(ip):
     # test table has two rows
     ip.run_line_magic("config", "SqlMagic.autolimit = 0")
@@ -569,7 +985,7 @@ def test_autolimit(ip):
     assert len(result) == 1
 
 
-invalid_connection_string = """
+invalid_connection_string = f"""
 No active connection.
 
 To fix it:
@@ -581,8 +997,8 @@ OR
 
 Set the environment variable $DATABASE_URL
 
-For technical support: https://ploomber.io/community
-Documentation: https://jupysql.ploomber.io/en/latest/connecting.html
+{PLOOMBER_DOCS_LINK_STR}
+{COMMUNITY}
 """
 
 
@@ -593,14 +1009,14 @@ def test_error_on_invalid_connection_string(ip_empty, clean_conns):
     assert isinstance(result.error_in_exec, UsageError)
 
 
-invalid_connection_string_format = """\
+invalid_connection_string_format = f"""\
 Can't load plugin: sqlalchemy.dialects:something
 
 To fix it, make sure you are using correct driver name:
 Ref: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
 
-For technical support: https://ploomber.io/community
-Documentation: https://jupysql.ploomber.io/en/latest/connecting.html
+{PLOOMBER_DOCS_LINK_STR}
+{COMMUNITY}
 """  # noqa
 
 
@@ -611,32 +1027,21 @@ def test_error_on_invalid_connection_string_format(ip_empty, clean_conns):
     assert isinstance(result.error_in_exec, UsageError)
 
 
-invalid_connection_string_existing_conns = """
-Can't load plugin: sqlalchemy.dialects:something
-
-To fix it, make sure you are using correct driver name:
-Ref: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
-
-For technical support: https://ploomber.io/community
-Documentation: https://jupysql.ploomber.io/en/latest/connecting.html
-"""  # noqa
-
-
 def test_error_on_invalid_connection_string_with_existing_conns(ip_empty, clean_conns):
     ip_empty.run_cell("%sql sqlite://")
     result = ip_empty.run_cell("%sql something://")
 
-    assert invalid_connection_string_existing_conns.strip() == str(result.error_in_exec)
+    assert invalid_connection_string_format.strip() == str(result.error_in_exec)
     assert isinstance(result.error_in_exec, UsageError)
 
 
-invalid_connection_string_with_possible_typo = """
+invalid_connection_string_with_possible_typo = f"""
 Can't load plugin: sqlalchemy.dialects:sqlit
 
 Perhaps you meant to use driver the dialect: "sqlite"
 
-For technical support: https://ploomber.io/community
-Documentation: https://jupysql.ploomber.io/en/latest/connecting.html
+{PLOOMBER_DOCS_LINK_STR}
+{COMMUNITY}
 """  # noqa
 
 
@@ -647,6 +1052,32 @@ def test_error_on_invalid_connection_string_with_possible_typo(ip_empty, clean_c
     assert invalid_connection_string_with_possible_typo.strip() == str(
         result.error_in_exec
     )
+    assert isinstance(result.error_in_exec, UsageError)
+
+
+invalid_connection_string_duckdb = f"""
+An error happened while creating the connection: connect(): incompatible function arguments. The following argument types are supported:
+    1. (database: str = ':memory:', read_only: bool = False, config: dict = None) -> duckdb.DuckDBPyConnection
+
+Invoked with: kwargs: host='invalid_db'.
+
+Perhaps you meant to use the 'duckdb' db 
+To find more information regarding connection: https://jupysql.ploomber.io/en/latest/integrations/duckdb.html
+
+To fix it:
+
+Pass a valid connection string:
+    Example: %sql postgresql://username:password@hostname/dbname
+
+{PLOOMBER_DOCS_LINK_STR}
+{COMMUNITY}
+"""  # noqa
+
+
+def test_error_on_invalid_connection_string_duckdb(ip_empty, clean_conns):
+    result = ip_empty.run_cell("%sql duckdb://invalid_db")
+
+    assert invalid_connection_string_duckdb.strip() == str(result.error_in_exec)
     assert isinstance(result.error_in_exec, UsageError)
 
 
@@ -748,10 +1179,16 @@ def test_save_with_number_table(
 
 
 def test_save_with_non_existing_with(ip):
-    out = ip.run_cell(
-        "%sql --with non_existing_sub_query " "SELECT * FROM non_existing_sub_query"
+    with pytest.warns(FutureWarning) as record:
+        ip.run_cell(
+            "%sql --with non_existing_sub_query " "SELECT * FROM non_existing_sub_query"
+        )
+    assert len(record) == 1
+    assert (
+        "CTE dependencies are now automatically inferred, you can omit the "
+        "--with arguments. Using --with will raise an exception in the next "
+        "major release so please remove it." in record[0].message.args[0]
     )
-    assert isinstance(out.error_in_exec, UsageError)
 
 
 def test_save_with_non_existing_table(ip, capsys):
@@ -763,8 +1200,8 @@ def test_save_with_non_existing_table(ip, capsys):
 def test_save_with_bad_query_save(ip, capsys):
     ip.run_cell("%sql --save my_query SELECT * non_existing_table")
     ip.run_cell("%sql --with my_query SELECT * FROM my_query")
-    out, _ = capsys.readouterr()
-    assert '(sqlite3.OperationalError) near "non_existing_table": syntax error' in out
+    out, err = capsys.readouterr()
+    assert '(sqlite3.OperationalError) near "non_existing_table": syntax error' in err
 
 
 def test_interact_basic_data_types(ip, capsys):

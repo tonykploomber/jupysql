@@ -56,6 +56,7 @@ def ip_empty():
     ip_session.register_magics(SqlPlotMagic)
     ip_session.register_magics(SqlCmdMagic)
     yield ip_session
+    Connection.close_all()
 
 
 @pytest.fixture
@@ -69,7 +70,7 @@ def ip(ip_empty):
             "CREATE TABLE test (n INT, name TEXT)",
             "INSERT INTO test VALUES (1, 'foo')",
             "INSERT INTO test VALUES (2, 'bar')",
-            'CREATE TABLE "table with spaces" (first INT, second TEXT)',
+            "CREATE TABLE [table with spaces] (first INT, second TEXT)",
             "CREATE TABLE author (first_name, last_name, year_of_death)",
             "INSERT INTO author VALUES ('William', 'Shakespeare', 1616)",
             "INSERT INTO author VALUES ('Bertold', 'Brecht', 1956)",
@@ -94,10 +95,10 @@ def ip(ip_empty):
         ],
     )
     yield ip_empty
-    runsql(ip_empty, "DROP TABLE test")
-    runsql(ip_empty, "DROP TABLE author")
-    runsql(ip_empty, "DROP TABLE website")
-    runsql(ip_empty, "DROP TABLE number_table")
+    runsql(ip_empty, "DROP TABLE IF EXISTS test")
+    runsql(ip_empty, "DROP TABLE IF EXISTS author")
+    runsql(ip_empty, "DROP TABLE IF EXISTS website")
+    runsql(ip_empty, "DROP TABLE IF EXISTS number_table")
 
 
 @pytest.fixture

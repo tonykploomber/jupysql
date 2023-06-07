@@ -1,6 +1,7 @@
+from datetime import datetime
 import pytest
 from sql import util
-
+import json
 from IPython.core.error import UsageError
 
 ERROR_MESSAGE = "Table cannot be None"
@@ -14,6 +15,34 @@ EXPECTED_STORE_SUGGESTIONS = (
 )
 
 
+@pytest.fixture
+def ip_snippets(ip):
+    ip.run_cell(
+        """
+%%sql --save a --no-execute
+SELECT *
+FROM number_table
+"""
+    )
+    ip.run_cell(
+        """
+            %%sql --save b --no-execute
+            SELECT *
+            FROM a
+            WHERE x > 5
+            """
+    )
+    ip.run_cell(
+        """
+            %%sql --save c --no-execute
+            SELECT *
+            FROM a
+            WHERE x < 5
+            """
+    )
+    yield ip
+
+
 @pytest.mark.parametrize(
     "store_table, query",
     [
@@ -21,34 +50,6 @@ EXPECTED_STORE_SUGGESTIONS = (
         ("bbb", "%sqlcmd profile --table {}"),
         ("c_c", "%sqlplot histogram --table {} --column x"),
         ("d_d_d", "%sqlplot boxplot --table {} --column x"),
-    ],
-)
-def test_missing_with(ip, store_table, query):
-    ip.run_cell(
-        f"""
-        %%sql --save {store_table} --no-execute
-        SELECT *
-        FROM number_table
-        """
-    ).result
-
-    query = query.format(store_table)
-    out = ip.run_cell(query)
-
-    expected_store_message = EXPECTED_STORE_SUGGESTIONS.format(store_table)
-
-    error_message = str(out.error_in_exec)
-    assert isinstance(out.error_in_exec, UsageError)
-    assert str(expected_store_message).lower() in error_message.lower()
-
-
-@pytest.mark.parametrize(
-    "store_table, query",
-    [
-        ("a", "%sqlcmd columns --table {} --with {}"),
-        ("bbb", "%sqlcmd profile --table {} --with {}"),
-        ("c_c", "%sqlplot histogram --table {} --with {} --column x"),
-        ("d_d_d", "%sqlplot boxplot --table {} --with {} --column x"),
     ],
 )
 def test_no_errors_with_stored_query(ip, store_table, query):
@@ -236,7 +237,7 @@ def test_is_table_exists_with(ip, table, expected_error, expected_suggestions):
     )
     if expected_error:
         with pytest.raises(expected_error) as error:
-            util.is_table_exists(table, with_=with_)
+            util.is_table_exists(table)
 
         error_suggestions_arr = str(error.value).split(EXPECTED_SUGGESTIONS_MESSAGE)
 
@@ -281,3 +282,190 @@ def test_flatten(src, ltypes, expected):
         assert util.flatten(src, ltypes) == expected
     else:
         assert util.flatten(src) == expected
+
+
+@pytest.mark.parametrize(
+    "table, offset, n_rows, expected_rows, expected_columns",
+    [
+        ("number_table", 0, 0, [], ["x", "y"]),
+        ("number_table", 5, 0, [], ["x", "y"]),
+        ("number_table", 50, 0, [], ["x", "y"]),
+        ("number_table", 50, 10, [], ["x", "y"]),
+        (
+            "number_table",
+            2,
+            10,
+            [(2, 4), (0, 2), (-5, -1), (-2, -3), (-2, -3), (-4, 2), (2, -5), (4, 3)],
+            ["x", "y"],
+        ),
+        (
+            "number_table",
+            2,
+            100,
+            [(2, 4), (0, 2), (-5, -1), (-2, -3), (-2, -3), (-4, 2), (2, -5), (4, 3)],
+            ["x", "y"],
+        ),
+        ("number_table", 0, 2, [(4, -2), (-5, 0)], ["x", "y"]),
+        ("number_table", 2, 2, [(2, 4), (0, 2)], ["x", "y"]),
+        (
+            "number_table",
+            2,
+            5,
+            [(2, 4), (0, 2), (-5, -1), (-2, -3), (-2, -3)],
+            ["x", "y"],
+        ),
+        ("empty_table", 2, 5, [], ["column", "another"]),
+    ],
+)
+def test_fetch_sql_with_pagination_no_sort(
+    ip, table, offset, n_rows, expected_rows, expected_columns
+):
+    rows, columns = util.fetch_sql_with_pagination(table, offset, n_rows)
+
+    assert rows == expected_rows
+    assert columns == expected_columns
+
+
+@pytest.mark.parametrize(
+    "table, offset, n_rows, sort_by, order_by, expected_rows, expected_columns",
+    [
+        ("number_table", 0, 0, "x", "DESC", [], ["x", "y"]),
+        ("number_table", 5, 0, "x", "DESC", [], ["x", "y"]),
+        ("number_table", 50, 0, "y", "ASC", [], ["x", "y"]),
+        ("number_table", 50, 10, "y", "ASC", [], ["x", "y"]),
+        ("number_table", 0, 2, "x", "DESC", [(4, -2), (4, 3)], ["x", "y"]),
+        ("number_table", 0, 2, "x", "ASC", [(-5, 0), (-5, -1)], ["x", "y"]),
+        ("empty_table", 2, 5, "column", "ASC", [], ["column", "another"]),
+        ("number_table", 2, 2, "x", "ASC", [(-4, 2), (-2, -3)], ["x", "y"]),
+        ("number_table", 2, 2, "x", "DESC", [(2, 4), (2, -5)], ["x", "y"]),
+        (
+            "number_table",
+            2,
+            10,
+            "x",
+            "DESC",
+            [(2, 4), (2, -5), (0, 2), (-2, -3), (-2, -3), (-4, 2), (-5, 0), (-5, -1)],
+            ["x", "y"],
+        ),
+        (
+            "number_table",
+            2,
+            100,
+            "x",
+            "DESC",
+            [(2, 4), (2, -5), (0, 2), (-2, -3), (-2, -3), (-4, 2), (-5, 0), (-5, -1)],
+            ["x", "y"],
+        ),
+        (
+            "number_table",
+            2,
+            5,
+            "y",
+            "ASC",
+            [(-2, -3), (4, -2), (-5, -1), (-5, 0), (0, 2)],
+            ["x", "y"],
+        ),
+    ],
+)
+def test_fetch_sql_with_pagination_with_sort(
+    ip, table, offset, n_rows, sort_by, order_by, expected_rows, expected_columns
+):
+    rows, columns = util.fetch_sql_with_pagination(
+        table, offset, n_rows, sort_by, order_by
+    )
+
+    assert rows == expected_rows
+    assert columns == expected_columns
+
+
+@pytest.mark.parametrize(
+    "table",
+    ["no_such_table", ""],
+)
+def test_fetch_sql_with_pagination_no_table_error(ip, table):
+    with pytest.raises(UsageError) as excinfo:
+        util.fetch_sql_with_pagination(table, 0, 2)
+
+    assert excinfo.value.error_type == "TableNotFoundError"
+
+
+def test_fetch_sql_with_pagination_none_table(ip):
+    with pytest.raises(UsageError) as excinfo:
+        util.fetch_sql_with_pagination(None, 0, 2)
+
+    assert excinfo.value.error_type == "UsageError"
+
+
+date_format = "%Y-%m-%d %H:%M:%S"
+
+
+@pytest.mark.parametrize(
+    "rows, columns, expected_json",
+    [
+        ([(1, 2), (3, 4)], ["x", "y"], [{"x": 1, "y": 2}, {"x": 3, "y": 4}]),
+        ([(1,), (3,)], ["x"], [{"x": 1}, {"x": 3}]),
+        (
+            [
+                ("a", datetime.strptime("2021-01-01 00:30:10", date_format)),
+                ("b", datetime.strptime("2021-02-01 00:30:10", date_format)),
+            ],
+            ["id", "datetime"],
+            [
+                {
+                    "datetime": "2021-01-01 00:30:10",
+                    "id": "a",
+                },
+                {
+                    "datetime": "2021-02-01 00:30:10",
+                    "id": "b",
+                },
+            ],
+        ),
+        (
+            [(None, "a1", "b1"), (None, "a2", "b2")],
+            ["x", "y", "z"],
+            [
+                {
+                    "x": "None",
+                    "y": "a1",
+                    "z": "b1",
+                },
+                {
+                    "x": "None",
+                    "y": "a2",
+                    "z": "b2",
+                },
+            ],
+        ),
+    ],
+)
+def test_parse_sql_results_to_json(ip, capsys, rows, columns, expected_json):
+    j = util.parse_sql_results_to_json(rows, columns)
+    j = json.loads(j)
+    with capsys.disabled():
+        assert str(j) == str(expected_json)
+
+
+def test_get_all_keys(ip_snippets):
+    keys = util.get_all_keys()
+    assert "a" in keys
+    assert "b" in keys
+    assert "c" in keys
+
+
+def test_get_key_dependents(ip_snippets):
+    keys = util.get_key_dependents("a")
+    assert "b" in keys
+    assert "c" in keys
+
+
+def test_del_saved_key(ip_snippets):
+    keys = util.del_saved_key("c")
+    assert "a" in keys
+    assert "b" in keys
+
+
+def test_del_saved_key_error(ip_snippets):
+    with pytest.raises(UsageError) as excinfo:
+        util.del_saved_key("non_existent_key")
+    assert "No such saved snippet found : non_existent_key" in str(excinfo.value)

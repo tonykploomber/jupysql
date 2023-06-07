@@ -6,6 +6,8 @@ from ploomber_core.exceptions import modify_exceptions
 from jinja2 import Template
 
 from sql.util import flatten
+from sqlalchemy.exc import ProgrammingError
+from sql import exceptions
 
 try:
     import matplotlib.pyplot as plt
@@ -30,6 +32,7 @@ def _summary_stats(conn, table, column, with_=None):
 
     if not conn:
         conn = sql.connection.Connection.current
+    driver = conn._get_curr_sqlalchemy_connection_info()["driver"]
 
     template = Template(
         """
@@ -44,7 +47,16 @@ def _summary_stats(conn, table, column, with_=None):
 
     query = template.render(table=table, column=column)
 
-    values = conn.execute(query, with_).fetchone()
+    try:
+        values = conn.execute(query, with_).fetchone()
+    except ProgrammingError as e:
+        print(e)
+        raise exceptions.RuntimeError(
+            f"\nEnsure that percentile_disc function is available on {driver}."
+        )
+    except Exception as e:
+        raise e
+
     keys = ["q1", "med", "q3", "mean", "N"]
     return {k: float(v) for k, v in zip(keys, flatten(values))}
 
@@ -349,7 +361,9 @@ def histogram(
         Added plot title and axis labels. Allowing to pass lists in ``column``.
         Function returns a ``matplotlib.Axes`` object.
 
-    .. versionadded:: 0.4.4
+    .. versionchanged:: 0.7.9
+        Added support for NULL values, additional filter query with new logic.
+        Skips the rows with NULL in the column, does not raise ValueError
 
     Returns
     -------
@@ -489,7 +503,12 @@ def _histogram(table, column, bins, with_=None, conn=None, facet=None):
     # FIXME: we're computing all the with elements twice
     min_, max_ = _min_max(conn, table, column, with_=with_, use_backticks=use_backticks)
 
-    filter_query = f"WHERE {facet['key']} == '{facet['value']}'" if facet else ""
+    # Define all relevant filters here
+    filter_query_1 = f'"{column}" IS NOT NULL'
+
+    filter_query_2 = f"{facet['key']} == '{facet['value']}'" if facet else None
+
+    filter_query = _filter_aggregate(filter_query_1, filter_query_2)
 
     bin_size = None
 
@@ -541,9 +560,6 @@ def _histogram(table, column, bins, with_=None, conn=None, facet=None):
 
     bin_, height = zip(*data)
 
-    if bin_[0] is None:
-        raise ValueError("Data contains NULLs")
-
     return bin_, height, bin_size
 
 
@@ -570,7 +586,11 @@ def _histogram_stacked(
 
     cases = " ".join(cases)
 
-    filter_query = f"WHERE {facet['key']} == '{facet['value']}'" if facet else ""
+    filter_query_1 = f'"{column}" IS NOT NULL'
+
+    filter_query_2 = f"{facet['key']} == '{facet['value']}'" if facet else None
+
+    filter_query = _filter_aggregate(filter_query_1, filter_query_2)
 
     template = Template(
         """
@@ -593,3 +613,358 @@ def _histogram_stacked(
     data = conn.execute(query, with_).fetchall()
 
     return data
+
+
+@modify_exceptions
+def _filter_aggregate(*filter_queries):
+    """Return a single filter query based on multiple queries.
+
+    Parameters:
+    ----------
+    *filter_queries (str):
+    Variable length argument list of filter queries.
+    Filter query is  string with a filtering condition in SQL
+    (e.g., "age > 25").
+    (e.g., "column is NULL").
+
+    Notes
+    -----
+    .. versionadded:: 0.7.9
+
+    Returns:
+    -----
+    final_filter (str):
+    A string that represents a SQL WHERE clause
+
+    """
+    final_filter = ""
+    for idx, query in enumerate(filter_queries):
+        if query is not None:
+            if idx == 0:
+                final_filter = f"{final_filter}WHERE {query}"
+                continue
+            final_filter = f"{final_filter} AND {query}"
+    return final_filter
+
+
+@modify_exceptions
+def _bar(table, column, with_=None, conn=None):
+    """get x and height for bar plot"""
+    if not conn:
+        conn = sql.connection.Connection.current
+    use_backticks = conn.is_use_backtick_template()
+
+    if isinstance(column, list):
+        if len(column) > 2:
+            raise exceptions.UsageError(
+                f"Passed columns: {column}\n"
+                "Bar chart currently supports, either a single column"
+                " on which group by and count is applied or"
+                " two columns: labels and size"
+            )
+
+        x_ = column[0]
+        height_ = column[1]
+
+        print(f"Removing NULLs, if there exists any from {x_} and {height_}")
+        template_ = """
+            select "{{x_}}" as x,
+            "{{height_}}" as height
+            from "{{table}}"
+            where "{{x_}}" is not null
+            and "{{height_}}" is not null;
+            """
+
+        xlabel = x_
+        ylabel = height_
+
+        if use_backticks:
+            template_ = template_.replace('"', "`")
+
+        template = Template(template_)
+        query = template.render(table=table, x_=x_, height_=height_)
+
+    else:
+        print(f"Removing NULLs, if there exists any from {column}")
+        template_ = """
+                select "{{column}}" as x,
+                count("{{column}}") as height
+                from "{{table}}"
+                where "{{column}}" is not null
+                group by "{{column}}";
+                """
+
+        xlabel = column
+        ylabel = "Count"
+
+        if use_backticks:
+            template_ = template_.replace('"', "`")
+
+        template = Template(template_)
+        query = template.render(table=table, column=column)
+
+    data = conn.execute(query, with_).fetchall()
+
+    x, height = zip(*data)
+
+    if x[0] is None:
+        raise ValueError("Data contains NULLs")
+
+    return x, height, xlabel, ylabel
+
+
+@requires(["matplotlib"])
+@telemetry.log_call("bar", payload=True)
+def bar(
+    payload,
+    table,
+    column,
+    show_num=False,
+    orient="v",
+    with_=None,
+    conn=None,
+    cmap=None,
+    color=None,
+    edgecolor=None,
+    ax=None,
+):
+    """Plot Bar Chart
+
+    Parameters
+    ----------
+    table : str
+        Table name where the data is located
+
+    column : str
+        Column(s) to plot
+
+    show_num: bool
+        Show numbers on top of plot
+
+    orient : str, default='v'
+        Orientation of the plot. 'v' for vertical and 'h' for horizontal
+
+    conn : connection, default=None
+        Database connection. If None, it uses the current connection
+
+    Notes
+    -----
+
+    .. versionadded:: 0.7.6
+
+    Returns
+    -------
+    ax : matplotlib.Axes
+        Generated plot
+
+    """
+
+    if not conn:
+        conn = sql.connection.Connection.current
+
+    ax = ax or plt.gca()
+    payload["connection_info"] = conn._get_curr_sqlalchemy_connection_info()
+
+    if column is None:
+        raise exceptions.UsageError("Column name has not been specified")
+
+    x, height_, xlabel, ylabel = _bar(table, column, with_=with_, conn=conn)
+
+    if color and cmap:
+        # raise a userwarning
+        warnings.warn(
+            "Both color and cmap are given. cmap will be ignored", UserWarning
+        )
+
+    if (not color) and cmap:
+        cmap = plt.get_cmap(cmap)
+        norm = Normalize(vmin=0, vmax=len(x))
+        color = [cmap(norm(i)) for i in range(len(x))]
+
+    if orient == "h":
+        ax.barh(
+            x,
+            height_,
+            align="center",
+            edgecolor=edgecolor,
+            color=color,
+        )
+        ax.set_xlabel(ylabel)
+        ax.set_ylabel(xlabel)
+    else:
+        ax.bar(
+            x,
+            height_,
+            align="center",
+            edgecolor=edgecolor,
+            color=color,
+        )
+        ax.set_ylabel(ylabel)
+        ax.set_xlabel(xlabel)
+
+    if show_num:
+        if orient == "v":
+            for i, v in enumerate(height_):
+                ax.text(
+                    i,
+                    v,
+                    str(v),
+                    color="black",
+                    fontweight="bold",
+                    ha="center",
+                    va="bottom",
+                )
+        else:
+            for i, v in enumerate(height_):
+                ax.text(
+                    v,
+                    i,
+                    str(v),
+                    color="black",
+                    fontweight="bold",
+                    ha="left",
+                    va="center",
+                )
+
+    ax.set_title(table)
+
+    return ax
+
+
+@modify_exceptions
+def _pie(table, column, with_=None, conn=None):
+    """get x and height for pie chart"""
+    if not conn:
+        conn = sql.connection.Connection.current
+    use_backticks = conn.is_use_backtick_template()
+
+    if isinstance(column, list):
+        if len(column) > 2:
+            raise exceptions.UsageError(
+                f"Passed columns: {column}\n"
+                "Pie chart currently supports, either a single column"
+                " on which group by and count is applied or"
+                " two columns: labels and size"
+            )
+
+        labels_ = column[0]
+        size_ = column[1]
+
+        print(f"Removing NULLs, if there exists any from {labels_} and {size_}")
+        template_ = """
+                select "{{labels_}}" as labels,
+                "{{size_}}" as size
+                from "{{table}}"
+                where "{{labels_}}" is not null
+                and "{{size_}}" is not null;
+                """
+        if use_backticks:
+            template_ = template_.replace('"', "`")
+
+        template = Template(template_)
+        query = template.render(table=table, labels_=labels_, size_=size_)
+
+    else:
+        print(f"Removing NULLs, if there exists any from {column}")
+        template_ = """
+                select "{{column}}" as x,
+                count("{{column}}") as height
+                from "{{table}}"
+                where "{{column}}" is not null
+                group by "{{column}}";
+                """
+        if use_backticks:
+            template_ = template_.replace('"', "`")
+
+        template = Template(template_)
+        query = template.render(table=table, column=column)
+
+    data = conn.execute(query, with_).fetchall()
+
+    labels, size = zip(*data)
+
+    if labels[0] is None:
+        raise ValueError("Data contains NULLs")
+
+    return labels, size
+
+
+@requires(["matplotlib"])
+@telemetry.log_call("bar", payload=True)
+def pie(
+    payload,
+    table,
+    column,
+    show_num=False,
+    with_=None,
+    conn=None,
+    cmap=None,
+    color=None,
+    ax=None,
+):
+    """Plot Pie Chart
+
+    Parameters
+    ----------
+    table : str
+        Table name where the data is located
+
+    column : str
+        Column(s) to plot
+
+    show_num: bool
+        Show numbers on top of plot
+
+    conn : connection, default=None
+        Database connection. If None, it uses the current connection
+
+    Notes
+    -----
+
+    .. versionadded:: 0.7.6
+
+    Returns
+    -------
+    ax : matplotlib.Axes
+        Generated plot
+    """
+
+    if not conn:
+        conn = sql.connection.Connection.current
+
+    ax = ax or plt.gca()
+    payload["connection_info"] = conn._get_curr_sqlalchemy_connection_info()
+
+    if column is None:
+        raise exceptions.UsageError("Column name has not been specified")
+
+    labels, size_ = _pie(table, column, with_=with_, conn=conn)
+
+    if color and cmap:
+        # raise a userwarning
+        warnings.warn(
+            "Both color and cmap are given. cmap will be ignored", UserWarning
+        )
+
+    if (not color) and cmap:
+        cmap = plt.get_cmap(cmap)
+        norm = Normalize(vmin=0, vmax=len(labels))
+        color = [cmap(norm(i)) for i in range(len(labels))]
+
+    if show_num:
+        ax.pie(
+            size_,
+            labels=labels,
+            colors=color,
+            autopct="%1.2f%%",
+        )
+    else:
+        ax.pie(
+            size_,
+            labels=labels,
+            colors=color,
+        )
+
+    ax.set_title(table)
+
+    return ax

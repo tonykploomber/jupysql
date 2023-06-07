@@ -26,7 +26,7 @@ myst:
     Close named connection ([example](#close-connection))
 
 ``-c`` / ``--creator <creator-function>``
-    Specify creator function for new connection
+    Specify creator function for new connection ([example](#specify-creator-function))
 
 ``-s`` / ``--section <section-name>``
     Section of dsn_file to be used for generating a connection string
@@ -111,7 +111,7 @@ To make all subsequent queries to use certain connection, pass the connection na
 You can inspect which is the current active connection:
 
 ```{code-cell} ipython3
-%sql --list
+%sql --connections
 ```
 
 For more details on managing connections, see [Switch connections](../howto.md#switch-connections).
@@ -121,7 +121,7 @@ For more details on managing connections, see [Switch connections](../howto.md#s
 ## List connections
 
 ```{code-cell} ipython3
-%sql --list
+%sql --connections
 ```
 
 ## Close connection
@@ -135,6 +135,25 @@ Or pass an alias (**added in 0.5.2**):
 ```{code-cell} ipython3
 %sql --close db-two
 ```
+
+
+## Specify creator function
+```{code-cell} ipython3
+import os
+import sqlite3
+
+# Set environment variable $DATABASE_URL
+os.environ["DATABASE_URL"] = "sqlite:///"
+
+# Define a function that returns a DBAPI connection
+def creator():
+    return sqlite3.connect("")
+```
+
+```{code-cell} ipython3
+%sql --creator creator
+```
+
 
 ## Create table
 
@@ -205,7 +224,7 @@ FROM my_data
 LIMIT 3
 """
 
-%sql $QUERY
+%sql {{QUERY}}
 ```
 
 ## Templated SQL queries
@@ -228,11 +247,11 @@ limit_two = template.substitute(limit=2)
 **Important:** Ensure you sanitize the input parameters; as malicious parameters will be able to run arbitrary SQL queries.
 
 ```{code-cell} ipython3
-%sql $limit_one
+%sql {{limit_one}}
 ```
 
 ```{code-cell} ipython3
-%sql $limit_two
+%sql {{limit_two}}
 ```
 
 ## Compose large queries
