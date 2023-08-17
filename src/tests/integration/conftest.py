@@ -3,7 +3,7 @@ from pathlib import Path
 import shutil
 import pandas as pd
 import pytest
-from sqlalchemy import MetaData, Table, create_engine
+from sqlalchemy import MetaData, Table, create_engine, text
 import uuid
 import duckdb
 
@@ -75,6 +75,39 @@ def test_table_name_dict():
 def drop_table(engine, table_name):
     tbl = Table(table_name, MetaData(), autoload_with=engine)
     tbl.drop(engine, checkfirst=False)
+
+
+def load_taxi_data_clickhouse(engine, table_name):
+    data = ["Eric Ken", "John Smith", "Kevin Kelly"] * 15
+    query = f"""CREATE TABLE {table_name} (taxi_driver_name String)
+            ENGINE = MergeTree()
+            ORDER BY taxi_driver_name"""
+    insert_query = f"INSERT INTO {table_name} (taxi_driver_name) VALUES "
+    insert_query += ", ".join(f"('{name}')" for name in data)
+    engine.execute(text(query))
+    engine.execute(text(insert_query))
+
+
+def load_plot_data_clickhouse(engine, table_name):
+    data = {"x": range(0, 5), "y": range(5, 10)}
+    query = f"""CREATE TABLE {table_name} (x Int32, y Int32)
+                ENGINE = MergeTree()
+                ORDER BY x"""
+    engine.execute(text(query))
+    for values in zip(data["x"], data["y"]):
+        query = f"INSERT INTO {table_name} (x, y) VALUES ('{values[0]}', {values[1]})"
+        engine.execute(text(query))
+
+
+def load_numbers_data_clickhouse(engine, table_name):
+    data = [1, 2, 3] * 20
+    query = f"""CREATE TABLE {table_name} (numbers_elements Int32)
+            ENGINE = MergeTree()
+            ORDER BY numbers_elements"""
+    insert_query = f"INSERT INTO {table_name} (numbers_elements) VALUES "
+    insert_query += ", ".join(f"('{number}')" for number in data)
+    engine.execute(text(query))
+    engine.execute(text(insert_query))
 
 
 def load_taxi_data(engine, table_name, index=True):
@@ -477,14 +510,16 @@ def setup_clickhouse(test_table_name_dict):
         )
         engine.connect()
         # Load pre-defined datasets
-        load_generic_testing_data(engine, test_table_name_dict, index=False)
+        load_taxi_data_clickhouse(engine, test_table_name_dict["taxi"])
+        load_plot_data_clickhouse(engine, test_table_name_dict["plot_something"])
+        load_numbers_data_clickhouse(engine, test_table_name_dict["numbers"])
         yield engine
         tear_down_generic_testing_data(engine, test_table_name_dict)
         engine.dispose()
 
 
 @pytest.fixture
-def ip_with_clickhouse(ip_empty, setup_oracle):
+def ip_with_clickhouse(ip_empty, setup_clickhouse):
     configKey = "clickhouse"
     config = _testing.DatabaseConfigHelper.get_database_config(configKey)
     # Select database engine

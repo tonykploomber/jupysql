@@ -192,8 +192,8 @@ databaseConfig = {
     },
     "clickhouse": {
         "drivername": "clickhouse+native",
-        "username": "ploomber_app",
-        "password": "ploomber_app_password",
+        "username": "username",
+        "password": "password",
         # database/schema
         "host": "localhost",
         "port": "9000",
