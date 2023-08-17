@@ -201,7 +201,7 @@ databaseConfig = {
         "database": "my_database",
         "docker_ct": {
             "name": "clickhouse",
-            "image": "clickhouse/clickhouse-server",
+            "image": "lunalabsltd/clickhouse-server:21.7.2.7-arm",
             "ports": {9000: 9000},
         },
         "query": {},
@@ -472,7 +472,7 @@ def clickhouse(is_bypass_init=False):
 
 def main():
     print("Starting test containers...")
-    with postgres(), mysql(), mariadb(), mssql(), oracle():
+    with clickhouse():
         print("Press CTRL+C to exit")
         try:
             while True:
