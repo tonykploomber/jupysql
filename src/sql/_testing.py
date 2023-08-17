@@ -191,7 +191,7 @@ databaseConfig = {
         "query": {},
     },
     "clickhouse": {
-        "drivername": "clickhouse+native",
+        "drivername": "clickhouse",
         "username": "username",
         "password": "password",
         # database/schema
