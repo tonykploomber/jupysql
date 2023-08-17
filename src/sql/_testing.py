@@ -463,7 +463,6 @@ def clickhouse(is_bypass_init=False):
             environment={
                 "APP_USER": db_config["username"],
                 "APP_USER_PASSWORD": db_config["password"],
-                "ORACLE_PASSWORD": db_config["admin_password"],
             },
         ) as container:
             yield container
