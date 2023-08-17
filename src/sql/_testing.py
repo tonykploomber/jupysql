@@ -461,8 +461,8 @@ def clickhouse(is_bypass_init=False):
             image_name=db_config["docker_ct"]["image"],
             ports=db_config["docker_ct"]["ports"],
             environment={
-                "APP_USER": db_config["username"],
-                "APP_USER_PASSWORD": db_config["password"],
+                "CLICKHOUSE_USER": db_config["username"],
+                "CLICKHOUSE_PASSWORD": db_config["password"],
             },
         ) as container:
             yield container
