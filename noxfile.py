@@ -132,7 +132,13 @@ def test_integration_cloud(session):
     # tests
     _install(session, integration=True)
     session.install("snowflake-sqlalchemy", "redshift-connector", "sqlalchemy-redshift")
-    session.run("pytest", "src/tests/integration", "-k", "snowflake or redshift", "-v")
+    session.run(
+        "pytest",
+        "src/tests/integration",
+        "-k",
+        "snowflake or redshift or clickhouse",
+        "-v",
+    )
 
 
 @nox.session(
@@ -146,6 +152,6 @@ def test_integration(session):
         "pytest",
         "src/tests/integration",
         "-k",
-        "not (snowflake or redshift)",
+        "not (snowflake or redshift or clickhouse)",
         "-v",
     )
