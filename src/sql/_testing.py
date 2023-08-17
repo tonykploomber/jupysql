@@ -463,6 +463,7 @@ def clickhouse(is_bypass_init=False):
             environment={
                 "CLICKHOUSE_USER": db_config["username"],
                 "CLICKHOUSE_PASSWORD": db_config["password"],
+                "CLICKHOUSE_DB": db_config["database"],
             },
             ready_test=lambda: database_ready(database="clickhouse"),
         ) as container:
