@@ -190,6 +190,22 @@ databaseConfig = {
         "docker_ct": None,
         "query": {},
     },
+    "clickhouse": {
+        "drivername": "clickhouse+native",
+        "username": "ploomber_app",
+        "password": "ploomber_app_password",
+        # database/schema
+        "host": "localhost",
+        "port": "9000",
+        "alias": "clickhouse",
+        "database": "my_database",
+        "docker_ct": {
+            "name": "clickhouse",
+            "image": "clickhouse/clickhouse-server",
+            "ports": {9000: 9000},
+        },
+        "query": {},
+    },
 }
 
 
@@ -423,6 +439,32 @@ def oracle(is_bypass_init=False):
             },
             # Oracle takes more time to initialize
             ready_test=lambda: database_ready(database="oracle"),
+        ) as container:
+            yield container
+
+
+@contextmanager
+@requires(["docker", "dockerctx"])
+def clickhouse(is_bypass_init=False):
+    if is_bypass_init:
+        yield None
+        return
+    db_config = DatabaseConfigHelper.get_database_config("clickhouse")
+    try:
+        client = get_docker_client()
+        curr = client.containers.get(db_config["docker_ct"]["name"])
+        yield curr
+    except docker.errors.NotFound:
+        print("Creating new container: clickhouse")
+        with new_container(
+            new_container_name=db_config["docker_ct"]["name"],
+            image_name=db_config["docker_ct"]["image"],
+            ports=db_config["docker_ct"]["ports"],
+            environment={
+                "APP_USER": db_config["username"],
+                "APP_USER_PASSWORD": db_config["password"],
+                "ORACLE_PASSWORD": db_config["admin_password"],
+            },
         ) as container:
             yield container
 

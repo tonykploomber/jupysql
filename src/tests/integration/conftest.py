@@ -467,3 +467,33 @@ def ip_with_oracle(ip_empty, setup_oracle):
     yield ip_empty
     # Disconnect database
     ip_empty.run_cell("%sql -x " + config["alias"])
+
+
+@pytest.fixture(scope="session")
+def setup_clickhouse(test_table_name_dict):
+    with _testing.clickhouse():
+        engine = create_engine(
+            _testing.DatabaseConfigHelper.get_database_url("clickhouse")
+        )
+        engine.connect()
+        # Load pre-defined datasets
+        load_generic_testing_data(engine, test_table_name_dict, index=False)
+        yield engine
+        tear_down_generic_testing_data(engine, test_table_name_dict)
+        engine.dispose()
+
+
+@pytest.fixture
+def ip_with_clickhouse(ip_empty, setup_oracle):
+    configKey = "clickhouse"
+    config = _testing.DatabaseConfigHelper.get_database_config(configKey)
+    # Select database engine
+    ip_empty.run_cell(
+        "%sql "
+        + _testing.DatabaseConfigHelper.get_database_url(configKey)
+        + " --alias "
+        + config["alias"]
+    )
+    yield ip_empty
+    # Disconnect database
+    ip_empty.run_cell("%sql -x " + config["alias"])
