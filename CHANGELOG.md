@@ -16,6 +16,8 @@
 * [Fix] `ResultSet` footer (when `displaylimit` truncates results and when showing how to convert to a data frame) now appears in the `ResultSet` plain text representation (#682)
 * [Doc] Fixes documentation inaccuracy that said `:variable` was deprecated (we brought it back in `0.9.0`)
 
+* [Feature] Added clickhouse integration tests
+
 ## 0.9.1 (2023-08-10)
 
 * [Feature] Added `--breaks/-B` to ggplot histogram for specifying breaks ([#719](https://github.com/ploomber/jupysql/issues/719))
