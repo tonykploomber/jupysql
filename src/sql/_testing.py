@@ -201,7 +201,7 @@ databaseConfig = {
         "database": "my_database",
         "docker_ct": {
             "name": "clickhouse",
-            "image": "lunalabsltd/clickhouse-server:21.7.2.7-arm",
+            "image": "clickhouse/clickhouse-server",
             "ports": {9000: 9000},
         },
         "query": {},
