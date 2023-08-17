@@ -450,24 +450,26 @@ def clickhouse(is_bypass_init=False):
         yield None
         return
     db_config = DatabaseConfigHelper.get_database_config("clickhouse")
-    try:
-        client = get_docker_client()
-        curr = client.containers.get(db_config["docker_ct"]["name"])
-        yield curr
-    except docker.errors.NotFound:
-        print("Creating new container: clickhouse")
-        with new_container(
-            new_container_name=db_config["docker_ct"]["name"],
-            image_name=db_config["docker_ct"]["image"],
-            ports=db_config["docker_ct"]["ports"],
-            environment={
-                "CLICKHOUSE_USER": db_config["username"],
-                "CLICKHOUSE_PASSWORD": db_config["password"],
-                "CLICKHOUSE_DB": db_config["database"],
-            },
-            ready_test=lambda: database_ready(database="clickhouse"),
-        ) as container:
-            yield container
+    # try:
+    #     p
+    #     client = get_docker_client()
+    #     curr = client.containers.get(db_config["docker_ct"]["name"])
+    #     print("curr: ", curr)
+    #     yield curr
+    # except docker.errors.NotFound:
+    print("Creating new container: clickhouse")
+    with new_container(
+        new_container_name=db_config["docker_ct"]["name"],
+        image_name=db_config["docker_ct"]["image"],
+        ports=db_config["docker_ct"]["ports"],
+        environment={
+            "CLICKHOUSE_USER": db_config["username"],
+            "CLICKHOUSE_PASSWORD": db_config["password"],
+            "CLICKHOUSE_DB": db_config["database"],
+        },
+        ready_test=lambda: database_ready(database="clickhouse"),
+    ) as container:
+        yield container
 
 
 def main():

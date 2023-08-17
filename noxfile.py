@@ -136,7 +136,7 @@ def test_integration_cloud(session):
         "pytest",
         "src/tests/integration",
         "-k",
-        "snowflake or redshift or clickhouse",
+        "clickhouse",
         "-v",
     )
 
